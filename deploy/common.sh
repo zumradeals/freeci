@@ -1,12 +1,15 @@
 # Fonctions communes aux scripts de déploiement FreeCI. À « sourcer », pas à exécuter.
 # Variables (toutes facultatives, valeurs par défaut entre parenthèses) :
 #   APP_DIR (dossier parent de deploy/)  BACKUP_DIR (/var/backups/freeci)  KEEP_BACKUPS (14)
-#   PHP_BIN (php)  COMPOSER_BIN (composer)  NPM_BIN (npm)  SKIP_FRONTEND_BUILD (0)
+#   PHP_BIN (php)  COMPOSER_BIN (composer ; peut contenir des espaces, ex. « php8.3 /usr/local/bin/composer »)  NPM_BIN (npm)  SKIP_FRONTEND_BUILD (0)
 #   PHP_FPM_SERVICE (vide = ne pas recharger ; ex. php8.3-fpm)  GIT_REMOTE (origin)
 
 set -Eeuo pipefail
 
 APP_DIR="${APP_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+# Réglages propres au serveur (non versionnés) : deploy/local.env, voir deploy/local.env.example.
+# shellcheck disable=SC1091
+[ -f "$APP_DIR/deploy/local.env" ] && . "$APP_DIR/deploy/local.env"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/freeci}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-14}"
 PHP_BIN="${PHP_BIN:-php}"
@@ -56,7 +59,7 @@ build_caches() {
 
 install_dependencies() {
   log "Dépendances PHP (production, sans outils de test)"
-  (cd "$APP_DIR" && "$COMPOSER_BIN" install --no-dev --prefer-dist --no-interaction --optimize-autoloader)
+  (cd "$APP_DIR" && $COMPOSER_BIN install --no-dev --prefer-dist --no-interaction --optimize-autoloader)
   if [ "$SKIP_FRONTEND_BUILD" = "1" ]; then
     [ -f "$APP_DIR/public/build/manifest.json" ] || die "SKIP_FRONTEND_BUILD=1 mais public/build/manifest.json est absent : copiez les ressources compilées."
     log "Ressources compilées fournies (SKIP_FRONTEND_BUILD=1)"
