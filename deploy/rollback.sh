@@ -28,9 +28,12 @@ git checkout --detach "$sha"
 install_dependencies
 if [ -n "$restore_dir" ]; then
   export PGPASSWORD="$(env_get DB_PASSWORD)"
-  log "Restauration de la base depuis $restore_dir/db.dump"
-  pg_restore --host="$(env_get DB_HOST)" --port="$(env_get DB_PORT)" --username="$(env_get DB_USERNAME)" \
-    --dbname="$(env_get DB_DATABASE)" --clean --if-exists --no-owner --single-transaction "$restore_dir/db.dump"
+  log "Restauration de la base depuis $restore_dir/db.dump (une seule transaction : tout ou rien)"
+  # On supprime d'abord les objets appartenant au rôle FreeCI dans CETTE base (tables ajoutées depuis la sauvegarde
+  # comprises), puis on rejoue la sauvegarde. Les autres bases du serveur ne sont pas concernées.
+  { echo "DROP OWNED BY CURRENT_USER CASCADE;"; pg_restore --no-owner --file=- "$restore_dir/db.dump"; } \
+    | psql --no-psqlrc --quiet --host="$(env_get DB_HOST)" --port="$(env_get DB_PORT)" --username="$(env_get DB_USERNAME)" \
+        --dbname="$(env_get DB_DATABASE)" --set=ON_ERROR_STOP=1 --single-transaction --output=/dev/null
 else
   warn "Base non restaurée. Si une migration de la version retirée a modifié le schéma, utilisez --restore-db."
 fi

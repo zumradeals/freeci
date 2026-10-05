@@ -57,4 +57,28 @@ class DemoSeedTest extends TestCase
         $this->assertStringNotContainsString('Demo-Local', $seeder);
         $this->assertDoesNotMatchRegularExpression('/[\'"]password[\'"]\s*=>\s*[\'"][^\'"]+[\'"]/', $seeder);
     }
+
+    public function test_demo_purge_removes_only_demo_data(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $real = Service::factory()->create(['is_demo' => false, 'title' => 'Service réel']);
+        $real->freelanceProfile->update(['is_demo' => false]);
+        $realUser = User::factory()->create(['is_demo' => false]);
+
+        $this->artisan('freeci:demo-purge', ['--force' => true])->assertSuccessful();
+
+        $this->assertSame(0, Service::where('is_demo', true)->count());
+        $this->assertSame(0, User::where('is_demo', true)->count());
+        $this->assertTrue(Service::whereKey($real->id)->exists());
+        $this->assertTrue(User::whereKey($realUser->id)->exists());
+        $this->assertSame(9, Category::count(), 'les catégories (8 + celle du service réel) ne sont pas supprimées');
+        $this->artisan('freeci:demo-purge', ['--force' => true])->expectsOutput('Rien à supprimer.')->assertSuccessful();
+    }
+
+    public function test_migrations_and_updates_never_seed_demo_data(): void
+    {
+        $this->assertSame(0, Service::count());
+        $this->artisan('migrate', ['--force' => true])->assertSuccessful();
+        $this->assertSame(0, Service::count(), 'migrate ne doit jamais installer de données de démonstration');
+    }
 }

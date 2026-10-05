@@ -133,6 +133,8 @@ La V1 doit permettre **une transaction complète, de la recherche à la clôture
 | **D29** | **Dépliants secondaires** repliés sur mobile, ouverts sur ordinateur ; les informations essentielles à une décision restent immédiatement accessibles | `03` §6.10 |
 | **D30** | **Premier lot fonctionnel** : socle Laravel/PostgreSQL, accueil, catalogue (recherche, catégorie, pagination), fiche de service, inscription/connexion/déconnexion/récupération, espace client à l'état vide, données fictives reproductibles | `06` |
 | **D31** | **Conventions techniques du lot 1** (UUID v7, schéma `public`, versions verrouillées, organisation des modules) : décisions internes réversibles, **sans nouvelle confirmation** | `06` |
+| **D32** | **Déploiement sur VPS** `https://freeci.dgafrique.com` (sous-domaine **temporaire**), réalisé **par le porteur** ; FreeCI **autonome** de DG Afrique ; domaine **configurable** ; VPS **non supposé vierge** (autres sites préservés) ; catalogue public sans restriction globale ; aucun paiement réel ; données fictives optionnelles et identifiées | `07` ; `LIVRAISONS` |
+| **D33** | **Chaque lot terminé et vérifié est poussé sur `main`, sans push forcé**, avec : SHA à déployer, nouvelles variables d'environnement, migrations à appliquer | `LIVRAISONS` |
 | **D19** | **Publication autorisée** des cinq documents et dérivés dans le dépôt public ; visibilité du dépôt inchangée ; **exclus** : secrets, identifiants, données personnelles réelles, pièces client originales | Clôt Q16. |
 
 **Pile d'interface validée (D15).** Blade/Livewire, Tailwind et Alpine.js : leur place est expliquée en `02` §5. Les versions restent à vérifier avant installation (D17).

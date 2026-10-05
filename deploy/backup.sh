@@ -19,7 +19,7 @@ pg_restore --list "$dir/db.dump" >/dev/null || die "La sauvegarde de la base est
 
 log "Sauvegarde de storage/ et du .env"
 tar -C "$APP_DIR" --exclude='storage/logs' --exclude='storage/framework/cache' --exclude='storage/framework/sessions' --exclude='storage/framework/views' -czf "$dir/storage.tar.gz" storage
-cp -p "$APP_DIR/.env" "$dir/env.copy"
+install -m 600 "$APP_DIR/.env" "$dir/env.copy"
 (cd "$APP_DIR" && git rev-parse HEAD 2>/dev/null || echo "inconnu") > "$dir/SHA"
 (cd "$dir" && sha256sum db.dump storage.tar.gz env.copy SHA > SHA256SUMS)
 

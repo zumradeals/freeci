@@ -2,10 +2,12 @@
 
 namespace App\Modules\Accounts\Models;
 
+use App\Modules\Catalog\Models\FreelanceProfile;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -31,6 +33,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_demo' => 'boolean',
         ];
+    }
+
+    public function freelanceProfile(): HasOne
+    {
+        return $this->hasOne(FreelanceProfile::class);
     }
 
     public function firstName(): string

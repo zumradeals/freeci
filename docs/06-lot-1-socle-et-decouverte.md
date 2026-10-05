@@ -53,7 +53,7 @@ Accueil fidèle à V01.1 (recherche, catégories, services publiés récents) ·
 
 ## 4. Vérifications
 
-Voir le rapport `design/lot-1/RAPPORT-LOT-1.md` : tests automatisés (PostgreSQL), installation propre, rendus sur 5 largeurs comparés à V01.1, contrôle axe-core, et **limites** (pas d'appareil réel, un seul moteur de navigation, pas de lecteur d'écran, courrier non envoyé).
+Voir le rapport `design/lot-1/RAPPORT-LOT-1.md`; déploiement : `docs/07-deploiement.md` : tests automatisés (PostgreSQL), installation propre, rendus sur 5 largeurs comparés à V01.1, contrôle axe-core, et **limites** (pas d'appareil réel, un seul moteur de navigation, pas de lecteur d'écran, courrier non envoyé).
 
 ## 5. Lot suivant recommandé
 

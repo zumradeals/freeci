@@ -52,3 +52,7 @@ Compte client de démonstration : `client@demo.freeci.invalid` (mot de passe : v
 php artisan test        # PostgreSQL, base freeci_test
 ./vendor/bin/pint --test
 ```
+
+### Déploiement
+
+Procédure complète (première installation, mise à jour, sauvegardes, retour arrière) : [`docs/07-deploiement.md`](docs/07-deploiement.md). Livraisons : [`docs/LIVRAISONS.md`](docs/LIVRAISONS.md). Scripts : `deploy/`.

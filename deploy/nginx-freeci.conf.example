@@ -1,0 +1,56 @@
+# FreeCI — site nginx dédié. Fichier À AJOUTER (ex. /etc/nginx/sites-available/freeci.dgafrique.com) ; ne modifie aucun autre site.
+# Remplacer le nom d'hôte, le chemin et la version de PHP-FPM par ceux du serveur (voir « php-fpm pool » dans docs/07 §2).
+# Étape 1 : déployer d'abord SEULEMENT le premier bloc (port 80) avec « certbot --nginx -d <hôte> » ; certbot ajoute le bloc 443.
+# Étape 2 : comparer avec le second bloc ci-dessous et reporter les directives de sécurité manquantes.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name freeci.dgafrique.com;
+    root /var/www/freeci/public;
+
+    location /.well-known/acme-challenge/ { allow all; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name freeci.dgafrique.com;
+
+    ssl_certificate     /etc/letsencrypt/live/freeci.dgafrique.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freeci.dgafrique.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root /var/www/freeci/public;      # SEUL public/ est exposé : jamais .env, vendor/, storage/
+    index index.php;
+    charset utf-8;
+    client_max_body_size 12m;
+    server_tokens off;
+
+    # Les en-têtes de sécurité (HSTS, X-Frame-Options, …) sont envoyés par l'application (FREECI_HSTS_MAX_AGE).
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location /build/ {
+        access_log off;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        include snippets/fastcgi-php.conf;                 # ou fastcgi_params selon la distribution
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;         # adapter : socket du pool PHP 8.3
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    # Aucun fichier caché (.env, .git…), sauf la validation du certificat.
+    location ~ /\.(?!well-known) { deny all; return 404; }
+
+    access_log /var/log/nginx/freeci.access.log;
+    error_log  /var/log/nginx/freeci.error.log warn;
+}
