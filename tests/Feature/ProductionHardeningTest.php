@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Modules\Catalog\Models\Category;
 use App\Providers\AppServiceProvider;
+use Dotenv\Dotenv;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -122,5 +123,14 @@ class ProductionHardeningTest extends TestCase
         Artisan::call('freeci:preflight');
 
         $this->assertMatchesRegularExpression('/non réinjectables\s*\|\s*AVERT\./u', Artisan::output());
+    }
+
+    public function test_env_templates_are_valid_dotenv_files(): void
+    {
+        foreach ([base_path('.env.example'), base_path('deploy/env.production.example')] as $file) {
+            $vars = Dotenv::parse(file_get_contents($file));
+            $this->assertArrayHasKey('APP_URL', $vars, $file);
+            $this->assertSame('', $vars['APP_KEY'] ?? '', 'aucune clé dans le modèle : '.$file);
+        }
     }
 }
