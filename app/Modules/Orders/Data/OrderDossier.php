@@ -64,5 +64,7 @@ final readonly class OrderDossier
         public bool $canUpload = false,
         public bool $briefRequiresFiles = false,
         public string $uploadLimits = '',
+        /** Livraisons, corrections, reports, délai d'examen : voir Queries\DeliverySection. */
+        public array $delivery = [],
     ) {}
 }

@@ -200,7 +200,7 @@ class PaymentSandboxTest extends TestCase
         }
         // et aucune annulation simple après un paiement confirmé
         $this->actingAs($this->client)->post("/commandes/{$order->reference}/cancel", ['expected_version' => $order->fresh()->row_version, 'operation_key' => 'c1'])->assertStatus(409);
-        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertSee('Le travail a démarré')->assertSee('Paiement simulé confirmé');
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertSee('réalise votre commande')->assertSee('Paiement simulé confirmé');
     }
 
     public function test_duplicate_and_disordered_events_have_a_single_effect(): void

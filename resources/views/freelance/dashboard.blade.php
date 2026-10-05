@@ -18,7 +18,7 @@
         @if(count($o['waiting']))
           <div class="order-list">@foreach($o['waiting'] as $c)<x-orders.card :c="$c" />@endforeach</div>
         @else
-          <div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p style="font-weight:600">Aucune commande en attente de paiement.</p><p class="muted" style="max-width:36em">Après votre acceptation, la commande attend le paiement du client avant de démarrer.</p></div>
+          <div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p style="font-weight:600">Aucune commande en attente du client.</p><p class="muted" style="max-width:36em">Paiement, brief, examen d’une livraison ou réponse à un report : ce que le client doit faire apparaît ici.</p></div>
         @endif
       </section>
     </div>

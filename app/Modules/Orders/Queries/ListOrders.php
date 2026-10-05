@@ -18,9 +18,9 @@ final class ListOrders
         $asFreelancer = $as === 'freelancer';
         $this->expire->__invoke($user->getKey());
 
-        return Order::query()->with(['agreement', 'client', 'freelancer'])
+        return Order::query()->with(['agreement', 'client', 'freelancer', 'latestDelivery'])
             ->where($asFreelancer ? 'freelancer_id' : 'client_id', $user->getKey())
-            ->orderByRaw("case when state in ('awaiting_acceptance','awaiting_payment') then 0 else 1 end")
+            ->orderByRaw("case when state in ('awaiting_acceptance','awaiting_payment','awaiting_brief','delivered','revision_requested') then 0 else 1 end")
             ->orderByDesc('requested_at')->orderByDesc('id')
             ->get()->map(fn (Order $o) => OrderCards::make($o, $asFreelancer))->all();
     }

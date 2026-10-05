@@ -24,6 +24,10 @@ return [
         'payment_hours' => (int) env('FREECI_PAYMENT_HOURS', 24),
         // Version des conditions de demande affichées et acceptées (le texte juridique définitif reste à rédiger).
         'conditions_version' => '2026-10-v1',
+        // Livraison : délai d'examen du client (jours). Son expiration enregistre un besoin de suivi ; elle ne valide ni ne clôture rien.
+        'review_days' => (int) env('FREECI_REVIEW_DAYS', 7),
+        // Report d'échéance : une proposition ne peut dépasser l'échéance actuelle de plus de N jours.
+        'extension_max_days' => (int) env('FREECI_EXTENSION_MAX_DAYS', 30),
     ],
 
     'payments' => [
@@ -39,6 +43,8 @@ return [
         'scanner' => env('FREECI_FILE_SCANNER', 'none'),
         'clamscan_binary' => env('FREECI_CLAMSCAN_BINARY', '/usr/bin/clamdscan'),
         'max_mb' => (int) env('FREECI_UPLOAD_MAX_MB', 10),
+        // Fichiers d'une livraison : même plafond par défaut (nginx et PHP-FPM doivent l'accepter, docs/11).
+        'delivery_max_mb' => (int) env('FREECI_DELIVERY_MAX_MB', 10),
         'max_files' => 10,
         'max_total_mb' => 50,
     ],

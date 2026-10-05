@@ -11,6 +11,7 @@ use App\Modules\Finance\Models\LedgerBatch;
 use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Actions\BriefStatus;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
+use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use App\Modules\Orders\Data\OrderDossier;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\OrderForbidden;
@@ -21,7 +22,7 @@ use App\Shared\Money;
 /** `Orders\GetOrderDossier` : lecture BORNÉE AUX PARTIES. Inexistant et interdit répondent pareil (docs/04 §8.5). */
 final class GetOrderDossier
 {
-    public function __construct(private ExpireOverdueOrders $expire, private SandboxGate $gate, private FileScanner $scanner, private DownloadBriefFile $downloads) {}
+    public function __construct(private ExpireOverdueOrders $expire, private SandboxGate $gate, private FileScanner $scanner, private DownloadBriefFile $downloads, private DeliverySection $deliverySection, private RecordReviewFollowUps $followUps) {}
 
     public function __invoke(User $viewer, string $reference): OrderDossier
     {
@@ -32,6 +33,7 @@ final class GetOrderDossier
             throw new OrderForbidden;
         }
         $this->expire->forOrder($order->getKey());
+        $this->followUps->forOrder($order->getKey());
         $order = Order::with(['agreement', 'brief', 'events.actor', 'client', 'freelancer', 'files'])->findOrFail($order->getKey());
 
         $isFreelancer = $order->freelancer_id === $viewer->getKey();
@@ -59,6 +61,15 @@ final class GetOrderDossier
                 'brief_file_clean' => 'Fichier contrôlé : contrôle de sécurité réussi',
                 'brief_file_rejected' => 'Fichier refusé par le contrôle de sécurité',
                 'brief_file_removed' => "Fichier retiré par {$who}",
+                'delivery_submitted' => 'Livraison v'.($e->meta['version'] ?? '?').' soumise par '.$who,
+                'correction_requested' => 'Correction n° '.($e->meta['correction_number'] ?? '?').' demandée par '.$who.' (livraison v'.($e->meta['delivery_version'] ?? '?').')',
+                'extension_requested' => "Report d’échéance proposé par {$who}",
+                'extension_accepted' => "Report d’échéance accepté par {$who}",
+                'extension_declined' => "Report d’échéance refusé par {$who}",
+                'extension_withdrawn' => 'Proposition de report retirée',
+                'validated' => 'Livraison v'.($e->meta['delivery_version'] ?? '?')." validée par {$who}",
+                'closed' => 'Commande clôturée (clôture commerciale)',
+                'review_overdue' => 'Délai d’examen dépassé : besoin de suivi enregistré',
                 'declined' => "Demande refusée par {$who}",
                 'withdrawn' => "Demande retirée par {$who}",
                 'cancelled' => "Commande annulée par {$who}",
@@ -122,7 +133,8 @@ final class GetOrderDossier
             briefItems: $items->all(), briefNotes: $order->brief->notes, briefComplete: $brief['complete'], briefMissing: $brief['missing'],
             events: $events, actions: $actions,
             stepIndex: match ($order->state) {
-                OrderState::AwaitingAcceptance => 0, OrderState::AwaitingPayment => 1, default => 0
+                OrderState::AwaitingAcceptance => 0, OrderState::AwaitingPayment => 1, OrderState::AwaitingBrief => 2, OrderState::InProgress, OrderState::RevisionRequested => 3,
+                OrderState::Delivered => 4, OrderState::Validated => 5, OrderState::Closed => 7, default => 0
             },
             isFinal: $order->state->isFinal(),
             startedAt: $order->started_at, dueAt: $order->due_at,
@@ -134,6 +146,7 @@ final class GetOrderDossier
             files: $files, uploadsEnabled: $uploadsEnabled, canUpload: $canUpload,
             briefRequiresFiles: (bool) $a->brief_requires_files,
             uploadLimits: $this->uploadLimits(),
+            delivery: ($this->deliverySection)($order, $viewer, $isFreelancer),
         );
     }
 

@@ -30,6 +30,9 @@ enum OrderState: string
             self::AwaitingAcceptance => [self::AwaitingPayment, self::Cancelled, self::Expired],
             self::AwaitingPayment => [self::AwaitingBrief, self::InProgress, self::Cancelled, self::Expired],
             self::AwaitingBrief => [self::InProgress],
+            self::InProgress, self::RevisionRequested => [self::Delivered],
+            self::Delivered => [self::RevisionRequested, self::Validated],
+            self::Validated => [self::Closed],
             default => [],
         };
     }
@@ -69,6 +72,8 @@ enum OrderState: string
             self::AwaitingAcceptance => $asFreelancer ? ['warning', 'warn'] : ['info', 'clock'],
             self::AwaitingPayment => ['warning', 'warn'],
             self::Cancelled, self::Expired => ['neutral', 'minus-circle'],
+            self::Delivered => $asFreelancer ? ['info', 'clock'] : ['warning', 'warn'],
+            self::RevisionRequested => $asFreelancer ? ['warning', 'warn'] : ['info', 'clock'],
             self::Disputed => ['error', 'error'],
             self::Validated, self::Closed => ['success', 'check-circle'],
             default => ['info', 'info'],

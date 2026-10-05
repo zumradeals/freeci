@@ -6,6 +6,7 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Files\Enums\FileState;
 use App\Modules\Files\Exceptions\FileForbidden;
 use App\Modules\Files\Models\FileAsset;
+use App\Modules\Orders\Models\Delivery;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -41,6 +42,13 @@ final class DownloadBriefFile
         $file = $order === null ? null : FileAsset::query()->whereKey($fileId)->where('order_id', $order->getKey())->first();
         if ($file === null || $file->state !== FileState::Clean) {
             throw new FileForbidden;          // inexistant, d'autrui ou non contrôlé : même réponse
+        }
+        if ($file->delivery_id !== null) {
+            // Fichier de livraison : le client n'y accède qu'une fois la livraison SOUMISE (un brouillon reste privé au freelance).
+            $delivery = Delivery::query()->whereKey($file->delivery_id)->first();
+            if ($delivery === null || (! $delivery->isSubmitted() && $order->freelancer_id !== $viewer->getKey())) {
+                throw new FileForbidden;
+            }
         }
 
         return $file;

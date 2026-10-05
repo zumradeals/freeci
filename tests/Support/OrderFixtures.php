@@ -80,6 +80,18 @@ trait OrderFixtures
         return $order->fresh();
     }
 
+    /** Commande démarrée (paiement simulé confirmé côté serveur, brief complet) : prête pour la livraison. */
+    protected function inProgress(array $service = []): Order
+    {
+        $order = $this->payableOrder($service);
+        $this->startPayment($order)->assertRedirect();
+        $this->resolve($this->currentPayment($order)->provider_reference, 'succeeded', ['--notify' => true]);
+        $order->refresh();
+        $this->assertSame('in_progress', $order->state->value);
+
+        return $order;
+    }
+
     protected function startPayment(Order $order, ?string $key = null)
     {
         return $this->actingAs($this->client)->post("/commandes/{$order->reference}/paiement", ['operation_key' => $key ?? (string) Str::uuid(), 'conditions' => '1']);

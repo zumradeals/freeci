@@ -250,7 +250,8 @@ class OrderRequestFlowTest extends TestCase
         $this->assertFalse(OrderState::AwaitingAcceptance->canTransitionTo(OrderState::InProgress));
         $this->assertFalse(OrderState::Cancelled->canTransitionTo(OrderState::AwaitingPayment));
         $this->assertFalse(OrderState::Expired->canTransitionTo(OrderState::AwaitingAcceptance));
-        $this->assertSame([], OrderState::InProgress->allowedNext());
+        $this->assertSame([OrderState::Delivered], OrderState::InProgress->allowedNext(), 'depuis le travail : seule la livraison explicite');
+        $this->assertFalse(OrderState::Closed->canTransitionTo(OrderState::InProgress));
 
         // aucune route publique ne permet de « marquer payé » ; aucune colonne de paiement dans la table des commandes
         // Seules les routes de paiement SIMULÉ prévues existent ; aucune ne « confirme » ni ne « marque payé ».

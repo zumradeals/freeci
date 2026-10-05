@@ -26,7 +26,7 @@ class OrderSpacesTest extends TestCase
     public function test_dashboards_have_honest_empty_states(): void
     {
         $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee('Rien à faire pour l’instant.')->assertSee('Aucune commande pour l’instant.')->assertSee('Activer l’espace freelance');
-        $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Aucune demande à traiter.')->assertSee('Aucune commande en attente de paiement.');
+        $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Aucune demande à traiter.')->assertSee('Aucune commande en attente du client.');
         $this->actingAs($this->client)->get('/espace/commandes')->assertSee('Aucune commande pour l’instant.');
     }
 

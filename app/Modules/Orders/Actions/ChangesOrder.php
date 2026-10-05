@@ -51,9 +51,8 @@ abstract class ChangesOrder
                     throw new InvalidTransition;
                 }
 
-                if ($guard !== null) {
-                    $guard($locked);
-                }
+                // La garde contrôle les règles métier ET peut écrire les effets liés (même transaction) ; un tableau retourné devient `meta`.
+                $guardMeta = $guard !== null ? $guard($locked, $actor) : null;
 
                 $from = $locked->state;
                 $now = now();
@@ -71,7 +70,7 @@ abstract class ChangesOrder
                 $locked->forceFill($updates)->save();
                 $locked->events()->create([
                     'type' => $eventType, 'actor_id' => $actor->getKey(), 'from_state' => $from->value, 'to_state' => $to->value,
-                    'note' => $note, 'meta' => $startsPaymentWindow ? ['payment_open' => $paymentOpen ?? false] : null,
+                    'note' => $note, 'meta' => $startsPaymentWindow ? ['payment_open' => $paymentOpen ?? false] : (is_array($guardMeta) ? $guardMeta : null),
                 ]);
 
                 return $locked->getKey();

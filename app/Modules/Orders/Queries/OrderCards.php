@@ -22,7 +22,12 @@ final class OrderCards
                 ? 'À payer avant le '.Dates::short($o->payment_deadline_at)
                 : 'Paiement non ouvert pour le moment',
             OrderState::AwaitingBrief => 'Brief à compléter avant le départ',
-            OrderState::InProgress => $o->due_at ? 'Livraison prévue le '.Dates::short($o->due_at) : '',
+            OrderState::InProgress => $o->due_at ? ($o->due_at->lte(now()) ? 'Échéance dépassée depuis le ' : 'Livraison prévue le ').Dates::short($o->due_at) : '',
+            OrderState::RevisionRequested => $asFreelancer ? 'Correction à traiter · livraison prévue le '.Dates::short($o->due_at) : 'Le freelance prépare une nouvelle version',
+            OrderState::Delivered => $o->latestDelivery
+                ? ($asFreelancer ? 'Livraison v'.$o->latestDelivery->version.' en attente d’examen' : 'À examiner : livraison v'.$o->latestDelivery->version.' · avant le '.Dates::short($o->latestDelivery->review_deadline_at))
+                : '',
+            OrderState::Closed => 'Clôturée le '.Dates::short($o->closed_at),
             OrderState::Cancelled, OrderState::Expired => $o->closure_reason?->label() ?? '',
             default => '',
         };

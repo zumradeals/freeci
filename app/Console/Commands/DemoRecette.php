@@ -77,7 +77,7 @@ class DemoRecette extends Command
                 'deliverables' => ['Un plan 2D coté au format PDF.'], 'exclusions' => ['Tout travail réel : ceci est une démonstration.'],
                 'client_inputs' => ['Votre besoin en une phrase'],
                 'images' => [['src' => '/img/demo/plan-dwg-wide.svg', 'card' => '/img/demo/plan-dwg.svg', 'alt' => 'Exemple : plan d’étage', 'caption' => 'Exemple : plan d’étage']],
-                'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true, 'brief_requires_files' => true,
+                'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true, 'brief_requires_files' => true, 'delivery_requires_files' => true,
             ]);
         });
 

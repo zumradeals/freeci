@@ -19,7 +19,7 @@ final class BriefStatus
         $order->loadMissing(['brief', 'agreement']);
         $missing = collect($order->brief->answers)->filter(fn ($i) => trim((string) ($i['answer'] ?? '')) === '')->count();
         $required = (bool) $order->agreement->brief_requires_files;
-        $hasClean = FileAsset::query()->where('order_id', $order->getKey())->where('state', FileState::Clean->value)->exists();
+        $hasClean = FileAsset::query()->where('order_id', $order->getKey())->whereNull('delivery_id')->where('state', FileState::Clean->value)->exists();
         $missingFiles = $required && ! $hasClean ? 1 : 0;
 
         return ['complete' => $missing === 0 && $missingFiles === 0, 'missing' => $missing + $missingFiles, 'filesRequired' => $required, 'hasCleanFile' => $hasClean];

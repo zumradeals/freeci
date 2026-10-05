@@ -3,6 +3,10 @@
   $steps = ['Accord', 'Paiement', 'Brief', 'Réalisation', 'Livraison', 'Validation', 'Clôture'];
   $back = $isF ? route('freelance.dashboard') : route('account.dashboard');
   $act = collect($d->actions);
+  $dl = $d->delivery;
+  $closedOk = $d->stateValue === 'closed';
+  $showDeliveries = in_array($d->stateValue, ['in_progress', 'revision_requested', 'delivered', 'validated', 'closed'], true) || count($dl['deliveries'] ?? []) > 0;
+  $first = $showDeliveries ? 'livraisons' : 'accord';
 @endphp
 <x-layouts.account :title="'Commande '.$d->reference" :space="$space">
   <nav class="crumbs" aria-label="Fil d’Ariane" style="margin-bottom:-8px"><a class="back-m" href="{{ $back }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Vue d’ensemble</a><a class="hide-m" href="{{ $back }}">Vue d’ensemble</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Commande {{ $d->reference }}</span></nav>
@@ -13,23 +17,27 @@
     <dl class="meta">
       <div><dt>{{ $d->otherPartyLabel }}</dt><dd>{{ $d->otherPartyName }}</dd></div>
       <div><dt>Montant convenu</dt><dd><x-fc.money :amount="$d->price" /></dd></div>
-      <div class="span2"><dt>Échéance de réalisation</dt><dd>@if($d->dueAt){{ \App\Shared\Dates::format($d->dueAt) }}<small>Départ le {{ \App\Shared\Dates::format($d->startedAt) }} : enregistrés une seule fois.</small>@else Non démarrée<small>Elle est enregistrée une seule fois, après paiement confirmé et brief complet.</small>@endif</dd></div>
+      <div class="span2"><dt>Échéance de réalisation</dt><dd>@if($d->dueAt){{ \App\Shared\Dates::format($d->dueAt) }}@if($dl['late'])<span class="badge tone-warning" style="margin-left:8px"><x-fc.icon name="warn" :size="16" />Échéance dépassée</span>@endif<small>@if($dl['initialDue'])Report accepté (initialement le {{ $dl['initialDue'] }}). @endif Départ le {{ \App\Shared\Dates::format($d->startedAt) }}.</small>@else Non démarrée<small>Elle est enregistrée une seule fois, après paiement confirmé et brief complet.</small>@endif</dd></div>
     </dl>
-    @unless($d->isFinal)
+    @if(! $d->isFinal || $closedOk)
     <div><ol class="steps-d" aria-label="Étapes de la commande">
       @foreach($steps as $i => $s)
         @php($cls = $i < $d->stepIndex ? 'done' : ($i === $d->stepIndex ? 'cur' : ''))
         <li class="{{ $cls }}" @if($cls === 'cur') aria-current="step" @endif><span class="mk" aria-hidden="true">@if($cls === 'done')<x-fc.icon name="check" :size="16" />@elseif($cls !== 'cur'){{ $i + 1 }}@endif</span><span>{{ $s }}<span class="sr-only"> ({{ $cls === 'done' ? 'terminée' : ($cls === 'cur' ? 'étape en cours' : 'à venir') }})</span></span></li>
       @endforeach
     </ol>
-    <details class="steps-m"><summary><span>Étape {{ $d->stepIndex + 1 }} sur 7 · <strong>{{ $steps[$d->stepIndex] }}</strong></span><x-fc.icon name="chev-down" :size="20" /></summary>
+    <details class="steps-m"><summary><span>@if($closedOk)<strong>Commande clôturée</strong> · 7 étapes terminées @else Étape {{ $d->stepIndex + 1 }} sur 7 · <strong>{{ $steps[$d->stepIndex] }}</strong>@endif</span><x-fc.icon name="chev-down" :size="20" /></summary>
       <div class="bar" aria-hidden="true">@foreach($steps as $i => $s)<i class="{{ $i < $d->stepIndex ? 'done' : ($i === $d->stepIndex ? 'cur' : '') }}"></i>@endforeach</div>
       <ol aria-label="Étapes de la commande">@foreach($steps as $i => $s)<li class="{{ $i < $d->stepIndex ? 'done' : ($i === $d->stepIndex ? 'cur' : '') }}"><x-fc.icon :name="$i < $d->stepIndex ? 'check-circle' : ($i === $d->stepIndex ? 'clock' : 'minus-circle')" :size="20" /><span>{{ $s }}</span></li>@endforeach</ol></details></div>
-    @endunless
+    @endif
   </section>
 
   {{-- Action attendue — calculée côté serveur, revérifiée à l'exécution --}}
-  @if($d->isFinal)
+  @if($closedOk)
+    <section class="card" aria-labelledby="h-closed" style="border-left:4px solid var(--success-700)"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />Clôturée</p><h2 class="t-h2" id="h-closed" style="margin-top:6px">Livraison v{{ $dl['latestVersion'] }} validée : commande clôturée</h2>
+      <p style="margin-top:6px">Validée le {{ $dl['validatedAt'] }}. Cette clôture est <strong>commerciale</strong> : elle ne confirme ni ne déclenche aucun reversement.</p>
+      <p class="muted" style="margin-top:8px">Toutes les versions livrées restent consultables dans l’onglet « Livraisons ».</p></section>
+  @elseif($d->isFinal)
     <section class="card" aria-labelledby="h-closed"><p class="eyebrow">{{ $d->stateValue === 'expired' ? 'Expirée' : 'Annulée' }}</p><h2 class="t-h2" id="h-closed" style="margin-top:6px">{{ $d->closureReason }}</h2>
       @if($d->closureNote && $d->stateValue === 'cancelled' && $d->closureReason === 'Demande refusée par le freelance')<p style="margin-top:8px"><strong>Motif :</strong> « {{ $d->closureNote }} »</p>@endif
       <p class="muted" style="margin-top:8px">Aucun montant n’a été encaissé. Aucune livraison n’est attendue.</p>
@@ -71,22 +79,59 @@
       <p style="margin-top:6px">Le paiement est confirmé. Le travail démarre dès que le brief est complet ({{ $d->briefMissing }} {{ $d->briefMissing > 1 ? 'éléments manquants' : 'élément manquant' }}).</p>
       <div style="margin-top:16px"><a class="btn btn-primary btn-lg" href="#brief" data-goto-tab="brief" data-goto="panel-brief">Voir le brief</a></div></section>
   @elseif($d->stateValue === 'in_progress')
-    <section class="card" aria-labelledby="h-action"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />En cours</p>
-      <h2 class="t-h2" id="h-action" style="margin-top:6px">Le travail a démarré</h2>
-      <p style="margin-top:6px">Départ le {{ \App\Shared\Dates::format($d->startedAt) }} · échéance de livraison le <strong>{{ \App\Shared\Dates::format($d->dueAt) }}</strong> <span class="rel">({{ \App\Shared\Dates::until($d->dueAt) }})</span>.</p>
-      <p class="muted" style="margin-top:8px">La livraison arrive dans un prochain lot : aucune livraison n’est possible dans cette version.</p></section>
+    <section class="{{ $isF ? 'action-card' : 'card' }}" aria-labelledby="h-action"><p class="eyebrow"><x-fc.icon name="{{ $isF ? 'arrow-right' : 'check-circle' }}" :size="16" />{{ $isF ? 'Action attendue' : 'En cours' }}</p>
+      <h2 class="t-h2" id="h-action" style="margin-top:6px">{{ $isF ? 'Déposer la livraison' : $d->freelancerName.' réalise votre commande' }}</h2>
+      <p class="due due-block"><x-fc.icon name="clock" :size="20" /><span>Échéance de livraison : <strong>{{ \App\Shared\Dates::format($d->dueAt) }}</strong> <span class="{{ $dl['late'] || \App\Shared\Dates::isUrgent($d->dueAt) ? 'urgent' : 'rel' }}">({{ \App\Shared\Dates::until($d->dueAt) }})</span></span></p>
+      @if($isF)<div class="row" style="margin-top:16px"><a class="btn btn-primary btn-lg" href="{{ route('orders.delivery', $d->reference) }}">Préparer la livraison</a>@if($dl['canRequestExtension'])<a class="btn btn-secondary btn-lg" href="{{ route('orders.extension', $d->reference) }}">Proposer un report</a>@endif</div>
+      <p class="effect" style="margin-top:12px">Le client ne voit rien avant que vous ne <strong>soumettiez</strong> la livraison.</p>
+      @else<p class="muted" style="margin-top:8px">Départ le {{ \App\Shared\Dates::format($d->startedAt) }}. Vous serez invité à examiner la livraison dès qu’elle est soumise.</p>@endif</section>
+  @elseif($d->stateValue === 'revision_requested')
+    @php($last = collect($dl['deliveries'])->firstWhere('isLatest', true))
+    <section class="{{ $isF ? 'action-card' : 'card' }}" aria-labelledby="h-action"><p class="eyebrow"><x-fc.icon name="{{ $isF ? 'arrow-right' : 'clock' }}" :size="16" />{{ $isF ? 'Action attendue' : 'Correction demandée' }}</p>
+      <h2 class="t-h2" id="h-action" style="margin-top:6px">{{ $isF ? 'Répondre à la correction n° '.($last['correction']['number'] ?? '') : $d->freelancerName.' prépare une nouvelle version' }}</h2>
+      @if($last && $last['correction'])<div class="quote" style="margin-top:10px"><strong>Correction {{ $last['correction']['number'] }} sur {{ $dl['corrections']['included'] }} demandée le {{ $last['correction']['when'] }}</strong><br>« {{ $last['correction']['reason'] }} »</div>@endif
+      <p class="due due-block"><x-fc.icon name="clock" :size="20" /><span>Échéance de livraison : <strong>{{ \App\Shared\Dates::format($d->dueAt) }}</strong> <span class="{{ $dl['late'] ? 'urgent' : 'rel' }}">({{ \App\Shared\Dates::until($d->dueAt) }})</span></span></p>
+      @if($isF)<div class="row" style="margin-top:16px"><a class="btn btn-primary btn-lg" href="{{ route('orders.delivery', $d->reference) }}">Préparer la livraison v{{ $dl['latestVersion'] + 1 }}</a>@if($dl['canRequestExtension'])<a class="btn btn-secondary btn-lg" href="{{ route('orders.extension', $d->reference) }}">Proposer un report</a>@endif</div>
+      <p class="effect" style="margin-top:12px">La nouvelle version <strong>ne remplace pas</strong> la précédente : toutes restent consultables.</p>@endif</section>
+  @elseif($d->stateValue === 'delivered')
+    @php($rv = $dl['review'])
+    <section class="{{ $isF ? 'card' : 'action-card' }}" aria-labelledby="h-action"><p class="eyebrow"><x-fc.icon name="{{ $isF ? 'clock' : 'arrow-right' }}" :size="16" />{{ $isF ? 'En attente du client' : 'Action attendue' }}</p>
+      <h2 class="t-h2" id="h-action" style="margin-top:6px">{{ $isF ? 'Livraison v'.$dl['latestVersion'].' soumise : en attente d’examen' : 'Examiner la livraison v'.$dl['latestVersion'] }}</h2>
+      @php($lv = collect($dl['deliveries'])->firstWhere('isLatest', true))
+      <p style="margin-top:6px">{{ count($lv['files'] ?? []) }} fichier{{ count($lv['files'] ?? []) > 1 ? 's' : '' }} déposé{{ count($lv['files'] ?? []) > 1 ? 's' : '' }} le {{ $lv['when'] }} par {{ $lv['author'] }}.</p>
+      @if($rv)<p class="due due-block"><x-fc.icon name="clock" :size="20" /><span>{{ $isF ? 'Délai d’examen du client' : 'À décider avant le' }} <strong>{{ \App\Shared\Dates::format($rv['deadline']) }}</strong> <span class="{{ $rv['overdue'] ? 'urgent' : 'rel' }}">({{ \App\Shared\Dates::until($rv['deadline']) }})</span></span></p>
+        @if($rv['overdue'])<p class="note-line" style="margin-top:8px"><x-fc.icon name="info" :size="16" /><span><strong>Le délai d’examen est dépassé.</strong> La commande reste ouverte : rien n’est validé, clôturé ni libéré automatiquement.@if($rv['followUp']) Un besoin de suivi est enregistré ; <strong>aucun support n’a été contacté automatiquement</strong>.@endif</span></p>@endif @endif
+      @unless($isF)<div style="margin-top:16px"><a class="btn btn-primary btn-lg" href="#livraison-v{{ $dl['latestVersion'] }}" data-goto-tab="livraisons" data-goto="livraison-v{{ $dl['latestVersion'] }}">Consulter les fichiers de la livraison v{{ $dl['latestVersion'] }} <x-fc.icon name="arrow-down" :size="18" /></a></div>
+      <p class="effect" style="margin-top:12px">Ensuite, vous pourrez <strong>valider la livraison</strong> ou <strong>demander une correction</strong> ({{ $dl['corrections']['remaining'] }} sur {{ $dl['corrections']['included'] }} restante{{ $dl['corrections']['remaining'] > 1 ? 's' : '' }}).</p>@endunless</section>
+  @endif
+
+  @if($dl['extension'])
+    @php($x = $dl['extension'])
+    <section class="{{ $dl['canAnswerExtension'] ? 'action-card' : 'card' }}" aria-labelledby="h-ext"><p class="eyebrow"><x-fc.icon name="clock" :size="16" />Report d’échéance proposé</p>
+      <h2 class="t-h2" id="h-ext" style="margin-top:6px">{{ $dl['canAnswerExtension'] ? $d->freelancerName.' propose une nouvelle échéance' : 'Votre proposition attend la réponse du client' }}</h2>
+      <dl class="defs" style="margin-top:8px"><div><dt>Échéance actuelle</dt><dd>{{ $x['previous'] }}</dd></div><div><dt>Échéance proposée</dt><dd>{{ $x['proposed'] }}</dd></div><div><dt>Motif</dt><dd>« {{ $x['reason'] }} »</dd></div></dl>
+      @if($dl['canAnswerExtension'])<div class="row" style="margin-top:16px"><a class="btn btn-primary" href="{{ route('orders.extension.answer', [$d->reference, 'accepter']) }}">Accepter le report</a><a class="btn btn-secondary" href="{{ route('orders.extension.answer', [$d->reference, 'refuser']) }}">Refuser le report</a></div>
+      <p class="effect" style="margin-top:12px">L’échéance ne change que si vous acceptez ; sans réponse, elle reste inchangée.</p>
+      @elseif($dl['canWithdrawExtension'])<form method="post" action="{{ route('orders.extension.withdraw', $d->reference) }}" data-once style="margin-top:12px">@csrf<input type="hidden" name="extension_id" value="{{ $x['id'] }}"><input type="hidden" name="expected_version" value="{{ $d->version }}"><input type="hidden" name="operation_key" value="{{ \Illuminate\Support\Str::uuid() }}"><button class="btn btn-secondary" type="submit" data-once-label="Retrait…">Retirer la proposition</button></form>@endif</section>
   @endif
 
   <div class="cols">
     <div>
       <div class="tabs" role="tablist" aria-label="Sections de la commande">
-        <button class="tab" role="tab" type="button" id="tab-accord" aria-controls="panel-accord" aria-selected="true" tabindex="0">Accord</button>
+        @if($showDeliveries)<button class="tab" role="tab" type="button" id="tab-livraisons" aria-controls="panel-livraisons" aria-selected="true" tabindex="0">Livraisons @if(count($dl['deliveries']))<span class="n">{{ count($dl['deliveries']) }}</span>@endif</button>@endif
+        <button class="tab" role="tab" type="button" id="tab-accord" aria-controls="panel-accord" aria-selected="{{ $first === 'accord' ? 'true' : 'false' }}" tabindex="{{ $first === 'accord' ? '0' : '-1' }}">Accord</button>
         <button class="tab" role="tab" type="button" id="tab-brief" aria-controls="panel-brief" aria-selected="false" tabindex="-1">Brief</button>
         <button class="tab" role="tab" type="button" id="tab-finances" aria-controls="panel-finances" aria-selected="false" tabindex="-1">Finances</button>
         <button class="tab" role="tab" type="button" id="tab-historique" aria-controls="panel-historique" aria-selected="false" tabindex="-1">Historique</button>
       </div>
 
-      <div class="panel" role="tabpanel" id="panel-accord" aria-labelledby="tab-accord" tabindex="0">
+      @if($showDeliveries)
+      <div class="panel" role="tabpanel" id="panel-livraisons" aria-labelledby="tab-livraisons" tabindex="0">
+        @include('orders._deliveries')
+      </div>
+      @endif
+
+      <div class="panel" role="tabpanel" id="panel-accord" aria-labelledby="tab-accord" tabindex="0" @if($first !== 'accord') hidden @endif>
         <section class="card" aria-labelledby="h-accord"><h2 class="t-h2 card-title" id="h-accord">Accord de commande</h2>
           <dl class="defs">
             <div><dt>Parties</dt><dd>Client : {{ $d->clientName }}<small>Freelance : {{ $d->freelancerName }}</small></dd></div>
@@ -97,8 +142,9 @@
             <div><dt>Prix convenu</dt><dd><x-fc.money :amount="$d->price" /><small>Figé dans l’accord</small></dd></div>
             <div><dt>Délai</dt><dd>{{ $d->deliveryDays }} {{ $d->deliveryDays > 1 ? 'jours' : 'jour' }} à partir du départ</dd></div>
             <div><dt>Départ</dt><dd>@if($d->startedAt){{ \App\Shared\Dates::format($d->startedAt) }}<small>Enregistré une seule fois, après paiement confirmé côté serveur et brief complet.</small>@else Non enregistré<small>Enregistré une seule fois, après paiement confirmé et brief complet. Aucune échéance de réalisation ne court avant.</small>@endif</dd></div>
-            @if($d->dueAt)<div><dt>Échéance de réalisation</dt><dd>{{ \App\Shared\Dates::format($d->dueAt) }}<small>Fixée au départ ; elle ne change pas.</small></dd></div>@endif
+            @if($d->dueAt)<div><dt>Échéance de réalisation</dt><dd>{{ \App\Shared\Dates::format($d->dueAt) }}<small>Fixée au départ ; seul un report accepté par le client la modifie (l’ancienne valeur est conservée).</small></dd></div>@endif
             <div><dt>Corrections incluses</dt><dd>{{ $d->revisionsIncluded }}</dd></div>
+            <div><dt>Fichiers livrables</dt><dd>{{ ($dl['requiresFiles'] ?? false) ? 'Exigés : au moins un fichier contrôlé par livraison' : 'Non exigés par l’accord' }}</dd></div>
             <div><dt>Délais de la demande</dt><dd>Réponse du freelance avant le {{ \App\Shared\Dates::format($d->responseDeadline) }}</dd></div>
             <div><dt>Conditions</dt><dd>Conditions de la demande v{{ $d->conditionsVersion }}<small>Acceptées le {{ \App\Shared\Dates::format($d->conditionsAcceptedAt) }}</small></dd></div>
           </dl></section>
@@ -140,8 +186,8 @@
           <section class="card fin" aria-labelledby="f-fin"><div class="fh"><h3 id="f-fin">Situation financière</h3><span class="badge tone-{{ $d->confirmedXof > 0 ? 'success' : 'neutral' }}"><x-fc.icon :name="$d->confirmedXof > 0 ? 'check-circle' : 'minus-circle'" :size="16" />{{ $d->confirmedXof > 0 ? 'Encaissement simulé' : 'Aucun encaissement' }}</span></div>
             <dl><div><dt>Encaissé (simulé)</dt><dd>{{ \App\Shared\Money::xof($d->confirmedXof)->formatted() }} FCFA</dd></div></dl>
             <p class="what">État financier distinct de la tentative de paiement et de la commande ; enregistré une seule fois au paiement confirmé.</p></section>
-          <section class="card fin" aria-labelledby="f-ref"><div class="fh"><h3 id="f-ref">Remboursement</h3><span class="badge tone-neutral"><x-fc.icon name="minus-circle" :size="16" />Sans objet</span></div><p class="what">Aucun montant encaissé, donc rien à rembourser.</p></section>
-          <section class="card fin" aria-labelledby="f-pout"><div class="fh"><h3 id="f-pout">Reversement</h3><span class="badge tone-neutral"><x-fc.icon name="minus-circle" :size="16" />Sans objet</span></div><p class="what">Le reversement au freelance n’existe qu’après une prestation validée.</p></section>
+          <section class="card fin" aria-labelledby="f-ref"><div class="fh"><h3 id="f-ref">Remboursement</h3><span class="badge tone-neutral"><x-fc.icon name="minus-circle" :size="16" />Sans objet</span></div><p class="what">{{ $d->confirmedXof > 0 ? 'Aucun remboursement n’est géré dans cette version.' : 'Aucun montant encaissé, donc rien à rembourser.' }}</p></section>
+          <section class="card fin" aria-labelledby="f-pout"><div class="fh"><h3 id="f-pout">Reversement</h3><span class="badge tone-neutral"><x-fc.icon name="minus-circle" :size="16" />{{ $closedOk ? 'Non déclenché' : 'Sans objet' }}</span></div><p class="what">@if($closedOk)Non déclenché : la clôture commerciale ne confirme ni ne déclenche aucun reversement. Le suivi du reversement viendra dans un lot ultérieur.@else Le reversement au freelance n’existe qu’après une prestation validée, et il est suivi séparément de la commande.@endif</p></section>
         </div>
       </div>
 

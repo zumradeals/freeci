@@ -51,14 +51,14 @@ final class UploadBriefFile
             throw new FileRejected('Le téléversement a échoué : réessayez.');
         }
 
-        [$name, $ext, $mime] = $this->validate($file);
+        [$name, $ext, $mime] = $this->validateFile($file, (int) config('freeci.files.max_mb'));
 
         return DB::transaction(function () use ($order, $client, $file, $name, $ext, $mime) {
             $locked = Order::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
             if (! in_array($locked->state, [OrderState::AwaitingAcceptance, OrderState::AwaitingPayment, OrderState::AwaitingBrief], true) || $locked->started_at !== null) {
                 throw new InvalidTransition;
             }
-            $active = FileAsset::query()->where('order_id', $locked->getKey())->whereNotIn('state', [FileState::Rejected->value, FileState::Removed->value]);
+            $active = FileAsset::query()->where('order_id', $locked->getKey())->whereNull('delivery_id')->whereNotIn('state', [FileState::Rejected->value, FileState::Removed->value]);
             if ((clone $active)->count() >= (int) config('freeci.files.max_files')) {
                 throw new FileRejected('Nombre maximal de fichiers atteint ('.config('freeci.files.max_files').').');
             }
@@ -80,15 +80,15 @@ final class UploadBriefFile
         });
     }
 
-    /** @return array{0: string, 1: string, 2: string} [nom assaini, extension, type réel] */
-    private function validate(UploadedFile $file): array
+    /** @return array{0: string, 1: string, 2: string} [nom assaini, extension, type réel] — partagé avec les fichiers de livraison */
+    public function validateFile(UploadedFile $file, int $maxMb): array
     {
-        $max = (int) config('freeci.files.max_mb') * 1048576;
+        $max = $maxMb * 1048576;
         if ($file->getSize() === 0) {
             throw new FileRejected('Fichier vide.');
         }
         if ($file->getSize() > $max) {
-            throw new FileRejected('Fichier trop volumineux (maximum '.config('freeci.files.max_mb').' Mo).');
+            throw new FileRejected('Fichier trop volumineux (maximum '.$maxMb.' Mo).');
         }
 
         $name = trim(preg_replace('/[\x00-\x1F\x7F\\\\\/]+/u', '', basename(str_replace('\\', '/', (string) $file->getClientOriginalName()))) ?? '');

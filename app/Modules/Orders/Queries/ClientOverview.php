@@ -5,6 +5,7 @@ namespace App\Modules\Orders\Queries;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
+use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use App\Modules\Orders\Data\OrderCard;
 use App\Modules\Orders\Data\TaskItem;
 use App\Modules\Orders\Enums\OrderState;
@@ -15,13 +16,14 @@ use App\Shared\Money;
 /** Tableau de bord client : vraies données, actions classées par urgence réelle (échéance la plus proche d'abord). */
 final class ClientOverview
 {
-    public function __construct(private ExpireOverdueOrders $expire, private ListOrders $list) {}
+    public function __construct(private ExpireOverdueOrders $expire, private ListOrders $list, private RecordReviewFollowUps $followUps) {}
 
     /** @return array{tasks: list<TaskItem>, orders: list<OrderCard>, counts: array<string,int>} */
     public function __invoke(User $client): array
     {
         $this->expire->__invoke($client->getKey());
-        $orders = Order::query()->with(['agreement', 'client', 'freelancer'])->where('client_id', $client->getKey())->get();
+        $this->followUps->__invoke($client->getKey());
+        $orders = Order::query()->with(['agreement', 'client', 'freelancer', 'latestDelivery', 'pendingExtension'])->where('client_id', $client->getKey())->get();
 
         $gate = app(SandboxGate::class);
         $tasks = $orders->whereIn('state', [OrderState::AwaitingPayment, OrderState::AwaitingBrief])->map(function (Order $o) use ($gate) {
@@ -46,13 +48,28 @@ final class ClientOverview
                 'Le travail commence après paiement confirmé et brief complet.', 'Voir la commande', route('orders.show', $o->reference), 'card', false);
         })->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
 
+        // Livraisons à examiner et reports à décider : de vraies actions, avec leur échéance réelle.
+        $review = $orders->where('state', OrderState::Delivered)->filter(fn (Order $o) => $o->latestDelivery !== null)->map(function (Order $o) {
+            $d = $o->latestDelivery;
+            $late = $d->review_deadline_at->lte(now());
+
+            return new TaskItem('Examiner la livraison v'.$d->version, $o->agreement->service_title.' · '.$o->reference, $d->review_deadline_at,
+                ($late ? 'Délai d’examen dépassé le ' : 'À décider avant le ').Dates::format($d->review_deadline_at),
+                'Vous pourrez valider la livraison ou demander une correction. Sans réponse, rien n’est validé à votre place.', 'Examiner la livraison', route('orders.show', $o->reference).'#livraison-v'.$d->version, 'inbox');
+        })->values()->all();
+        $extensions = $orders->filter(fn (Order $o) => $o->pendingExtension !== null && in_array($o->state, [OrderState::InProgress, OrderState::RevisionRequested], true))->map(fn (Order $o) => new TaskItem(
+            'Report d’échéance à décider', $o->agreement->service_title.' · '.$o->reference, $o->due_at, 'Échéance actuelle : '.Dates::format($o->due_at),
+            'L’échéance ne change que si vous acceptez.', 'Répondre au report', route('orders.show', $o->reference), 'clock'))->values()->all();
+        $tasks = collect(array_merge($review, $extensions, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
+
         return [
             'tasks' => $tasks,
             'orders' => ($this->list)($client, 'client'),
             'counts' => [
                 'En attente de réponse' => $orders->where('state', OrderState::AwaitingAcceptance)->count(),
                 'En attente de paiement' => $orders->where('state', OrderState::AwaitingPayment)->count(),
-                'En cours' => $orders->where('state', OrderState::InProgress)->count(),
+                'En cours' => $orders->whereIn('state', [OrderState::InProgress, OrderState::RevisionRequested])->count(),
+                'À examiner' => $orders->where('state', OrderState::Delivered)->count(),
                 'Commandes au total' => $orders->count(),
             ],
         ];

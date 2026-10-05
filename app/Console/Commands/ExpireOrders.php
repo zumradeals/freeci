@@ -3,17 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
+use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use Illuminate\Console\Command;
 
 class ExpireOrders extends Command
 {
     protected $signature = 'freeci:orders:expire';
 
-    protected $description = 'Expire les demandes dont le délai de réponse est dépassé (les actions et les listes le font aussi à la volée).';
+    protected $description = 'Expire les demandes dont le délai est dépassé et enregistre les besoins de suivi après délai d’examen (les actions et les listes le font aussi à la volée).';
 
-    public function handle(ExpireOverdueOrders $expire): int
+    public function handle(ExpireOverdueOrders $expire, RecordReviewFollowUps $followUps): int
     {
         $this->info($expire().' commande(s) expirée(s).');
+        $this->info($followUps().' besoin(s) de suivi enregistré(s) (délai d’examen dépassé ; aucune validation automatique).');
 
         return self::SUCCESS;
     }

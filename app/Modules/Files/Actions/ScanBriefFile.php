@@ -48,15 +48,19 @@ final class ScanBriefFile
 
             if ($result === ScanResult::Clean) {
                 $f->forceFill(['state' => FileState::Clean, 'scanned_at' => now(), 'last_scan_error' => null])->save();
-                $order->events()->create(['type' => 'brief_file_clean', 'actor_id' => null, 'note' => $f->original_name]);
-                ($this->start)($order);
+                if ($f->delivery_id === null) {                       // un brouillon de livraison reste privé au freelance : pas d'historique partagé
+                    $order->events()->create(['type' => 'brief_file_clean', 'actor_id' => null, 'note' => $f->original_name]);
+                    ($this->start)($order);
+                }
 
                 return 'clean';
             }
             if ($result === ScanResult::Infected) {
                 $f->forceFill(['state' => FileState::Rejected, 'rejection_reason' => 'malware_detected', 'scanned_at' => now()])->save();
                 Storage::disk('private_files')->delete($f->storage_key);
-                $order->events()->create(['type' => 'brief_file_rejected', 'actor_id' => null, 'note' => $f->original_name]);
+                if ($f->delivery_id === null) {
+                    $order->events()->create(['type' => 'brief_file_rejected', 'actor_id' => null, 'note' => $f->original_name]);
+                }
 
                 return 'rejected';
             }

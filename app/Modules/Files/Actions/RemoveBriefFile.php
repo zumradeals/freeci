@@ -26,7 +26,7 @@ final class RemoveBriefFile
             if ($locked->started_at !== null || $locked->state->isFinal()) {
                 throw new InvalidTransition;
             }
-            $f = FileAsset::query()->whereKey($fileId)->where('order_id', $locked->getKey())->lockForUpdate()->first();
+            $f = FileAsset::query()->whereKey($fileId)->where('order_id', $locked->getKey())->whereNull('delivery_id')->lockForUpdate()->first();
             if ($f === null || in_array($f->state, [FileState::Removed, FileState::Rejected], true)) {
                 throw new FileForbidden;
             }

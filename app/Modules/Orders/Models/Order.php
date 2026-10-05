@@ -32,6 +32,7 @@ class Order extends Model
             'closed_at' => 'datetime',
             'started_at' => 'datetime',
             'due_at' => 'datetime',
+            'validated_at' => 'datetime',
             'is_demo' => 'boolean',
         ];
     }
@@ -73,7 +74,28 @@ class Order extends Model
 
     public function files(): HasMany
     {
-        return $this->hasMany(FileAsset::class)->orderBy('created_at');
+        return $this->hasMany(FileAsset::class)->whereNull('delivery_id')->orderBy('created_at');   // pièces du BRIEF ; celles d'une livraison : Delivery::files()
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class)->orderBy('created_at');
+    }
+
+    /** Dernière version SOUMISE (jamais un brouillon). */
+    public function latestDelivery(): HasOne
+    {
+        return $this->hasOne(Delivery::class)->where('state', 'submitted')->orderByDesc('version');      // eager-load : le premier de chaque commande
+    }
+
+    public function pendingExtension(): HasOne
+    {
+        return $this->hasOne(ExtensionRequest::class)->where('state', 'pending');      // une seule en attente (index unique)
+    }
+
+    public function extensionRequests(): HasMany
+    {
+        return $this->hasMany(ExtensionRequest::class)->orderBy('id');
     }
 
     public function events(): HasMany
