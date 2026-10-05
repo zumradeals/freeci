@@ -42,8 +42,8 @@ server {
     }
 
     location ~ \.php$ {
-        try_files $uri =404;
-        include snippets/fastcgi-php.conf;                 # ou fastcgi_params selon la distribution
+        # Le snippet Debian/Ubuntu contient déjà « try_files $fastcgi_script_name =404; » : ne pas le répéter ici.
+        include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;         # adapter : socket du pool PHP 8.3
         fastcgi_hide_header X-Powered-By;
     }

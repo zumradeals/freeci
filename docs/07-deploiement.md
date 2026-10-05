@@ -109,7 +109,7 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache &&
 ### 4.8 Serveur web et HTTPS
 
 ```bash
-sudo cp deploy/nginx-freeci.conf.example /etc/nginx/sites-available/freeci.dgafrique.com   # adapter hôte, chemins, socket PHP-FPM
+sudo cp deploy/nginx-freeci-http.conf /etc/nginx/sites-available/freeci.dgafrique.com   # adapter hôte, chemins, socket PHP-FPM
 sudo ln -s /etc/nginx/sites-available/freeci.dgafrique.com /etc/nginx/sites-enabled/
 sudo nginx -t                                    # DOIT réussir avant tout rechargement : il valide aussi les autres sites
 sudo certbot --nginx -d freeci.dgafrique.com     # certificat Let's Encrypt, ne touche que ce vhost
