@@ -4,7 +4,9 @@ use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // Espace privé : toute route ici exige une session authentifiée ; réponses jamais mises en cache partagé.
@@ -20,6 +22,16 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/commandes/{reference}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/commandes/{reference}/{action}', [OrderController::class, 'confirm'])->whereIn('action', ['accept', 'decline', 'withdraw', 'cancel'])->name('orders.confirm');
     Route::post('/commandes/{reference}/{action}', [OrderController::class, 'act'])->whereIn('action', ['accept', 'decline', 'withdraw', 'cancel'])->middleware('throttle:30,1')->name('orders.act');
+
+    // Paiement SIMULÉ (réservé aux commandes et comptes de démonstration autorisés) : état lu en base, jamais déduit de l'URL.
+    Route::get('/commandes/{reference}/paiement', [PaymentController::class, 'show'])->name('orders.payment');
+    Route::post('/commandes/{reference}/paiement', [PaymentController::class, 'pay'])->middleware('throttle:10,1')->name('orders.payment.start');
+    Route::post('/commandes/{reference}/paiement/actualiser', [PaymentController::class, 'refresh'])->middleware('throttle:20,1')->name('orders.payment.refresh');
+
+    // Pièces jointes privées du brief.
+    Route::post('/commandes/{reference}/brief/fichiers', [OrderFileController::class, 'store'])->middleware('throttle:20,1')->name('orders.files.store');
+    Route::post('/commandes/{reference}/brief/fichiers/{file}/retirer', [OrderFileController::class, 'destroy'])->name('orders.files.destroy');
+    Route::get('/commandes/{reference}/fichiers/{file}', [OrderFileController::class, 'download'])->middleware('signed')->name('orders.files.download');
 
     // Espace freelance : activation puis pages réservées au rôle freelance.
     Route::get('/freelance/activer', [FreelanceController::class, 'activate'])->name('freelance.activate');

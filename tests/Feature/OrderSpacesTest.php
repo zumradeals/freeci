@@ -44,6 +44,7 @@ class OrderSpacesTest extends TestCase
 
     public function test_undated_client_tasks_never_precede_dated_ones(): void
     {
+        $this->enableSandbox();
         $a = $this->placeOrder();
         $this->accept($a);
         $this->travel(1)->minute();
@@ -67,7 +68,7 @@ class OrderSpacesTest extends TestCase
         $this->actingAs($this->freelancer)->get('/freelance')->assertSee('Répondre à la demande')->assertSee('Fanta Client');
         $this->actingAs($this->freelancer)->get('/freelance/commandes')->assertSee('À accepter');
         $this->accept($order);
-        $this->actingAs($this->client)->get('/espace')->assertSee('En attente de paiement')->assertSee('Paiement bientôt disponible');
+        $this->actingAs($this->client)->get('/espace')->assertSee('En attente de paiement')->assertSee('Paiement non ouvert pour le moment');
         $this->actingAs($this->freelancer)->get('/freelance/commandes')->assertSee('En attente de paiement')->assertDontSee('À accepter');
     }
 

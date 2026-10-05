@@ -21,9 +21,8 @@ class ExpireOverdueOrders
             ->when($partyId, fn ($q) => $q->where(fn ($w) => $w->where('client_id', $partyId)->orWhere('freelancer_id', $partyId)))
             ->where(function ($q) {
                 $q->where(fn ($w) => $w->where('state', OrderState::AwaitingAcceptance->value)->where('response_deadline_at', '<=', now()));
-                if (config('freeci.orders.payments_open')) {
-                    $q->orWhere(fn ($w) => $w->where('state', OrderState::AwaitingPayment->value)->whereNotNull('payment_deadline_at')->where('payment_deadline_at', '<=', now()));
-                }
+                // Échéance de paiement : seulement pour les commandes dont le paiement a été OUVERT (échéance enregistrée).
+                $q->orWhere(fn ($w) => $w->where('state', OrderState::AwaitingPayment->value)->whereNotNull('payment_deadline_at')->where('payment_deadline_at', '<=', now()));
             })->pluck('id');
 
         return $ids->filter(fn ($id) => $this->forOrder($id))->count();
@@ -40,8 +39,9 @@ class ExpireOverdueOrders
             $reason = null;
             if ($order->state === OrderState::AwaitingAcceptance && $order->response_deadline_at->lte(now())) {
                 $reason = ClosureReason::ExpiredAcceptance;
-            } elseif (config('freeci.orders.payments_open') && $order->state === OrderState::AwaitingPayment
-                && $order->payment_deadline_at !== null && $order->payment_deadline_at->lte(now())) {
+            } elseif ($order->state === OrderState::AwaitingPayment && $order->payment_deadline_at !== null && $order->payment_deadline_at->lte(now())
+                && ! $order->payments()->whereIn('state', ['created', 'pending', 'unknown', 'confirmed'])->exists()) {
+                // Jamais d'expiration pendant qu'un paiement est en cours, incertain ou confirmé (docs/02 §4.4).
                 $reason = ClosureReason::ExpiredPayment;
             }
             if ($reason === null) {

@@ -52,8 +52,8 @@ class OrderRequestFlowTest extends TestCase
         $this->assertNotNull($order->accepted_at);
         $this->assertNull($order->payment_deadline_at, 'le paiement n’est pas ouvert : aucune échéance de paiement ne court');
         $this->actingAs($this->client)->get("/commandes/{$order->reference}")
-            ->assertOk()->assertSee('En attente de paiement')->assertSee('Le paiement n’est pas encore ouvert')->assertSee('Non démarrée')->assertSee('Demande acceptée par Kader Freelance');
-        $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee($order->reference)->assertSee('Régler la commande');
+            ->assertOk()->assertSee('En attente de paiement')->assertSee('Le paiement n’est pas ouvert pour cette commande')->assertSee('Non démarrée')->assertSee('Demande acceptée par Kader Freelance');
+        $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee($order->reference)->assertSee('Le paiement n’est pas ouvert pour cette commande')->assertDontSee('Payer 35');
         $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('En attente du client')->assertSee($order->reference);
     }
 
@@ -210,37 +210,57 @@ class OrderRequestFlowTest extends TestCase
         $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertSee('Délai de réponse dépassé');
     }
 
-    public function test_accepted_orders_never_expire_while_payment_is_closed_and_expire_once_it_opens(): void
+    public function test_orders_whose_payment_was_never_opened_never_expire_for_non_payment(): void
     {
         $order = $this->placeOrder();
         $this->accept($order);
-        $this->travel(10)->days();
+        $this->assertNull($order->fresh()->payment_deadline_at, 'paiement jamais ouvert : aucune échéance');
+        $this->travel(30)->days();
         $this->artisan('freeci:orders:expire')->assertSuccessful();
-        $this->assertSame(OrderState::AwaitingPayment, $order->fresh()->state, 'aucune échéance de paiement tant que le paiement n’est pas ouvert');
+        $this->assertSame(OrderState::AwaitingPayment, $order->fresh()->state);
+    }
 
-        // Quand le paiement sera ouvert (lot ultérieur), l'échéance courra à l'acceptation et l'expiration sera appliquée.
-        config(['freeci.orders.payments_open' => true]);
-        $this->travelBack();
-        $o2 = $this->placeOrder();
-        $this->accept($o2);
-        $this->assertNotNull($o2->fresh()->payment_deadline_at);
+    public function test_payment_deadline_only_runs_when_payment_is_opened_for_that_order_and_never_during_a_payment(): void
+    {
+        $this->enableSandbox();
+        $order = $this->placeOrder();
+        $this->accept($order);
+        $this->assertNotNull($order->fresh()->payment_deadline_at, 'paiement ouvert pour cette commande : l’échéance court');
+
+        // un paiement en cours bloque l'expiration
+        $this->travel(2)->hours();
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/paiement", ['operation_key' => 'k-expire', 'conditions' => '1'])->assertRedirect();
+        $this->travel(30)->hours();
+        $this->artisan('freeci:orders:expire')->assertSuccessful();
+        $this->assertSame(OrderState::AwaitingPayment, $order->fresh()->state, 'jamais d’expiration pendant un paiement ouvert');
+    }
+
+    public function test_unpaid_expired_deadline_closes_an_opened_order(): void
+    {
+        $this->enableSandbox();
+        $order = $this->placeOrder();
+        $this->accept($order);
         $this->travel(25)->hours();
         $this->artisan('freeci:orders:expire')->assertSuccessful();
-        $this->assertSame('expired_payment', $o2->fresh()->closure_reason->value);
+        $this->assertSame('expired_payment', $order->fresh()->closure_reason->value);
     }
 
     public function test_state_machine_has_no_path_to_work_without_confirmed_payment(): void
     {
-        $this->assertFalse(OrderState::AwaitingPayment->canTransitionTo(OrderState::InProgress));
-        $this->assertFalse(OrderState::AwaitingPayment->canTransitionTo(OrderState::AwaitingBrief));
         $this->assertFalse(OrderState::AwaitingAcceptance->canTransitionTo(OrderState::InProgress));
         $this->assertFalse(OrderState::Cancelled->canTransitionTo(OrderState::AwaitingPayment));
         $this->assertFalse(OrderState::Expired->canTransitionTo(OrderState::AwaitingAcceptance));
         $this->assertSame([], OrderState::InProgress->allowedNext());
 
         // aucune route publique ne permet de « marquer payé » ; aucune colonne de paiement dans la table des commandes
+        // Seules les routes de paiement SIMULÉ prévues existent ; aucune ne « confirme » ni ne « marque payé ».
+        $allowed = ['commandes/{reference}/paiement', 'commandes/{reference}/paiement/actualiser', 'webhooks/sandbox-payments'];
         foreach (app('router')->getRoutes() as $route) {
-            $this->assertDoesNotMatchRegularExpression('/pay|paid|paiement|mark/i', $route->uri().' '.($route->getName() ?? ''), $route->uri());
+            $line = $route->uri().' '.($route->getName() ?? '');
+            $this->assertDoesNotMatchRegularExpression('/paid|mark|confirm-?pay|confirmer/i', $line, $route->uri());
+            if (preg_match('/pay|paiement/i', $route->uri())) {
+                $this->assertContains($route->uri(), $allowed, $route->uri());
+            }
         }
         $columns = DB::getSchemaBuilder()->getColumnListing('orders');
         $this->assertSame([], array_values(array_filter($columns, fn ($c) => preg_match('/paid|payment_status|payment_ref/', $c))));

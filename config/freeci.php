@@ -24,8 +24,22 @@ return [
         'payment_hours' => (int) env('FREECI_PAYMENT_HOURS', 24),
         // Version des conditions de demande affichées et acceptées (le texte juridique définitif reste à rédiger).
         'conditions_version' => '2026-10-v1',
-        // Le paiement n'existe pas dans ce lot : tant que false, AUCUNE échéance de paiement ne court
-        // (une commande acceptée reste « en attente de paiement » sans expirer). Pas une variable d'environnement.
-        'payments_open' => false,
+    ],
+
+    'payments' => [
+        // Simulateur de paiement : DÉSACTIVÉ par défaut. Même activé, il n'est utilisable que pour des commandes de
+        // démonstration et des comptes de recette autorisés (App\Modules\Finance\SandboxGate). Aucun prestataire réel.
+        'sandbox_enabled' => (bool) env('FREECI_PAYMENT_SANDBOX', false),
+        // Secret HMAC des notifications simulées (vide = notifications refusées). Jamais dans le dépôt.
+        'sandbox_webhook_secret' => env('FREECI_SANDBOX_WEBHOOK_SECRET'),
+    ],
+
+    'files' => [
+        // « clamav » = contrôle antivirus ; « none » (défaut) = aucun contrôle disponible : le dépôt de fichiers est désactivé.
+        'scanner' => env('FREECI_FILE_SCANNER', 'none'),
+        'clamscan_binary' => env('FREECI_CLAMSCAN_BINARY', '/usr/bin/clamdscan'),
+        'max_mb' => (int) env('FREECI_UPLOAD_MAX_MB', 10),
+        'max_files' => 10,
+        'max_total_mb' => 50,
     ],
 ];

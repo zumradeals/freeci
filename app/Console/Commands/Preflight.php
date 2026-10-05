@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Integrations\FileScan\FileScanner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
@@ -49,6 +51,12 @@ class Preflight extends Command
         $mailer = (string) config('mail.default');
         $this->check('Courrier réel (pas de pilote log/array)', ! in_array($mailer, ['log', 'array'], true), "MAIL_MAILER={$mailer} : le lien « mot de passe oublié » ne sera pas envoyé", false);
 
+        $sandbox = (bool) config('freeci.payments.sandbox_enabled');
+        $this->check('Simulateur de paiement désactivé', ! $sandbox, 'FREECI_PAYMENT_SANDBOX=true : réservé aux comptes et commandes de démonstration autorisés (comptes de recette) ; à remettre à false après la recette', false);
+        $this->check('Simulateur : secret de notification défini', ! $sandbox || filled(config('freeci.payments.sandbox_webhook_secret')), 'FREECI_SANDBOX_WEBHOOK_SECRET vide alors que le simulateur est activé : les notifications seront refusées');
+        $this->check('Service de contrôle des fichiers', config('freeci.files.scanner') === 'clamav' && app(FileScanner::class)->isOperational(), 'aucun service d\'analyse opérationnel : le dépôt de fichiers du brief est désactivé (voir docs/10)', false);
+        $this->check('Disque privé des fichiers inscriptible', $this->privateDiskWritable(), storage_path('app/private/files'));
+
         $this->check('storage/ inscriptible', is_writable(storage_path()) && is_writable(storage_path('logs')), storage_path());
         $this->check('bootstrap/cache inscriptible', is_writable(base_path('bootstrap/cache')), base_path('bootstrap/cache'));
         $this->check('Ressources compilées présentes', is_file(public_path('build/manifest.json')), 'npm run build (ou copier public/build)');
@@ -69,6 +77,20 @@ class Preflight extends Command
             $this->failed = true;
         }
         $this->rows[] = [$label, $ok ? 'OK' : ($blocking ? 'ÉCHEC' : 'AVERT.'), $ok ? '' : $detail];
+    }
+
+    private function privateDiskWritable(): bool
+    {
+        try {
+            $disk = Storage::disk('private_files');
+            $probe = '.preflight-'.bin2hex(random_bytes(4));
+            $disk->put($probe, 'x');
+            $disk->delete($probe);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function databaseOk(?string &$detail): bool

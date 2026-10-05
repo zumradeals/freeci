@@ -21,7 +21,7 @@ class OrderAgreement extends Model
     {
         return [
             'price_xof' => 'integer', 'delivery_days' => 'integer', 'revisions_included' => 'integer',
-            'deliverables' => 'array', 'exclusions' => 'array', 'client_inputs' => 'array',
+            'brief_requires_files' => 'boolean', 'deliverables' => 'array', 'exclusions' => 'array', 'client_inputs' => 'array',
             'conditions_accepted_at' => 'datetime', 'created_at' => 'datetime',
         ];
     }

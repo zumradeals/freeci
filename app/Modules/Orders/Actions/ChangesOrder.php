@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\InvalidTransition;
@@ -26,7 +27,7 @@ abstract class ChangesOrder
     protected function transition(
         User $actor, string $reference, string $action, string $operationKey, int $expectedVersion,
         callable $isActor, array $from, OrderState $to, string $eventType, ?string $note = null,
-        ?ClosureReason $reason = null, bool $startsPaymentWindow = false,
+        ?ClosureReason $reason = null, bool $startsPaymentWindow = false, ?callable $guard = null,
     ): array {
         // Un dossier inexistant et un dossier d'autrui répondent pareil : rien n'est révélé.
         $order = Order::query()->where('reference', $reference)->first();
@@ -41,13 +42,17 @@ abstract class ChangesOrder
 
         [$id, $replayed] = CommandReceipts::once(
             $actor->getKey(), $action, $operationKey, ['reference' => $reference, 'version' => $expectedVersion, 'note' => $note],
-            function () use ($order, $actor, $isActor, $expectedVersion, $from, $to, $eventType, $note, $reason, $startsPaymentWindow) {
+            function () use ($order, $actor, $isActor, $expectedVersion, $from, $to, $eventType, $note, $reason, $startsPaymentWindow, $guard) {
                 $locked = Order::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
                 if (! $isActor($locked)) {
                     throw new OrderForbidden;
                 }
                 if ($locked->row_version !== $expectedVersion || ! in_array($locked->state, $from, true) || ! $locked->state->canTransitionTo($to)) {
                     throw new InvalidTransition;
+                }
+
+                if ($guard !== null) {
+                    $guard($locked);
                 }
 
                 $from = $locked->state;
@@ -58,15 +63,15 @@ abstract class ChangesOrder
                 }
                 if ($startsPaymentWindow) {
                     $updates['accepted_at'] = $now;
-                    // Le paiement n'existe pas dans ce lot : aucune échéance de paiement ne court tant qu'il n'est pas ouvert.
-                    $updates['payment_deadline_at'] = config('freeci.orders.payments_open')
-                        ? $now->copy()->addHours($locked->agreement->payment_hours)
-                        : null;
+                    // L'échéance de paiement ne court QUE si le paiement est ouvert pour CETTE commande (simulateur autorisé).
+                    // Sinon (commande réelle, paiement jamais ouvert) : aucune échéance, donc aucune expiration pour non-paiement.
+                    $paymentOpen = app(SandboxGate::class)->allows($locked);
+                    $updates['payment_deadline_at'] = $paymentOpen ? $now->copy()->addHours($locked->agreement->payment_hours) : null;
                 }
                 $locked->forceFill($updates)->save();
                 $locked->events()->create([
                     'type' => $eventType, 'actor_id' => $actor->getKey(), 'from_state' => $from->value, 'to_state' => $to->value,
-                    'note' => $note, 'meta' => $startsPaymentWindow ? ['payment_open' => (bool) config('freeci.orders.payments_open')] : null,
+                    'note' => $note, 'meta' => $startsPaymentWindow ? ['payment_open' => $paymentOpen ?? false] : null,
                 ]);
 
                 return $locked->getKey();

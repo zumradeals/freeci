@@ -46,7 +46,7 @@ Le brief est **textuel** : réponses aux éléments à fournir + précisions. **
 
 ## 5. Recette avec deux comptes
 
-1. `php artisan freeci:demo:recette` (en production : `FREECI_ALLOW_DEMO_SEED=true` le temps de l'opération, puis `false`). Les deux mots de passe sont **affichés une seule fois** ; les comptes existants ne sont jamais modifiés.
+1. `deploy/recette.sh amorcer` (remplace l’ancienne procédure : fonctionne même sans `FREECI_ALLOW_DEMO_SEED` dans `.env` et le remet à `false` quoi qu’il arrive ; voir docs/10). Les deux mots de passe sont **affichés une seule fois** ; les comptes existants ne sont jamais modifiés.
 2. **Client** (`recette.client@demo.freeci.invalid`) : service « Mise en plan 2D… (service de recette) » → *Demander cette prestation* → remplir → *Envoyer* → consulter le dossier (état « En attente de réponse »).
 3. **Freelance** (`recette.freelance@demo.freeci.invalid`) : vue d'ensemble → *Répondre à la demande* → lire le brief → *Accepter* (ou *Refuser* avec motif).
 4. Client : la commande est « En attente de paiement » ; le dossier indique que le paiement n'est pas ouvert, qu'aucune échéance de réalisation ne court ; *Annuler la commande* est possible.

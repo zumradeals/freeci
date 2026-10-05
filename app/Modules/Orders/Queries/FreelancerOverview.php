@@ -34,11 +34,12 @@ final class FreelancerOverview
 
         return [
             'tasks' => $tasks,
-            'waiting' => $orders->where('state', OrderState::AwaitingPayment)->map(fn (Order $o) => OrderCards::make($o, true))->values()->all(),
+            'waiting' => $orders->whereIn('state', [OrderState::AwaitingPayment, OrderState::AwaitingBrief])->map(fn (Order $o) => OrderCards::make($o, true))->values()->all(),
             'orders' => ($this->list)($freelancer, 'freelancer'),
             'counts' => [
                 'Demandes à accepter' => $orders->where('state', OrderState::AwaitingAcceptance)->count(),
                 'En attente de paiement' => $orders->where('state', OrderState::AwaitingPayment)->count(),
+                'En cours' => $orders->where('state', OrderState::InProgress)->count(),
                 'Commandes au total' => $orders->count(),
             ],
         ];

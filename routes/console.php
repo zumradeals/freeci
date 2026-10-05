@@ -11,3 +11,4 @@ use Illuminate\Support\Facades\Schedule;
 
 // Persistance des expirations ; facultatif (cron « * * * * * php artisan schedule:run »), l'exactitude ne dépend pas de ce passage.
 Schedule::command('freeci:orders:expire')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('freeci:files:scan')->everyFiveMinutes()->withoutOverlapping();

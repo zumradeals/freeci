@@ -18,8 +18,9 @@ enum OrderState: string
     case Expired = 'expired';
 
     /**
-     * Transitions autorisées DANS CE LOT. Les passages à « en attente du brief » / « en cours » n'existent pas ici :
-     * ils appartiennent à `Finance\ConfirmPayment` (paiement vérifié côté serveur), qui n'est pas implémenté.
+     * Transitions autorisées. Les passages à « en attente du brief » / « en cours » ne sont atteignables QUE par
+     * `Orders\StartOrderIfReady`, appelée par `Finance\ConfirmPayment` (paiement vérifié côté serveur) ou à la complétion
+     * du brief : aucune action utilisateur ne les déclenche. La base impose en plus un départ enregistré pour tout état de travail.
      *
      * @return list<self>
      */
@@ -27,7 +28,8 @@ enum OrderState: string
     {
         return match ($this) {
             self::AwaitingAcceptance => [self::AwaitingPayment, self::Cancelled, self::Expired],
-            self::AwaitingPayment => [self::Cancelled, self::Expired],
+            self::AwaitingPayment => [self::AwaitingBrief, self::InProgress, self::Cancelled, self::Expired],
+            self::AwaitingBrief => [self::InProgress],
             default => [],
         };
     }

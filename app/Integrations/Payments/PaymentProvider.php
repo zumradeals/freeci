@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Integrations\Payments;
+
+/**
+ * Port `PaymentProvider` (docs/02 §7). Aucun prestataire réel n'est intégré : le seul adaptateur est le simulateur.
+ * Les adaptateurs n'appellent jamais d'Action ; les notifications entrent par un contrôleur dédié.
+ */
+interface PaymentProvider
+{
+    public function name(): string;
+
+    public function createCheckout(CheckoutRequest $request): CheckoutResult;
+
+    /** Interroge le prestataire sur une référence : seule source de vérité de la confirmation. */
+    public function verify(string $reference): Verification;
+
+    /** @throws InvalidProviderEvent signature absente ou invalide, corps illisible, horodatage hors tolérance */
+    public function parseEvent(string $rawBody, array $headers): ProviderEvent;
+}

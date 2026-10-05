@@ -20,7 +20,9 @@ final class OrderCards
                 : 'Réponse attendue avant le '.Dates::short($o->response_deadline_at),
             OrderState::AwaitingPayment => $o->payment_deadline_at
                 ? 'À payer avant le '.Dates::short($o->payment_deadline_at)
-                : 'Paiement bientôt disponible',
+                : 'Paiement non ouvert pour le moment',
+            OrderState::AwaitingBrief => 'Brief à compléter avant le départ',
+            OrderState::InProgress => $o->due_at ? 'Livraison prévue le '.Dates::short($o->due_at) : '',
             OrderState::Cancelled, OrderState::Expired => $o->closure_reason?->label() ?? '',
             default => '',
         };

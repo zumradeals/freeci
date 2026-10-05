@@ -45,6 +45,10 @@ class DemoRecette extends Command
             $client = $this->account('recette.client@'.self::DOMAIN, 'Koffi Recette (démo client)', $created);
             $freelance->roles()->firstOrCreate(['role' => AccountRole::FREELANCE]);
             $client->roles()->firstOrCreate(['role' => AccountRole::CLIENT]);
+            // Compte de recette autorisé à utiliser le paiement simulé (si le simulateur est activé : FREECI_PAYMENT_SANDBOX).
+            if (! $client->sandbox_payments) {
+                $client->forceFill(['sandbox_payments' => true])->save();
+            }
 
             $profile = FreelanceProfile::firstOrCreate(['user_id' => $freelance->getKey()], [
                 'display_name' => 'Awa Recette', 'headline' => 'Dessinatrice DAO (démonstration)', 'city' => 'Abidjan', 'is_demo' => true,
@@ -62,9 +66,22 @@ class DemoRecette extends Command
                 'images' => [['src' => '/img/demo/plan-dwg-wide.svg', 'card' => '/img/demo/plan-dwg.svg', 'alt' => 'Exemple : plan d’étage', 'caption' => 'Exemple : plan d’étage']],
                 'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true,
             ]);
+
+            // Second service : le brief exige au moins un fichier contrôlé (nécessite le service de contrôle de sécurité).
+            Service::firstOrCreate(['slug' => 'service-de-recette-avec-fichiers'], [
+                'category_id' => $category->getKey(), 'freelance_profile_id' => $profile->getKey(),
+                'title' => 'Mise en plan à partir de plans joints (service de recette)',
+                'summary' => 'Service de DÉMONSTRATION dont le brief exige un fichier contrôlé : aucun travail réel.',
+                'scope' => 'Un plan joint par le client, une reprise comprise. Démonstration uniquement.',
+                'price_xof' => 55000, 'delivery_days' => 7, 'revisions_included' => 1,
+                'deliverables' => ['Un plan 2D coté au format PDF.'], 'exclusions' => ['Tout travail réel : ceci est une démonstration.'],
+                'client_inputs' => ['Votre besoin en une phrase'],
+                'images' => [['src' => '/img/demo/plan-dwg-wide.svg', 'card' => '/img/demo/plan-dwg.svg', 'alt' => 'Exemple : plan d’étage', 'caption' => 'Exemple : plan d’étage']],
+                'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true, 'brief_requires_files' => true,
+            ]);
         });
 
-        $this->info('Recette prête. Service : /services/service-de-recette-mise-en-plan');
+        $this->info('Recette prête. Services : /services/service-de-recette-mise-en-plan et /services/service-de-recette-avec-fichiers');
         foreach ($created as $email => $password) {
             $this->warn("{$email} — mot de passe généré, affiché UNE seule fois : {$password}");
         }

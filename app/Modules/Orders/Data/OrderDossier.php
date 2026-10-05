@@ -51,5 +51,18 @@ final readonly class OrderDossier
         public array $actions,
         public int $stepIndex,                 // 0..6 sur 7 étapes
         public bool $isFinal,
+        public ?CarbonInterface $startedAt = null,
+        public ?CarbonInterface $dueAt = null,
+        /** @var array{label:string,tone:string,icon:string,state:string,reference:string,at:?CarbonInterface}|null */
+        public ?array $payment = null,
+        public bool $paymentOpen = false,             // une tentative est en cours ou incertaine : « Payer » absent
+        public bool $canPay = false,                  // simulateur autorisé pour cette commande, client, état et tentative OK
+        public int $confirmedXof = 0,                 // montant encaissé (simulé), lu dans le registre
+        /** @var list<array{id:string,name:string,size:string,label:string,tone:string,icon:string,url:?string,canRemove:bool,note:?string}> */
+        public array $files = [],
+        public bool $uploadsEnabled = false,          // un service de contrôle de sécurité est disponible
+        public bool $canUpload = false,
+        public bool $briefRequiresFiles = false,
+        public string $uploadLimits = '',
     ) {}
 }

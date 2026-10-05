@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         then: function () {
             Route::middleware('web')->group(base_path('routes/account.php'));
+            Route::group([], base_path('routes/webhooks.php'));
         },
         commands: __DIR__.'/../routes/console.php',
         health: '/up',

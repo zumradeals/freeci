@@ -142,6 +142,7 @@ final class RequestService
             'deliverables' => $locked->deliverables,
             'exclusions' => $locked->exclusions,
             'client_inputs' => $locked->client_inputs,
+            'brief_requires_files' => $locked->brief_requires_files,   // exigence figée : le service pourra changer, pas l'accord
             'response_hours' => $responseHours,
             'payment_hours' => $paymentHours,
             'conditions_version' => config('freeci.orders.conditions_version'),

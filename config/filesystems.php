@@ -38,6 +38,16 @@ return [
             'report' => false,
         ],
 
+        // Pièces jointes privées : jamais servies par le serveur web, clés de stockage opaques.
+        'private_files' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/files'),
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+            'visibility' => 'private',
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

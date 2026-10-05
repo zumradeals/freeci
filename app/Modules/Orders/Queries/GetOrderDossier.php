@@ -2,7 +2,14 @@
 
 namespace App\Modules\Orders\Queries;
 
+use App\Integrations\FileScan\FileScanner;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Files\Actions\DownloadBriefFile;
+use App\Modules\Files\Enums\FileState;
+use App\Modules\Finance\Enums\PaymentState;
+use App\Modules\Finance\Models\LedgerBatch;
+use App\Modules\Finance\SandboxGate;
+use App\Modules\Orders\Actions\BriefStatus;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Data\OrderDossier;
 use App\Modules\Orders\Enums\OrderState;
@@ -14,7 +21,7 @@ use App\Shared\Money;
 /** `Orders\GetOrderDossier` : lecture BORNÉE AUX PARTIES. Inexistant et interdit répondent pareil (docs/04 §8.5). */
 final class GetOrderDossier
 {
-    public function __construct(private ExpireOverdueOrders $expire) {}
+    public function __construct(private ExpireOverdueOrders $expire, private SandboxGate $gate, private FileScanner $scanner, private DownloadBriefFile $downloads) {}
 
     public function __invoke(User $viewer, string $reference): OrderDossier
     {
@@ -25,7 +32,7 @@ final class GetOrderDossier
             throw new OrderForbidden;
         }
         $this->expire->forOrder($order->getKey());
-        $order = Order::with(['agreement', 'brief', 'events.actor', 'client', 'freelancer'])->findOrFail($order->getKey());
+        $order = Order::with(['agreement', 'brief', 'events.actor', 'client', 'freelancer', 'files'])->findOrFail($order->getKey());
 
         $isFreelancer = $order->freelancer_id === $viewer->getKey();
         $perspective = $isFreelancer ? 'freelancer' : 'client';
@@ -33,7 +40,7 @@ final class GetOrderDossier
         [$tone, $icon] = $order->state->tone($isFreelancer);
 
         $items = collect($order->brief->answers);
-        $missing = $items->filter(fn ($i) => trim((string) ($i['answer'] ?? '')) === '')->count();
+        $brief = BriefStatus::of($order);
 
         $names = [$order->client_id => $order->client->name, $order->freelancer_id => $order->freelancer->name];
         $events = $order->events->map(function ($e) use ($names, $isFreelancer) {
@@ -43,6 +50,15 @@ final class GetOrderDossier
             $title = match ($e->type) {
                 'requested' => "Demande envoyée par {$who}",
                 'accepted' => "Demande acceptée par {$who}",
+                'payment_started' => 'Paiement simulé démarré',
+                'payment_confirmed' => 'Paiement simulé confirmé (vérifié côté serveur)',
+                'payment_failed' => 'Paiement simulé non abouti',
+                'brief_awaited' => 'Brief à compléter avant le départ',
+                'work_started' => 'Départ de la réalisation enregistré',
+                'brief_file_added' => "Fichier ajouté au brief par {$who}",
+                'brief_file_clean' => 'Fichier contrôlé : contrôle de sécurité réussi',
+                'brief_file_rejected' => 'Fichier refusé par le contrôle de sécurité',
+                'brief_file_removed' => "Fichier retiré par {$who}",
                 'declined' => "Demande refusée par {$who}",
                 'withdrawn' => "Demande retirée par {$who}",
                 'cancelled' => "Commande annulée par {$who}",
@@ -59,6 +75,29 @@ final class GetOrderDossier
         if ($events !== []) {
             $events[0]['now'] = true;
         }
+
+        $payment = $order->payments()->orderByDesc('id')->first();
+        $paymentOpen = $payment?->state->isOpen() ?? false;
+        $paymentConfirmed = $payment?->state === PaymentState::Confirmed;
+        $canPay = ! $isFreelancer && $order->state === OrderState::AwaitingPayment && $this->gate->allows($order) && ! $paymentOpen && ! $paymentConfirmed;
+        $confirmedXof = (int) LedgerBatch::query()->where('order_id', $order->getKey())->where('kind', 'payment_confirmed')->join('ledger_lines', 'ledger_lines.batch_id', '=', 'ledger_batches.id')->where('ledger_lines.account', 'escrow_simulated')->sum('ledger_lines.amount_xof');
+
+        $uploadsEnabled = $this->scanner->isOperational();
+        $canUpload = ! $isFreelancer && $uploadsEnabled && in_array($order->state, [OrderState::AwaitingAcceptance, OrderState::AwaitingPayment, OrderState::AwaitingBrief], true) && $order->started_at === null;
+        $files = $order->files->whereNotIn('state', [FileState::Removed])->map(function ($f) use ($viewer, $order, $isFreelancer, $canUpload) {
+            [$tone, $icon] = match ($f->state) {
+                FileState::Clean => ['success', 'shield'], FileState::Rejected => ['error', 'error'], default => ['warning', 'clock']
+            };
+            $kb = $f->size_bytes / 1024;
+
+            return [
+                'id' => $f->id, 'name' => $f->original_name, 'size' => $kb >= 1024 ? number_format($kb / 1024, 1, ',', ' ').' Mo' : number_format($kb, 0, ',', ' ').' Ko',
+                'label' => $f->state->label(), 'tone' => $tone, 'icon' => $icon,
+                'url' => $f->state->downloadable() ? $this->downloads->link($viewer, $order->reference, $f->id) : null,
+                'canRemove' => ! $isFreelancer && $canUpload && $f->state !== FileState::Rejected ? true : false,
+                'note' => $f->state === FileState::Rejected ? 'Refusé par le contrôle de sécurité : non téléchargeable.' : (! $f->state->downloadable() ? 'Non téléchargeable avant la fin du contrôle de sécurité.' : null),
+            ];
+        })->values()->all();
 
         $actions = [];
         if ($order->state === OrderState::AwaitingAcceptance) {
@@ -80,12 +119,28 @@ final class GetOrderDossier
             serviceVersion: $a->service_row_version, conditionsVersion: $a->conditions_version, conditionsAcceptedAt: $a->conditions_accepted_at,
             requestedAt: $order->requested_at, responseDeadline: $order->response_deadline_at, acceptedAt: $order->accepted_at,
             paymentDeadline: $order->payment_deadline_at, closureReason: $order->closure_reason?->label(), closureNote: $order->closure_note,
-            briefItems: $items->all(), briefNotes: $order->brief->notes, briefComplete: $missing === 0, briefMissing: $missing,
+            briefItems: $items->all(), briefNotes: $order->brief->notes, briefComplete: $brief['complete'], briefMissing: $brief['missing'],
             events: $events, actions: $actions,
             stepIndex: match ($order->state) {
                 OrderState::AwaitingAcceptance => 0, OrderState::AwaitingPayment => 1, default => 0
             },
             isFinal: $order->state->isFinal(),
+            startedAt: $order->started_at, dueAt: $order->due_at,
+            payment: $payment === null ? null : [
+                'label' => $payment->state->label(), 'tone' => $payment->state->tone()[0], 'icon' => $payment->state->tone()[1],
+                'state' => $payment->state->value, 'reference' => $payment->reference, 'at' => $payment->created_at,
+            ],
+            paymentOpen: $paymentOpen, canPay: $canPay, confirmedXof: $confirmedXof,
+            files: $files, uploadsEnabled: $uploadsEnabled, canUpload: $canUpload,
+            briefRequiresFiles: (bool) $a->brief_requires_files,
+            uploadLimits: $this->uploadLimits(),
         );
+    }
+
+    private function uploadLimits(): string
+    {
+        $mb = (int) config('freeci.files.max_mb', 10);
+
+        return "PDF, images (JPG, PNG, WebP) ou plan DWG — {$mb} Mo maximum par fichier.";
     }
 }

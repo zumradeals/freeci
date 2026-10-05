@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Integrations\FileScan\ClamAvScanner;
+use App\Integrations\FileScan\FileScanner;
+use App\Integrations\FileScan\UnavailableScanner;
+use App\Integrations\Payments\PaymentProvider;
+use App\Integrations\Payments\SandboxPaymentProvider;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +17,11 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Un seul adaptateur de paiement : le simulateur. Aucun prestataire réel n'est choisi ni intégré.
+        $this->app->bind(PaymentProvider::class, SandboxPaymentProvider::class);
+        $this->app->bind(FileScanner::class, fn () => config('freeci.files.scanner') === 'clamav'
+            ? new ClamAvScanner((string) config('freeci.files.clamscan_binary'))
+            : new UnavailableScanner);
     }
 
     public function boot(): void
