@@ -58,3 +58,12 @@ Voir le rapport `design/lot-1/RAPPORT-LOT-1.md`; déploiement : `docs/07-deploie
 ## 5. Lot suivant recommandé
 
 **Lot 2 — demande de prestation et commande (sans paiement réel)** : versions immuables de service, brief et pièces jointes (stockage privé, contrôle de type), accord figé, états de commande, acceptation ou refus du freelance, tableau de bord client avec actions classées par urgence, rôle et profil freelance. Le paiement (port `PaymentProvider` simulé) ne vient qu'après. **Points à trancher avant** : fournisseur de courrier ; politique de stockage de fichiers ; vérification d'adresse e-mail (lien à usage unique, `02` §8.2).
+
+## 6. Administrateur (lot 1.1, D34)
+
+- **Modèle** : rôles commerciaux `client` et `freelance` dans `account_roles` ; habilitation du personnel dans `staff_grants` (capacité `administrator`, motif, date, expiration facultative, révocation, auteur). Il n'existe **aucun indicateur « admin » sur le compte**. Une seule habilitation active par personne (index unique partiel).
+- **Désignation** : uniquement par la console du serveur, `php artisan freeci:admin:grant <adresse> --create` (compte neuf, mot de passe aléatoire **affiché une seule fois**) ou `--existing` (compte déjà inscrit, avec `--reset-password` si l'on doute de son propriétaire). Sans l'un de ces drapeaux, **aucun compte n'est promu** : l'adresse n'étant pas vérifiée par courriel, quiconque peut s'inscrire avec n'importe quelle adresse.
+- **Accès** : `/admin` (404 pour tout autre que les administrateurs en vigueur, pages `no-store`). Coquille sans fonction. Les espaces freelance et client resteront accessibles à ce compte quand ils ouvriront.
+- **Avant toute fonction d'administration réelle** (à respecter) : authentification multifacteur, vérification d'adresse par lien à usage unique, courrier réel configuré.
+- **Audit** : `php artisan freeci:admin:list` ; événements consignés dans les journaux.
+
