@@ -1,0 +1,57 @@
+/* FreeCI — feuille d'entrée.
+   Tailwind v4 : jetons (@theme) et utilitaires, SANS la remise à zéro « preflight » :
+   la remise à zéro et les composants viennent de freeci.css, repris de la référence visuelle V01.1
+   (design/prototype-v01). Les utilitaires restent disponibles pour les nouveaux écrans. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source '../views';
+@source '../../app/Livewire';
+
+@theme {
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --color-marine-900: #102D4B;
+    --color-marine-700: #183B60;
+    --color-canvas: #F7F8FB;
+    --color-ink-900: #0F1B2D;
+    --color-ink-600: #4B5968;
+    --color-accent-700: #A63F14;
+    --color-accent-500: #F26B1D;
+    --color-info-700: #1F5FA6;
+    --color-success-700: #1E6B45;
+    --color-warning-700: #7A4B00;
+    --color-error-700: #B3261E;
+}
+
+@import './freeci.css';
+
+/* ---- Écrans applicatifs (lot 1) : compléments à la référence V01.1 ---- */
+.soon { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink-900); border: 1px solid var(--line); font-size: .75rem; font-weight: 600; line-height: 1.5; vertical-align: middle; white-space: nowrap; }
+.on-dark .soon, .btn-primary .soon { background: rgb(255 255 255 / .16); color: #fff; border-color: rgb(255 255 255 / .4); }
+.only-wide { display: none !important; }
+@media (min-width: 768px) { .only-wide { display: inline-flex !important; } }
+.field-error { display: flex; gap: 6px; align-items: center; color: var(--error-700); font-size: .9375rem; font-weight: 500; }
+.input[aria-invalid="true"] { border-color: var(--error-700); }
+.auth-wrap { padding-block: 32px 56px; display: grid; justify-items: center; }
+.auth-card { width: 100%; max-width: 480px; padding: 24px; display: grid; gap: 16px; }
+.auth-card .stack { display: grid; gap: 16px; }
+.check { display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: .9375rem; }
+.check input { width: 22px; height: 22px; accent-color: var(--marine-700); }
+.narrow-page { padding-block: 32px 56px; max-width: 720px; }
+.catalog { padding-block: 24px 56px; display: grid; gap: 20px; }
+.catalog-head { display: grid; gap: 4px; }
+.catalog-filters { display: grid; gap: 12px; padding: 16px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+.catalog-filters .search-field svg { z-index: 1; }
+.catalog-filters .search-field .input { border-color: var(--line-strong); min-height: 48px; }
+.catalog-submit .btn { width: 100%; }
+@media (min-width: 768px) { .catalog-filters { grid-template-columns: 2fr 1.3fr 1fr auto; } .catalog-submit .btn { width: auto; } }
+.chips.applied { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips.applied .chip { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.svc-grid.is-loading { opacity: .6; }
+.pager { display: grid; gap: 8px; justify-items: center; margin-top: 8px; }
+.pager ul { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.pager .btn { min-width: 44px; }
+.pager .is-disabled { opacity: .45; pointer-events: none; }
+.side-logout { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 8px 12px; border: 0; background: transparent; color: var(--ink-900); font-weight: 500; border-radius: var(--r-sm); text-align: left; }
+.side-logout:hover { background: var(--surface-2); }

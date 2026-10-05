@@ -562,7 +562,7 @@ Présentation : **panneau latéral 480 px** (≥ 1024) ou **écran plein** « D�
 
 | Règle | Détail |
 |---|---|
-| **Tri de « À faire »** | **Échéances de la part du client** d'abord (la plus proche en tête) ; puis les actions **sans échéance** du client. **Une fin de candidatures n'est pas une échéance d'action** : elle s'affiche en information (« Pas d'échéance de votre part. Candidatures ouvertes jusqu'au… ») et **n'oblige pas** à choisir avant cette date |
+| **Tri de « À faire »** | **Échéances de la part du client** d'abord (la plus proche en tête) ; puis les actions **sans échéance** du client. **Une fin de candidatures n'est pas une échéance d'action** : elle s'affiche en information (« Pas d'échéance de votre part. Candidatures ouvertes jusqu'au… ») et **n'oblige pas** à choisir avant cette date **Aucune position n'est figée** (D27) : une action sans échéance ne précède jamais automatiquement une livraison à examiner ; le rang vient de l'urgence réelle calculée à l'affichage. |
 | **Types d'éléments** (SRC ARB §4, §10) | *Compléter le brief* (commande `awaiting_brief`) · *Payer avant …* (`awaiting_payment`, → C06) · *Examiner la livraison* (`delivered`, → onglet Livraisons de C05) · *Comparer les propositions* · *Répondre à la demande de report* · *Répondre à une question* (message non lu) · *Corriger votre mission* (motif de modération) · *Un paiement est en vérification* (information, **sans** action de relance) |
 | **Échéances** | **Date + heure d'Abidjan** et durée relative ; un retard est un **indicateur** « En retard de 2 j », pas un état |
 | **Séparation** | « Missions de recrutement » et « Commandes conclues » distinctes (ARB §4) |
