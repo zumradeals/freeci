@@ -11,3 +11,4 @@
   <p class="effect"><strong>Vous décrivez votre besoin.</strong> {{ explode(' ', $service->sellerName)[0] }} a {{ config('freeci.orders.response_hours') }} h pour accepter ou refuser. <strong>Vous ne payez rien à cette étape</strong> : le paiement n’est pas encore ouvert dans cette version.</p>
   @guest<p class="muted small">Il vous faudra vous connecter ou créer un compte : vous reviendrez ici ensuite.</p>@endguest
 @endif
+@if(! isset($preview) && ! $own)<p style="margin-top:8px"><a href="{{ route('messages.start.service', $service->slug) }}"><x-fc.icon name="message" :size="16" /> Poser une question à {{ explode(' ', $service->sellerName)[0] }}</a></p>@endif

@@ -56,6 +56,14 @@ return [
         'proposal' => ['price_xof' => [5000, 5000000], 'delivery_days' => [1, 180], 'revisions' => [0, 10], 'scope' => [50, 3000], 'validity_days' => [1, 30], 'deliverables_max' => 10],
     ],
 
+    // Notifications et messagerie. Les courriels ne partent que si le courrier est RÉELLEMENT configuré (MAIL_MAILER ≠ log/array).
+    'notifications' => [
+        'emails' => (bool) env('FREECI_NOTIFICATION_EMAILS', true),
+        // Sans processus de file dédié, le planificateur peut vider la file chaque minute (cron « schedule:run » requis).
+        'queue_via_scheduler' => (bool) env('FREECI_QUEUE_VIA_SCHEDULER', false),
+    ],
+    'messaging' => ['body_max' => 4000, 'per_10_minutes' => 30, 'page_size' => 20],
+
     'files' => [
         // « clamav » = contrôle antivirus ; « none » (défaut) = aucun contrôle disponible : le dépôt de fichiers est désactivé.
         'scanner' => env('FREECI_FILE_SCANNER', 'none'),

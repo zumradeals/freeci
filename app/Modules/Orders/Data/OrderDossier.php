@@ -69,5 +69,6 @@ final readonly class OrderDossier
         public string $origin = 'service',               // service | mission
         public ?int $proposalNumber = null,
         public ?string $missionId = null,
+        public int $messageUnread = 0,
     ) {}
 }

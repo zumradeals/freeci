@@ -868,3 +868,11 @@ html:has(body.has-sticky-buy) { scroll-padding-bottom: 104px; }
 .cmp-row dt { color: var(--ink-700); }
 .cmp-row dd { margin: 0; font-weight: 600; text-align: right; }
 @media (min-width: 768px) { .cmp-table { display: block; } .cmp-stack { display: none; } }
+
+/* Lot 7 — messagerie et notifications. */
+.count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 8px; border-radius: 999px; background: var(--marine-800, #17375e); color: #fff; font-size: .75rem; font-weight: 700; line-height: 1; }
+.msg { max-width: 640px; padding: 10px 14px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); }
+.msg-mine { margin-left: auto; background: var(--surface-2); }
+.msg-meta { margin: 0 0 4px; font-size: .875rem; color: var(--ink-700); }
+.msg p { margin: 0 0 6px; overflow-wrap: anywhere; }
+@media (max-width: 767px) { .msg { max-width: 100%; } }

@@ -6,6 +6,8 @@ use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
@@ -36,6 +38,27 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/commandes/{reference}/brief/fichiers', [OrderFileController::class, 'store'])->middleware('throttle:20,1')->name('orders.files.store');
     Route::post('/commandes/{reference}/brief/fichiers/{file}/retirer', [OrderFileController::class, 'destroy'])->name('orders.files.destroy');
     Route::get('/commandes/{reference}/fichiers/{file}', [OrderFileController::class, 'download'])->middleware('signed')->name('orders.files.download');
+
+    // Messagerie privée : participants seulement. Les routes fixes passent avant {conversation}.
+    Route::get('/espace/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/espace/messages/fichiers/{file}', [MessageController::class, 'download'])->middleware('signed')->name('messages.files.download');
+    Route::get('/espace/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/espace/messages/{conversation}', [MessageController::class, 'store'])->middleware('throttle:30,1')->name('messages.send');
+    Route::post('/espace/messages/{conversation}/bloquer', [MessageController::class, 'block'])->middleware('throttle:20,1')->name('messages.block');
+    Route::post('/espace/messages/{conversation}/debloquer', [MessageController::class, 'unblock'])->middleware('throttle:20,1')->name('messages.unblock');
+    Route::get('/services/{slug}/contacter', [MessageController::class, 'startService'])->name('messages.start.service');
+    Route::post('/services/{slug}/contacter', [MessageController::class, 'storeService'])->middleware('throttle:10,1')->name('messages.start.service.store');
+    Route::get('/espace/propositions/{proposal}/message', [MessageController::class, 'startProposal'])->name('messages.start.proposal');
+    Route::post('/espace/propositions/{proposal}/message', [MessageController::class, 'storeProposal'])->middleware('throttle:10,1')->name('messages.start.proposal.store');
+    Route::get('/commandes/{reference}/messages', [MessageController::class, 'order'])->name('messages.order');
+
+    // Notifications : centre, lecture, préférences. Bornées à l'utilisateur connecté.
+    Route::get('/espace/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/espace/notifications/preferences', [NotificationController::class, 'preferences'])->name('notifications.preferences');
+    Route::post('/espace/notifications/preferences', [NotificationController::class, 'savePreferences'])->middleware('throttle:20,1')->name('notifications.preferences.save');
+    Route::post('/espace/notifications/tout-lire', [NotificationController::class, 'readAll'])->middleware('throttle:20,1')->name('notifications.read-all');
+    Route::get('/notifications/{id}/ouvrir', [NotificationController::class, 'open'])->whereNumber('id')->name('notifications.open');
+    Route::post('/notifications/{id}/lire', [NotificationController::class, 'read'])->whereNumber('id')->middleware('throttle:60,1')->name('notifications.read');
 
     // Missions (client) : propriétaire seulement. Les routes fixes passent avant les routes à paramètre.
     Route::get('/espace/missions', [ClientMissionController::class, 'index'])->name('client.missions');

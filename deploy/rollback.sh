@@ -42,5 +42,6 @@ build_caches
 artisan freeci:preflight || warn "Contrôle de production en échec : voir ci-dessus."
 reload_php
 artisan up
+artisan queue:restart || true      # les processus de file rechargent le nouveau code (sans effet s'il n'y en a pas)
 trap - ERR
 log "Retour arrière terminé vers ${sha}"

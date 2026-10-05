@@ -53,6 +53,7 @@ class Preflight extends Command
         $this->check('Courrier réel (pas de pilote log/array)', ! in_array($mailer, ['log', 'array'], true), "MAIL_MAILER={$mailer} : le lien « mot de passe oublié » ne sera pas envoyé", false);
 
         $sandbox = (bool) config('freeci.payments.sandbox_enabled');
+        $this->check('File d\'attente asynchrone (courriels avec reprises)', config('queue.default') !== 'sync', 'QUEUE_CONNECTION=sync : aucun traitement différé ni reprise ; utilisez « database » avec un processus queue:work ou FREECI_QUEUE_VIA_SCHEDULER=true', false);
         $this->check('Extension GD avec WebP (images de service)', ImageProcessor::available(), 'php8.3-gd absent : le dépôt d\'images de service est désactivé (les services restent publiables sans image)', false);
         $this->check('Simulateur de paiement désactivé', ! $sandbox, 'FREECI_PAYMENT_SANDBOX=true : réservé aux comptes et commandes de démonstration autorisés (comptes de recette) ; à remettre à false après la recette', false);
         $this->check('Simulateur : secret de notification défini', ! $sandbox || filled(config('freeci.payments.sandbox_webhook_secret')), 'FREECI_SANDBOX_WEBHOOK_SECRET vide alors que le simulateur est activé : les notifications seront refusées');

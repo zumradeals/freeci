@@ -9,6 +9,7 @@ use App\Modules\Files\Enums\FileState;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\LedgerBatch;
 use App\Modules\Finance\SandboxGate;
+use App\Modules\Messaging\Queries\Inbox;
 use App\Modules\Orders\Actions\BriefStatus;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Actions\RecordReviewFollowUps;
@@ -152,6 +153,7 @@ final class GetOrderDossier
             delivery: ($this->deliverySection)($order, $viewer, $isFreelancer),
             origin: $order->origin, proposalNumber: $order->origin === 'mission' ? (int) DB::table('proposal_versions')->where('id', $order->proposal_version_id)->value('number') : null,
             missionId: $order->origin === 'mission' && ! $isFreelancer ? $order->mission_id : null,
+            messageUnread: app(Inbox::class)->unreadForOrder($viewer, $order->getKey()),
         );
     }
 

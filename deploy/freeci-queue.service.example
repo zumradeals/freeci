@@ -1,0 +1,21 @@
+# Processus de file d'attente FreeCI (courriels de notification avec reprises).
+# Installation (en root) :
+#   cp deploy/freeci-queue.service.example /etc/systemd/system/freeci-queue.service
+#   systemctl daemon-reload && systemctl enable --now freeci-queue
+# Adapter l'utilisateur, le chemin et la version de PHP. Aucun secret dans ce fichier : l'application lit son .env.
+[Unit]
+Description=FreeCI - file d'attente (queue:work)
+After=network.target postgresql.service
+
+[Service]
+User=freeci
+Group=freeci
+WorkingDirectory=/var/www/freeci
+ExecStart=/usr/bin/php8.3 artisan queue:work --sleep=3 --tries=5 --max-time=3600
+Restart=always
+RestartSec=5
+# Arrêt propre : la tâche en cours se termine
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

@@ -4,6 +4,7 @@ namespace App\Modules\Missions\Actions;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\SandboxGate;
+use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Missions\Exceptions\MissionConflict;
 use App\Modules\Missions\Exceptions\MissionForbidden;
 use App\Modules\Missions\Models\Mission;
@@ -115,6 +116,8 @@ final class SelectProposal
         } catch (UniqueConstraintViolationException) {
             throw new MissionConflict('Une commande existe déjà pour cette mission : un seul choix est possible.');
         }
+
+        app(Conversations::class)->linkProposalOrder($order, $p->getKey());       // contexte conservé ; les fils des autres candidats ne sont pas touchés
 
         $order->agreement()->create([
             'origin' => 'mission', 'service_id' => null, 'service_row_version' => null, 'mission_id' => $m->getKey(), 'mission_version_id' => $live->getKey(), 'proposal_version_id' => $pv->getKey(),

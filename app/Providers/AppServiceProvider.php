@@ -7,6 +7,10 @@ use App\Integrations\FileScan\FileScanner;
 use App\Integrations\FileScan\UnavailableScanner;
 use App\Integrations\Payments\PaymentProvider;
 use App\Integrations\Payments\SandboxPaymentProvider;
+use App\Modules\Catalog\Models\ServiceEvent;
+use App\Modules\Missions\Models\MissionEvent;
+use App\Modules\Notifications\Actions\NotificationRouter;
+use App\Modules\Orders\Models\OrderEvent;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Production : migrate:fresh, migrate:refresh, migrate:reset et db:wipe sont refusés (préservation des données).
         DB::prohibitDestructiveCommands($this->app->isProduction());
+
+        // Notifications : chaque ligne d'historique métier (ajout seul) notifie ses destinataires, une seule fois.
+        OrderEvent::created(fn ($e) => app(NotificationRouter::class)->order($e));
+        ServiceEvent::created(fn ($e) => app(NotificationRouter::class)->service($e));
+        MissionEvent::created(fn ($e) => app(NotificationRouter::class)->mission($e));
 
         // Domaine configurable par APP_URL : en HTTPS, tous les liens générés (dont celui de réinitialisation) le sont aussi.
         if (str_starts_with((string) config('app.url'), 'https://')) {

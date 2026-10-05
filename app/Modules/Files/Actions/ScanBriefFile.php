@@ -40,7 +40,8 @@ final class ScanBriefFile
         $result = $this->scanner->scan($path);
 
         return DB::transaction(function () use ($claimed, $result) {
-            $order = Order::query()->whereKey($claimed->order_id)->lockForUpdate()->firstOrFail();      // ordre : commande, puis fichier
+            // Pièce jointe de message : aucune commande à verrouiller, aucun événement de commande, aucun démarrage.
+            $order = $claimed->order_id === null ? null : Order::query()->whereKey($claimed->order_id)->lockForUpdate()->firstOrFail();      // ordre : commande, puis fichier
             $f = FileAsset::query()->whereKey($claimed->getKey())->lockForUpdate()->firstOrFail();
             if ($f->state !== FileState::Scanning) {
                 return 'skipped';
@@ -48,7 +49,7 @@ final class ScanBriefFile
 
             if ($result === ScanResult::Clean) {
                 $f->forceFill(['state' => FileState::Clean, 'scanned_at' => now(), 'last_scan_error' => null])->save();
-                if ($f->delivery_id === null) {                       // un brouillon de livraison reste privé au freelance : pas d'historique partagé
+                if ($order !== null && $f->delivery_id === null) {                       // un brouillon de livraison reste privé au freelance : pas d'historique partagé
                     $order->events()->create(['type' => 'brief_file_clean', 'actor_id' => null, 'note' => $f->original_name]);
                     ($this->start)($order);
                 }
@@ -58,7 +59,7 @@ final class ScanBriefFile
             if ($result === ScanResult::Infected) {
                 $f->forceFill(['state' => FileState::Rejected, 'rejection_reason' => 'malware_detected', 'scanned_at' => now()])->save();
                 Storage::disk('private_files')->delete($f->storage_key);
-                if ($f->delivery_id === null) {
+                if ($order !== null && $f->delivery_id === null) {
                     $order->events()->create(['type' => 'brief_file_rejected', 'actor_id' => null, 'note' => $f->original_name]);
                 }
 

@@ -1,0 +1,1 @@
+<div wire:poll.20s>@if($n > 0)<p class="note-line" role="status"><x-fc.icon name="info" :size="16" /><span><strong>{{ $n }} nouveau{{ $n > 1 ? 'x' : '' }} message{{ $n > 1 ? 's' : '' }}.</strong> <a href="{{ route('messages.show', $conversation) }}">Actualiser la conversation</a></span></p>@endif</div>

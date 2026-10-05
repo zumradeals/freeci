@@ -8,6 +8,7 @@ use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Exceptions\OwnService;
@@ -127,6 +128,8 @@ final class RequestService
         } catch (UniqueConstraintViolationException) {
             throw new PendingRequestExists;
         }
+
+        app(Conversations::class)->linkServiceOrder($order);       // le fil de discussion du service se poursuit dans la commande
 
         $order->agreement()->create([
             'service_id' => $locked->getKey(),

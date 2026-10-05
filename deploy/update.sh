@@ -34,6 +34,7 @@ build_caches
 artisan freeci:preflight
 reload_php
 artisan up
+artisan queue:restart || true      # les processus de file rechargent le nouveau code (sans effet s'il n'y en a pas)
 trap - ERR
 log "Mise à jour terminée : ${sha}"
 log "Vérifiez https://$(env_get APP_URL | sed -E 's#^https?://##') puis, si besoin, deploy/rollback.sh ${previous}"
