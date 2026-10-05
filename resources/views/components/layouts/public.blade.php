@@ -41,7 +41,7 @@
         <li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li>
         <li><a href="{{ route('coming-soon', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
     </div>
-    <p class="legal">Version de démonstration. Noms, prix et services fictifs ; textes juridiques et mentions de l’opérateur à rédiger.</p>
+    <p class="legal">@if(config('freeci.demo_banner'))Version de démonstration. Noms, prix et services fictifs ; @endif textes juridiques et mentions de l’opérateur à rédiger.</p>
   </div>
 </footer>
 @include('partials.drawer')

@@ -1,0 +1,5 @@
+# À installer avec « crontab -e » sous l'utilisateur de déploiement (adapter les chemins).
+# Sauvegarde quotidienne à 02:17 (conserve KEEP_BACKUPS jours, 14 par défaut)
+17 2 * * * APP_DIR=/var/www/freeci BACKUP_DIR=/var/backups/freeci /var/www/freeci/deploy/backup.sh quotidienne >> /var/log/freeci-backup.log 2>&1
+# Purge hebdomadaire des jetons de réinitialisation expirés
+31 3 * * 0 cd /var/www/freeci && php artisan auth:clear-resets >> /var/log/freeci-backup.log 2>&1

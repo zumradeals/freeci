@@ -1,0 +1,68 @@
+# Fonctions communes aux scripts de déploiement FreeCI. À « sourcer », pas à exécuter.
+# Variables (toutes facultatives, valeurs par défaut entre parenthèses) :
+#   APP_DIR (dossier parent de deploy/)  BACKUP_DIR (/var/backups/freeci)  KEEP_BACKUPS (14)
+#   PHP_BIN (php)  COMPOSER_BIN (composer)  NPM_BIN (npm)  SKIP_FRONTEND_BUILD (0)
+#   PHP_FPM_SERVICE (vide = ne pas recharger ; ex. php8.3-fpm)  GIT_REMOTE (origin)
+
+set -Eeuo pipefail
+
+APP_DIR="${APP_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/freeci}"
+KEEP_BACKUPS="${KEEP_BACKUPS:-14}"
+PHP_BIN="${PHP_BIN:-php}"
+COMPOSER_BIN="${COMPOSER_BIN:-composer}"
+NPM_BIN="${NPM_BIN:-npm}"
+SKIP_FRONTEND_BUILD="${SKIP_FRONTEND_BUILD:-0}"
+PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-}"
+GIT_REMOTE="${GIT_REMOTE:-origin}"
+
+log()  { printf '\033[1;34m[freeci]\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[freeci] ATTENTION :\033[0m %s\n' "$*" >&2; }
+die()  { printf '\033[1;31m[freeci] ERREUR :\033[0m %s\n' "$*" >&2; exit 1; }
+
+artisan() { (cd "$APP_DIR" && "$PHP_BIN" artisan "$@"); }
+
+# Lit une variable du .env sans l'exécuter (pas de « source » : le fichier peut contenir des caractères spéciaux).
+env_get() {
+  local key="$1" line
+  line="$(grep -E "^${key}=" "$APP_DIR/.env" | tail -n1 || true)"
+  line="${line#*=}"; line="${line%\"}"; line="${line#\"}"
+  printf '%s' "$line"
+}
+
+require_install() {
+  [ -f "$APP_DIR/artisan" ] || die "artisan introuvable dans $APP_DIR (APP_DIR incorrect ?)"
+  [ -f "$APP_DIR/.env" ] || die ".env absent dans $APP_DIR : première installation non terminée."
+  [ "$(env_get APP_ENV)" = "production" ] || die "APP_ENV n'est pas « production » dans .env."
+  [ "$(env_get DB_CONNECTION)" = "pgsql" ] || die "DB_CONNECTION doit valoir pgsql."
+  [ "$(id -u)" -ne 0 ] || die "Ne pas exécuter en root : utiliser l'utilisateur propriétaire de $APP_DIR."
+}
+
+reload_php() {
+  if [ -n "$PHP_FPM_SERVICE" ]; then
+    log "Rechargement de $PHP_FPM_SERVICE (vide le cache d'opcodes)"
+    sudo -n systemctl reload "$PHP_FPM_SERVICE" || warn "Rechargement impossible sans mot de passe : exécutez « sudo systemctl reload $PHP_FPM_SERVICE »."
+  else
+    warn "PHP_FPM_SERVICE non défini : rechargez PHP-FPM vous-même (ex. « sudo systemctl reload php8.3-fpm »)."
+  fi
+}
+
+build_caches() {
+  artisan config:cache
+  artisan route:cache
+  artisan view:cache
+  artisan event:cache
+}
+
+install_dependencies() {
+  log "Dépendances PHP (production, sans outils de test)"
+  (cd "$APP_DIR" && "$COMPOSER_BIN" install --no-dev --prefer-dist --no-interaction --optimize-autoloader)
+  if [ "$SKIP_FRONTEND_BUILD" = "1" ]; then
+    [ -f "$APP_DIR/public/build/manifest.json" ] || die "SKIP_FRONTEND_BUILD=1 mais public/build/manifest.json est absent : copiez les ressources compilées."
+    log "Ressources compilées fournies (SKIP_FRONTEND_BUILD=1)"
+  else
+    command -v "$NPM_BIN" >/dev/null || die "npm introuvable : installez Node 22 ou compilez ailleurs et utilisez SKIP_FRONTEND_BUILD=1."
+    log "Compilation des ressources"
+    (cd "$APP_DIR" && "$NPM_BIN" ci --ignore-scripts && "$NPM_BIN" run build)
+  fi
+}
