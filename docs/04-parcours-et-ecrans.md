@@ -945,4 +945,6 @@ Les files **sans habilitation** n'apparaissent pas. Les indicateurs distinguent 
 
 Chaque maquette sera livrée avec : contenu réel de démonstration **étiqueté**, états vide/chargement/erreur/succès/accès interdit, versions **360 et 1440 px** au minimum (390/768/1024 pour les écrans à comportement spécifique : comparaison, commande, paiement), et la liste des **contrats métier** appelés.
 
+**V01 réalisé (D20).** Un premier prototype statique, navigable et responsive couvre l'accueil, le détail de service, le tableau de bord client (+ état vide) et la commande livrée (+ variante « paiement en vérification ») : voir [`design/prototype-v01/README.md`](../design/prototype-v01/README.md). Les écrans d'inventaire restants, la comparaison de propositions, la publication de mission et l'administration restent à maquetter.
+
 **Revue visuelle obligatoire (D18).** Chaque lot est **présenté en maquettes haute fidélité puis examiné par le porteur** avant son développement. L'examen porte sur : identité FreeCI reconnaissable (`03` §2.4), proportions (`03` §2.5), lisibilité, clarté des trois questions (`04` §0.1), parcours sur téléphone **et** ordinateur. Aucune règle métier n'est portée par la maquette ni par l'interface : **le serveur reste l'autorité** (`02` P3).

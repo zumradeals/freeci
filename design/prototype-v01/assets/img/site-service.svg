@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Exemple : maquette d'un site vitrine">
+<rect width="640" height="480" fill="#E6EDF5"/>
+<rect x="60" y="50" width="520" height="380" rx="16" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="2"/>
+<path d="M60 90h520" stroke="#D9E0E9" stroke-width="2"/><circle cx="90" cy="70" r="6" fill="#B8C3D1"/><circle cx="112" cy="70" r="6" fill="#B8C3D1"/><circle cx="134" cy="70" r="6" fill="#B8C3D1"/>
+<rect x="76" y="106" width="488" height="150" rx="10" fill="#102D4B"/>
+<rect x="100" y="134" width="230" height="20" rx="10" fill="#FFFFFF"/><rect x="100" y="168" width="170" height="12" rx="6" fill="#8FA7C2"/>
+<rect x="100" y="204" width="110" height="30" rx="8" fill="#F26B1D"/>
+<rect x="76" y="276" width="152" height="130" rx="10" fill="#F1F5FA" stroke="#D9E0E9"/><rect x="244" y="276" width="152" height="130" rx="10" fill="#F1F5FA" stroke="#D9E0E9"/><rect x="412" y="276" width="152" height="130" rx="10" fill="#F1F5FA" stroke="#D9E0E9"/>
+<rect x="92" y="294" width="40" height="40" rx="8" fill="#183B60"/><rect x="260" y="294" width="40" height="40" rx="8" fill="#183B60"/><rect x="428" y="294" width="40" height="40" rx="8" fill="#183B60"/>
+<rect x="92" y="350" width="110" height="10" rx="5" fill="#B8C3D1"/><rect x="260" y="350" width="110" height="10" rx="5" fill="#B8C3D1"/><rect x="428" y="350" width="110" height="10" rx="5" fill="#B8C3D1"/>
+<rect x="92" y="370" width="80" height="10" rx="5" fill="#D9E0E9"/><rect x="260" y="370" width="80" height="10" rx="5" fill="#D9E0E9"/><rect x="428" y="370" width="80" height="10" rx="5" fill="#D9E0E9"/>
+</svg>

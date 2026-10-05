@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 36 640 427" role="img" aria-label="Calques structurés : murs, cotations, mobilier">
+<rect x="0" y="-100" width="640" height="680" fill="#F1F5FA"/>
+<g transform="translate(0 300)">
+<polygon points="120,80 440,80 520,20 200,20" fill="#183B60" fill-opacity=".14" stroke="#183B60" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M170 62h200l40-34M210 62v-34" stroke="#183B60" stroke-width="5" fill="none" stroke-linecap="round"/>
+<text x="540" y="62" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#183B60">MURS</text>
+</g>
+<g transform="translate(0 215)">
+<polygon points="120,80 440,80 520,20 200,20" fill="#F26B1D" fill-opacity=".14" stroke="#F26B1D" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M170 60h250M170 53v14M420 53v14" stroke="#F26B1D" stroke-width="2.5" fill="none"/><text x="290" y="48" font-family="Arial, sans-serif" font-size="16" fill="#F26B1D" text-anchor="middle" font-weight="700">12,50</text>
+<text x="540" y="62" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#F26B1D">COTATION</text>
+</g>
+<g transform="translate(0 130)">
+<polygon points="120,80 440,80 520,20 200,20" fill="#2C8C63" fill-opacity=".14" stroke="#2C8C63" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="230" y="38" width="60" height="26" rx="3" fill="none" stroke="#2C8C63" stroke-width="2.5"/><circle cx="360" cy="52" r="12" fill="none" stroke="#2C8C63" stroke-width="2.5"/>
+<text x="540" y="62" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#2C8C63">MOBILIER</text>
+</g>
+</svg>

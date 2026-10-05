@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Plan converti en fichier DWG, calques structurés">
+<rect width="640" height="480" fill="#0B2038"/>
+<g stroke="#12304F" stroke-width="1">
+<path d="M0 0V480"/>
+<path d="M40 0V480"/>
+<path d="M80 0V480"/>
+<path d="M120 0V480"/>
+<path d="M160 0V480"/>
+<path d="M200 0V480"/>
+<path d="M240 0V480"/>
+<path d="M280 0V480"/>
+<path d="M320 0V480"/>
+<path d="M360 0V480"/>
+<path d="M400 0V480"/>
+<path d="M440 0V480"/>
+<path d="M480 0V480"/>
+<path d="M520 0V480"/>
+<path d="M560 0V480"/>
+<path d="M600 0V480"/>
+<path d="M640 0V480"/>
+<path d="M0 0H640"/>
+<path d="M0 40H640"/>
+<path d="M0 80H640"/>
+<path d="M0 120H640"/>
+<path d="M0 160H640"/>
+<path d="M0 200H640"/>
+<path d="M0 240H640"/>
+<path d="M0 280H640"/>
+<path d="M0 320H640"/>
+<path d="M0 360H640"/>
+<path d="M0 400H640"/>
+<path d="M0 440H640"/>
+<path d="M0 480H640"/>
+</g>
+<g fill="none" stroke="#EAF2FB" stroke-width="3" stroke-linejoin="miter">
+<rect x="70" y="60" width="500" height="340"/>
+<rect x="80" y="70" width="480" height="320"/>
+<path d="M300 70V230" stroke-width="5"/>
+<path d="M300 230H560" stroke-width="5"/>
+<path d="M440 230V390" stroke-width="5"/>
+<path d="M80 230H190" stroke-width="5"/>
+<path d="M240 230H300" stroke-width="5"/>
+<path d="M190 230V390" stroke-width="5"/>
+</g>
+<g fill="none" stroke="#67C1FF" stroke-width="1.6">
+<path d="M190 330a40 40 0 0 1 40-40"/><path d="M190 330v-40"/>
+<path d="M300 150a40 40 0 0 1-40 40"/><path d="M300 150h-40"/>
+<path d="M480 230a36 36 0 0 0-36 36"/><path d="M444 230v36"/>
+</g>
+<g stroke="#67C1FF" stroke-width="2.2">
+<path d="M130 60h46M130 70h46"/>
+<path d="M230 60h46M230 70h46"/>
+<path d="M360 60h46M360 70h46"/>
+<path d="M470 60h46M470 70h46"/>
+<path d="M570 110v46M560 110v46"/>
+<path d="M570 300v46M560 300v46"/>
+</g>
+<g fill="none" stroke="#7DE0B0" stroke-width="1.5">
+<rect x="100" y="90" width="90" height="46" rx="3"/><rect x="100" y="150" width="60" height="60" rx="3"/>
+<rect x="330" y="90" width="120" height="56" rx="3"/><rect x="470" y="90" width="70" height="110" rx="3"/>
+<rect x="210" y="250" width="60" height="120" rx="3"/><circle cx="355" cy="320" r="30"/><circle cx="355" cy="320" r="14"/>
+<rect x="460" y="260" width="90" height="40" rx="3"/><rect x="460" y="320" width="90" height="50" rx="3"/>
+</g>
+<g stroke="#FFB48A" stroke-width="1.2" fill="none">
+<path d="M70 430H570M70 422v16M570 422v16M70 40h500M70 32v16M570 32v16"/>
+<path d="M40 60V400M32 60h16M32 400h16"/>
+</g>
+<g font-family="Arial, sans-serif" font-size="13" fill="#D3DFEC" text-anchor="middle">
+<text x="320" y="425" fill="#FFB48A">12,50 m</text><text x="320" y="30" fill="#FFB48A">12,50 m</text>
+<text x="190" y="215">CHAMBRE 1</text><text x="430" y="215">SÉJOUR</text><text x="130" y="330">CUISINE</text><text x="365" y="372">ENTRÉE</text>
+</g>
+<text x="30" y="235" transform="rotate(-90 30 235)" font-family="Arial, sans-serif" font-size="13" fill="#FFB48A" text-anchor="middle">8,50 m</text>
+<g font-family="Arial, sans-serif" font-size="12" fill="#D3DFEC">
+<rect x="440" y="440" width="12" height="12" fill="#EAF2FB"/><text x="458" y="451">MURS</text>
+<rect x="505" y="440" width="12" height="12" fill="#67C1FF"/><text x="523" y="451">MENUISERIES</text>
+<rect x="600" y="440" width="12" height="12" fill="#FFB48A"/>
+</g>
+</svg>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convertir vos plans PDF en fichiers AutoCAD (DWG) — FreeCI (prototype V01)</title>
+<meta name="description" content="Prototype statique de conception FreeCI — données simulées.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/freeci.css">
+</head>
+<body class="has-sticky-buy">
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol><symbol id="i-chev-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol><symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6h.01" stroke-width="2.2"/></symbol><symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20.5H2z"/><path d="M12 10v4.5M12 17.6h.01" stroke-width="2.2"/></symbol><symbol id="i-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.3 3h7.4L21 8.3v7.4L15.7 21H8.3L3 15.7V8.3z"/><path d="M12 8v5M12 16.6h.01" stroke-width="2.2"/></symbol><symbol id="i-minus-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="m14.5 6.5 3 3"/></symbol><symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3.5 7.5v9L12 21l8.5-4.5v-9z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol><symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></symbol><symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9-9.6C2 6.9 4.3 4.5 7 4.5c1.9 0 3.6 1 5 3 1.4-2 3.1-3 5-3 2.7 0 5 2.4 4 5.9-1.5 5-9 9.6-9 9.6z"/></symbol><symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></symbol><symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol><symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-6 8-6s7 1.5 8 6"/></symbol><symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol><symbol id="i-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></symbol><symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5h6v3H9zM9 12h6M9 16h4"/></symbol><symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.5 3 7.7 7 9.5 4-1.8 7-5 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5M20 20v-4h-4"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol><symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol><symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.5 3.8 5.5 3.8 9s-1.2 6.5-3.8 9c-2.6-2.5-3.8-5.5-3.8-9S9.4 5.5 12 3z"/></symbol><symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20.5V9.5l6-4v15M10 20.5V3.5l10 5v12M2.5 20.5h19M7 11.5h.01M7 15.5h.01M14 11.5h3M14 15.5h3"/></symbol><symbol id="i-cog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3.4M12 17.8v3.4M2.8 12h3.4M17.8 12h3.4M5.5 5.5l2.4 2.4M16.1 16.1l2.4 2.4M18.5 5.5l-2.4 2.4M7.9 16.1l-2.4 2.4"/></symbol><symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4.5l-3 15"/></symbol><symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4 20 1.2-4.6L16 4.6a2.2 2.2 0 0 1 3.1 3.1L8.4 18.6z"/><path d="m14.2 6.4 3.4 3.4"/></symbol><symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h3l8 4V6L6 10z"/><path d="M18 9.5a3.5 3.5 0 0 1 0 5M8 14l1.5 5"/></symbol><symbol id="i-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h9M8.5 3v2M6 5c.5 4 3 7 6.5 8M12 5c-.5 4-3.5 7.5-8 9M13 21l4-10 4 10M14.5 17.5h5"/></symbol><symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c1.5 1.5 3.5 2.5 6 2.5s4.5-1 6-2.5v-4.5M22 9v6"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol><symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.2"/></symbol><symbol id="logo-mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#183B60"/><path d="M9 8h13v4H13.5v2.6H20v4h-6.5V24H9z" fill="#fff"/><circle cx="22.6" cy="22.2" r="2.7" fill="#F26B1D"/></symbol></svg>
+<div class="demo-bar" role="region" aria-label="Prototype de conception">
+  <div class="container">
+    <p class="txt"><strong>Prototype V01</strong> · <span class="short">données simulées</span><span class="long">données et interactions <strong>simulées</strong> : aucun compte, paiement, fichier ni règle métier réels.</span></p>
+    <details class="demo-pages"><summary>Écrans <svg class="chev" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-chev-down"/></svg><span class="sr-only"> du prototype</span></summary><nav aria-label="Écrans du prototype"><div class="grp">Écrans V01</div><a href="index.html">Accueil</a><a href="service.html" aria-current="page">Détail d'un service</a><a href="tableau-de-bord.html">Tableau de bord client</a><a href="commande.html">Commande livrée (vue client)</a><div class="grp">Variantes</div><a href="tableau-de-bord-vide.html">Tableau de bord — état vide</a><a href="commande-paiement-en-verification.html">Commande — paiement en vérification</a></nav></details>
+  </div>
+</div>
+<header class="site-header">
+  <div class="container bar">
+    <a class="logo" href="index.html" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
+    <nav class="main-nav" aria-label="Navigation principale"><a href="index.html#prestations" aria-current="page">Services</a><a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01.">Missions</a><a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01.">Freelances</a><a href="index.html#comment">Comment ça marche</a></nav>
+    <a class="btn btn-secondary header-cta" href="#" data-sim="Simulation : la publication d’une mission n’est pas incluse dans le prototype V01.">Publier une mission</a>
+    <a class="icon-btn" href="#" data-sim="Simulation : la messagerie n’est pas incluse dans le prototype V01." aria-label="Messages, 2 non lus"><svg width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-message"/></svg><span class="count" aria-hidden="true">2</span></a>
+    <a class="account-chip" href="tableau-de-bord.html"><span class="avatar" aria-hidden="true">FB</span><span>Fanta Bamba<small>Espace client · démo</small></span></a>
+    <button class="menu-btn" type="button" data-open="drawer" aria-haspopup="dialog"><svg width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg><span>Menu</span></button>
+  </div>
+</header>
+<main id="contenu" class="svc-page">
+<div class="container">
+  <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="index.html#prestations"><svg class="flip" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg>Retour aux services</a><a class="hide-m" href="index.html#prestations">Services</a><span class="sep hide-m" aria-hidden="true">›</span><a class="hide-m" href="#" data-sim="Simulation : le catalogue n’est pas inclus dans le prototype V01.">BTP et Architecture</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Plans AutoCAD</span></nav>
+  <div class="svc-layout">
+    <div>
+      <div class="row" style="margin:4px 0 10px"><span class="tag-demo">Exemple de démonstration</span></div>
+      <h1 class="t-h1">Convertir vos plans PDF en fichiers AutoCAD (DWG)</h1>
+      <div class="seller-line"><span class="who"><span class="avatar" aria-hidden="true">KS</span><span>Kader Soro<small class="muted" style="display:block;font-weight:450">Dessinateur DAO · Abidjan</small></span></span><span class="badge tone-success"><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Adresse e-mail vérifiée</span></div>
+      <figure class="gallery" data-gallery>
+        <div class="stage"><img src="assets/img/plan-dwg-wide.svg" alt="Plan d’étage converti en fichier DWG avec calques structurés" width="640" height="427"></div>
+        <div class="thumbs" role="group" aria-label="Choisir une image">
+          <button class="th" type="button" aria-pressed="true" data-src="assets/img/plan-dwg-wide.svg" data-alt="Plan d’étage converti en fichier DWG avec calques structurés" data-cap="Après : fichier DWG aux calques structurés."><img src="assets/img/plan-dwg-wide.svg" alt="Aperçu : plan converti en DWG"></button>
+          <button class="th" type="button" aria-pressed="false" data-src="assets/img/plan-pdf-wide.svg" data-alt="Plan d’étage reçu au format PDF" data-cap="Avant : plan reçu au format PDF."><img src="assets/img/plan-pdf-wide.svg" alt="Aperçu : plan reçu en PDF"></button>
+          <button class="th" type="button" aria-pressed="false" data-src="assets/img/plan-calques-wide.svg" data-alt="Calques structurés : murs, cotations, mobilier" data-cap="Calques structurés : murs, cotation, mobilier."><img src="assets/img/plan-calques-wide.svg" alt="Aperçu : calques structurés"></button>
+        </div>
+        <figcaption>Après : fichier DWG aux calques structurés.</figcaption>
+      </figure>
+
+      <div class="prose-sections">
+        <section aria-labelledby="s1"><h2 class="t-h2" id="s1">Ce que vous recevez</h2>
+          <ul class="checklist ok">
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span>Un fichier DWG par plan, remis à l’échelle indiquée.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span>Des calques structurés : murs, cotations, textes, mobilier.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span>Un PDF de contrôle pour comparer avec votre plan d’origine.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span>Format AutoCAD 2018, ou une version antérieure sur demande.</span></li></ul></section>
+        <section aria-labelledby="s2"><h2 class="t-h2" id="s2">Périmètre inclus</h2>
+          <p>Jusqu’à <strong>12 plans</strong> (A4 à A1) sur <strong>3 niveaux</strong> au maximum, <strong>2 corrections</strong> comprises. Au-delà, une proposition sur mesure est établie <strong>avant tout paiement</strong>.</p></section>
+        <section aria-labelledby="s3"><h2 class="t-h2" id="s3">Ce qui n’est pas inclus</h2>
+          <ul class="checklist no">
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-minus-circle"/></svg><span>Le dimensionnement ou la vérification technique des ouvrages.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-minus-circle"/></svg><span>La création de plans à partir de croquis à main levée.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-minus-circle"/></svg><span>Les demandes au-delà de 12 plans ou 3 niveaux.</span></li></ul></section>
+        <section aria-labelledby="s4"><h2 class="t-h2" id="s4">Ce que je dois recevoir de vous</h2>
+          <ul class="checklist need">
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clipboard"/></svg><span>Vos plans au format PDF (vectoriel de préférence, sinon scan net à 300 dpi).</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clipboard"/></svg><span>Le nombre de plans et de niveaux concernés.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clipboard"/></svg><span>La version d’AutoCAD de destination.</span></li>
+            <li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clipboard"/></svg><span>Vos conventions de calques, si vous en avez.</span></li></ul></section>
+        <section aria-labelledby="s5"><h2 class="t-h2" id="s5">À propos du vendeur</h2>
+          <div class="card seller-card"><div class="row" style="gap:16px;align-items:center"><span class="avatar avatar-xl" aria-hidden="true">KS</span>
+            <div><p class="t-h3">Kader Soro</p><p class="muted">Dessinateur DAO · Abidjan</p><p style="margin-top:4px"><span class="tag-demo">Profil fictif</span></p></div></div>
+            <ul class="facts"><li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg>Abidjan, à distance</li><li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-globe"/></svg>Français</li><li><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>Disponible sous 48 h</li></ul>
+            <a class="btn btn-secondary" href="#" data-sim="Simulation : le profil complet n’est pas inclus dans le prototype V01.">Voir le profil complet</a></div></section>
+        <section aria-labelledby="s6"><h2 class="t-h2" id="s6">Avis</h2>
+          <div class="card empty"><p style="font-weight:600">Aucun avis pour l’instant.</p><p class="muted">Les avis sont publiés après une commande validée : ils ne sont jamais ajoutés autrement.</p></div></section>
+      </div>
+    </div>
+
+    <aside aria-label="Offre">
+      <div class="offer">
+        <div><p class="muted small">Prix fixe pour le périmètre décrit</p><span class="price price-lg">35 000<small> FCFA</small></span></div>
+        <dl>
+          <div><dt><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>Délai</dt><dd>5 jours</dd></div>
+          <div><dt><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-pencil"/></svg>Corrections incluses</dt><dd>2</dd></div>
+          <div><dt><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-package"/></svg>Livrables</dt><dd>DWG + PDF de contrôle</dd></div>
+        </dl>
+        <button class="btn btn-primary btn-lg btn-block" type="button" data-open="request">Demander cette prestation</button>
+        <p class="effect"><strong>Vous décrivez votre besoin.</strong> Le freelance a 48 h pour accepter. <strong>Vous ne payez qu’après son acceptation.</strong></p>
+        <div class="offer-links"><button class="btn btn-link" type="button" data-sim="Simulation : la messagerie n’est pas incluse dans le prototype V01."><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Contacter</button>
+          <button class="btn btn-link" type="button" data-sim="Simulation : les favoris ne sont pas inclus dans le prototype V01."><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg>Favori</button>
+          <button class="btn btn-link" type="button" data-sim="Simulation : le signalement n’est pas inclus dans le prototype V01."><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-flag"/></svg>Signaler</button></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><span class="price price-md">35 000<small> FCFA</small></span><small>5 jours · 2 corrections</small></div><button class="btn btn-primary btn-lg" type="button" data-open="request">Demander</button></div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="cols">
+      <div class="stack-sm">
+        <a class="logo" href="index.html" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
+        <p class="muted" style="max-width:32em">Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.</p>
+      </div>
+      <div><h2>FreeCI</h2><ul>
+        <li><a href="index.html#comment">Comment ça marche</a></li>
+        <li><a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01.">Centre d’aide</a></li></ul></div>
+      <div><h2>Informations</h2><ul>
+        <li><a href="#" data-sim="Simulation : les textes juridiques restent à rédiger avec le conseil compétent.">Conditions d’utilisation</a></li>
+        <li><a href="#" data-sim="Simulation : les textes juridiques restent à rédiger avec le conseil compétent.">Confidentialité</a></li>
+        <li><a href="#" data-sim="Simulation : les mentions de l’opérateur restent à fournir.">Mentions légales</a></li></ul></div>
+    </div>
+    <p class="legal">Prototype de conception V01 — non destiné à la mise en ligne. Les noms, prix, dates, références et fichiers sont fictifs ; les textes juridiques et les mentions de l’opérateur restent à rédiger.</p>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-flag"/></svg><p class="msg"></p></div>
+<dialog class="drawer" id="drawer" aria-label="Menu">
+  <div class="drawer-inner">
+    <div class="drawer-head"><span class="logo" style="min-height:0"><svg width="28" height="28" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm" style="font-size:1.125rem;font-weight:750;letter-spacing:-.03em">Free<b style="color:var(--accent-700)">CI</b></span></span>
+      <button class="icon-btn" type="button" data-close aria-label="Fermer le menu" style="border:0"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
+    <div class="drawer-body">
+      <a class="btn btn-primary btn-lg btn-block" href="#" data-sim="Simulation : la publication d’une mission n’est pas incluse dans le prototype V01.">Publier une mission</a>
+      <nav aria-label="Navigation principale"><div class="nav-list">
+        <a href="index.html#prestations" aria-current="page"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>Services</a>
+        <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg>Missions</a>
+        <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Freelances</a>
+        <a href="index.html#comment"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>Comment ça marche</a>
+      </div></nav>
+      <div><p class="nav-title">Mon espace</p>
+        <div class="segmented" role="group" aria-label="Espace actif" style="margin-bottom:12px">
+          <button type="button" aria-current="true">Client</button>
+          <button type="button" data-sim="Simulation : l’espace freelance n’est pas inclus dans le prototype V01.">Freelance</button>
+        </div>
+        <nav aria-label="Espace client"><div class="nav-list">
+          <a href="tableau-de-bord.html"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg>Vue d’ensemble</a>
+          <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg>Mes missions</a>
+          <a href="commande.html"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-clipboard"/></svg>Commandes</a>
+          <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-card"/></svg>Paiements</a>
+          <a href="#" data-sim="Simulation : la messagerie n’est pas incluse dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Messages</a>
+          <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg>Favoris</a>
+          <a href="#" data-sim="Simulation : cet écran n’est pas inclus dans le prototype V01."><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Compte</a>
+        </div></nav>
+      </div>
+    </div>
+  </div>
+</dialog>
+<dialog class="modal" id="request" aria-labelledby="req-title">
+  <form class="modal-inner" method="dialog" onsubmit="return false">
+    <div class="modal-head"><h2 class="t-h2" id="req-title">Décrire votre besoin</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Fermer" style="border:0"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
+    <div class="dlg-form" style="display:contents">
+    <div class="modal-body">
+      <div class="sim-banner"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-flag"/></svg><p><strong>Simulation</strong> — cette demande ne sera pas réellement envoyée.</p></div>
+      <div class="card" style="padding:16px;background:var(--marine-50);border-color:var(--marine-100)">
+        <p class="small muted">Service demandé · version 3 du 28 sept. 2026</p>
+        <p style="font-weight:650;margin-top:2px">Convertir vos plans PDF en fichiers AutoCAD (DWG)</p>
+        <p class="row" style="margin-top:8px;gap:4px 16px"><span class="price">35 000<small> FCFA</small></span> <span>5 jours</span> <span>2 corrections incluses</span></p>
+      </div>
+      <div class="field"><label for="f-plans">Nombre de plans <span class="req">(obligatoire)</span></label><input class="input" id="f-plans" inputmode="numeric" value="12" aria-describedby="h-plans"><p class="hint" id="h-plans">Jusqu’à 12 plans (A4 à A1) sont inclus dans ce prix.</p></div>
+      <div class="field"><label for="f-niv">Niveaux concernés <span class="req">(obligatoire)</span></label><input class="input" id="f-niv" inputmode="numeric" value="3"></div>
+      <div class="field"><label for="f-q">Qualité du PDF <span class="req">(obligatoire)</span></label><select class="select" id="f-q"><option>PDF vectoriel (texte sélectionnable)</option><option>Scan net à 300 dpi</option><option>Scan de moindre qualité</option></select></div>
+      <div class="field"><label for="f-v">Version AutoCAD de destination <span class="req">(obligatoire)</span></label><select class="select" id="f-v"><option>AutoCAD 2018</option><option>AutoCAD 2013</option><option>AutoCAD 2010</option></select></div>
+      <div class="field"><label for="f-p">Précisions <span class="req">(facultatif)</span></label><textarea class="textarea" id="f-p">Plans d’une villa R+1 à Cocody. Merci de conserver nos conventions de calques (jointes).</textarea></div>
+      <div class="field"><span class="lbl" id="f-files">Vos plans <span class="req">(obligatoire)</span></span>
+        <div class="dropzone" aria-describedby="f-files"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-upload"/></svg><p style="font-weight:600">Ajouter des fichiers</p><p class="muted small">PDF, JPEG, PNG — 100 Mo maximum par fichier</p></div>
+        <div class="stack-sm" style="margin-top:8px">
+          <div class="file-line"><svg class="fi" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="fn">plans-rdc-r1.pdf <span class="meta-f">· 2,1 Mo</span></span><span class="badge tone-success"><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Vérifié</span></div>
+          <div class="file-line"><svg class="fi" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="fn">plans-coupes.pdf <span class="meta-f">· 3,4 Mo</span></span><span class="badge tone-success"><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg>Vérifié</span></div>
+          <div class="file-line"><svg class="fi" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="fn">conventions-calques.pdf <span class="meta-f">· 0,4 Mo</span></span><span class="badge tone-warning"><svg width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-warn"/></svg>En vérification</span></div></div></div>
+      <div><p class="t-h3" style="margin-bottom:8px">Ce qui se passera ensuite</p>
+        <ol class="stack-sm" style="padding-left:20px;list-style:decimal"><li>Kader Soro reçoit votre demande.</li><li>Il a <strong>48 h</strong> pour accepter ou refuser.</li><li>Après son acceptation, vous payez sous <strong>24 h</strong>.</li><li>Le travail commence après paiement confirmé et brief complet.</li></ol></div>
+      <label style="display:flex;gap:12px;align-items:flex-start;min-height:44px"><input type="checkbox" checked style="width:24px;height:24px;margin-top:2px;flex:none"><span>J’ai lu les conditions de commande (v1.2).</span></label>
+    </div>
+    <div class="modal-foot"><button class="btn btn-secondary" type="button" data-close>Annuler</button><button class="btn btn-primary btn-lg" type="button" data-confirm>Envoyer la demande</button></div>
+    </div>
+    <div class="dlg-result" hidden style="display:contents">
+      <div class="modal-body">
+        <div class="stack"><h3 class="t-h2" tabindex="-1">Simulation : aucune demande n’a été envoyée</h3>
+        <p>Dans l’application réelle, Kader Soro recevrait la demande et aurait 48 h pour répondre. La commande apparaîtrait alors avec l’état « À accepter ».</p>
+        <p class="small muted">Rien n’a été enregistré ni transmis.</p></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-secondary" type="button" data-close>Fermer</button><a class="btn btn-primary" href="commande.html">Voir un exemple de commande</a></div>
+    </div>
+  </form>
+</dialog>
+<script src="assets/js/prototype.js"></script>
+</body>
+</html>

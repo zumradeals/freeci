@@ -1,0 +1,701 @@
+{
+ "generated": "2026-10-05T17:44:02.795Z",
+ "tool": "playwright chromium",
+ "pages": {
+  "index@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 46,
+    "incomplete": [
+     {
+      "id": "color-contrast",
+      "nodes": 11
+     }
+    ]
+   }
+  },
+  "service@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   },
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 44,
+    "incomplete": []
+   }
+  },
+  "tableau-de-bord@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 43,
+    "incomplete": []
+   }
+  },
+  "tableau-de-bord-vide@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 40,
+    "incomplete": []
+   }
+  },
+  "commande@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 45,
+    "incomplete": []
+   }
+  },
+  "commande-paiement-en-verification@360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 45,
+    "incomplete": []
+   }
+  },
+  "index@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "service@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   },
+   "fontsLoaded": true
+  },
+  "tableau-de-bord@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "tableau-de-bord-vide@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande-paiement-en-verification@390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "index@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "service@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   },
+   "fontsLoaded": true
+  },
+  "tableau-de-bord@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "tableau-de-bord-vide@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande-paiement-en-verification@768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "index@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "service@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "tableau-de-bord@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "tableau-de-bord-vide@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "commande-paiement-en-verification@1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true
+  },
+  "index@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 46,
+    "incomplete": [
+     {
+      "id": "color-contrast",
+      "nodes": 11
+     }
+    ]
+   }
+  },
+  "service@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 44,
+    "incomplete": []
+   }
+  },
+  "tableau-de-bord@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 45,
+    "incomplete": []
+   }
+  },
+  "tableau-de-bord-vide@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 40,
+    "incomplete": []
+   }
+  },
+  "commande@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 45,
+    "incomplete": [
+     {
+      "id": "color-contrast",
+      "nodes": 4
+     }
+    ]
+   }
+  },
+  "commande-paiement-en-verification@1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "fontsLoaded": true,
+   "axe": {
+    "violations": [],
+    "passes": 45,
+    "incomplete": [
+     {
+      "id": "color-contrast",
+      "nodes": 7
+     }
+    ]
+   }
+  },
+  "index@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "service@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 134,
+    "bodyPaddingBottom": 84
+   }
+  },
+  "tableau-de-bord@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "tableau-de-bord-vide@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande-paiement-en-verification@zoom200-360": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "index@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "service@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 116,
+    "bodyPaddingBottom": 84
+   }
+  },
+  "tableau-de-bord@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "tableau-de-bord-vide@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande-paiement-en-verification@zoom200-390": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "index@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "service@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   }
+  },
+  "tableau-de-bord@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "tableau-de-bord-vide@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande-paiement-en-verification@zoom200-768": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "index@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "service@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   }
+  },
+  "tableau-de-bord@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "tableau-de-bord-vide@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande-paiement-en-verification@zoom200-1024": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "index@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "service@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": [],
+   "stickyBar": {
+    "height": 69,
+    "bodyPaddingBottom": 84
+   }
+  },
+  "tableau-de-bord@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "tableau-de-bord-vide@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  },
+  "commande-paiement-en-verification@zoom200-1440": {
+   "docScrollOverflow": 0,
+   "offViewport": [],
+   "clipped": [],
+   "textOverlaps": [],
+   "smallTargets": []
+  }
+ },
+ "interactions": {
+  "focus:index@360": {
+   "stops": 33,
+   "problems": []
+  },
+  "focus:service@360": {
+   "stops": 21,
+   "problems": []
+  },
+  "focus:tableau-de-bord@360": {
+   "stops": 29,
+   "problems": []
+  },
+  "focus:tableau-de-bord-vide@360": {
+   "stops": 17,
+   "problems": []
+  },
+  "focus:commande@360": {
+   "stops": 27,
+   "problems": []
+  },
+  "focus:commande-paiement-en-verification@360": {
+   "stops": 21,
+   "problems": []
+  },
+  "focus:index@1440": {
+   "stops": 38,
+   "problems": []
+  },
+  "focus:service@1440": {
+   "stops": 26,
+   "problems": []
+  },
+  "focus:tableau-de-bord@1440": {
+   "stops": 42,
+   "problems": []
+  },
+  "focus:tableau-de-bord-vide@1440": {
+   "stops": 30,
+   "problems": []
+  },
+  "focus:commande@1440": {
+   "stops": 39,
+   "problems": []
+  },
+  "focus:commande-paiement-en-verification@1440": {
+   "stops": 33,
+   "problems": []
+  },
+  "tiroir@360": {
+   "ouvertAuClavier": true,
+   "focusDansLeTiroir": true,
+   "echapFerme": true,
+   "focusRetourAuBouton": true
+  },
+  "ecrans-du-prototype@360": {
+   "ouvertAuClavier": true,
+   "panneauDansLeViewport": true
+  },
+  "onglets@1440": {
+   "fleche_droite": [
+    "tab-accord",
+    true,
+    true
+   ],
+   "fin": "tab-historique",
+   "debut": "tab-livraisons"
+  },
+  "onglets-lien-profond": "tab-finances",
+  "onglets-hashchange": "tab-historique",
+  "dialogue-valider@1440": {
+   "ouverture": {
+    "ouvert": true,
+    "focusDedans": true
+   },
+   "fermeture": {
+    "ferme": true,
+    "retour": "dlg-validate"
+   },
+   "resultat": {
+    "resultatVisible": true,
+    "texte": "Simulation : la commande n’a pas été modifiée",
+    "focusSurTitre": true
+   }
+  },
+  "etat-inchange-apres-validation": "Livrée",
+  "dialogue-demande@360": {
+   "ouvert": true,
+   "largeur": 360,
+   "hauteur": 900,
+   "viewportH": 900,
+   "pieDansViewport": true,
+   "scrollCorps": "hidden"
+  },
+  "galerie": {
+   "src": "assets/img/plan-pdf-wide.svg",
+   "legende": "Avant : plan reçu au format PDF.",
+   "pressed": "true"
+  },
+  "simulation-bouton-payer": {
+   "memeUrl": true,
+   "toastVisible": true,
+   "toast": "Simulation : le paiement de DEMO-26021 n’est pas inclus dans le prototype V01 (aucun paiem"
+  },
+  "reduced-motion": "1e-05s"
+ },
+ "links": {
+  "index": {
+   "missingFiles": [],
+   "badAnchors": []
+  },
+  "service": {
+   "missingFiles": [],
+   "badAnchors": []
+  },
+  "tableau-de-bord": {
+   "missingFiles": [],
+   "badAnchors": []
+  },
+  "tableau-de-bord-vide": {
+   "missingFiles": [],
+   "badAnchors": []
+  },
+  "commande": {
+   "missingFiles": [],
+   "badAnchors": []
+  },
+  "commande-paiement-en-verification": {
+   "missingFiles": [],
+   "badAnchors": []
+  }
+ },
+ "console": []
+}

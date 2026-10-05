@@ -11,3 +11,8 @@ Projet en phase de compréhension et de conception.
 - Aucun choix technologique ni paramètre commercial ne devient validé par sa seule présence dans un document de travail.
 
 Les documents du client doivent être examinés avant de figer la conception. Leur publication dans ce dépôt public doit être décidée séparément.
+
+## Conception
+
+- Dossier documentaire : [`docs/`](docs/).
+- Prototype visuel statique V01 (données simulées, sans backend) : [`design/prototype-v01/`](design/prototype-v01/README.md) — ouvrir `index.html` dans un navigateur.
