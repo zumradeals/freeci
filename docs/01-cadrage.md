@@ -1,7 +1,7 @@
 # 01 — Cadrage de FreeCI
 
-> **Statut : projet de conception, non validé.** Rien dans ce dossier n'est adopté tant que le porteur ne l'a pas déclaré lu et validé.
-> **Diffusion : LOCAL.** Ce dossier reprend et cite des documents client. Le dépôt `zumradeals/freeci` est **public** (vérifié le 2026-10-05) : aucun fichier de `docs/` ne doit être poussé tant que sa publication n'est pas autorisée par le porteur. Voir `05-decisions-et-recette.md` §6.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> Ce dossier cite les documents client comme **bases de réflexion** ; les pièces originales ne sont pas versionnées. Dépôt `zumradeals/freeci` public ; visibilité inchangée.
 
 ## 0. Conventions de lecture
 
@@ -22,15 +22,15 @@ Abréviations de sources : **CDC** = Cahier des charges v1.0 (2 oct. 2026) ; **A
 |---|---|---|---|
 | CDC, ARB, ARC (.docx) | INS | Oui, lus intégralement | Lus ; texte extrait sans perte apparente (tableaux inclus). Mise en page non examinée. |
 | 4 captures (accueil, client, freelance, admin) | INS | Oui | Références visuelles **partielles** : une seule largeur (≈ 950–1060 px), aucun état mobile, aucun état d'erreur, un seul écran par espace. |
-| « Maquettes principales validées le 3 octobre » | ARC §16 | **Non** : seules les 4 captures sont fournies | **Non vérifié.** Ni la liste des maquettes, ni l'étendue de la validation, ni qui a validé ne sont connues. |
-| « SQL de 55 tables » | ARC « Livrables », §15 | **Non** : aucun fichier SQL joint, aucun SQL dans le dépôt | **Non vérifié.** Les 55 noms de tables sont énumérés en prose dans ARC §3–§6 (17 + 10 + 12 + 16 = 55) : le décompte est cohérent, le contenu du SQL (clés, index, déclencheurs, gardes) ne l'est pas contrôlable. |
+| « Maquettes principales validées le 3 octobre » | ARC §16 | **N'existent pas** (confirmé par le porteur, D13) | Mention de ARC **sans objet** : on part de zéro. Les 4 captures sont des références visuelles partielles. |
+| « SQL de 55 tables » | ARC « Livrables », §15 | **N'existe pas** (confirmé par le porteur, D13) | Mention de ARC **sans objet**. Les noms de tables énumérés en prose dans ARC §3–§6 sont une **base de réflexion** ; le nombre 55 n'est **pas un objectif** (D14). |
 | « 46 gabarits » | ARB intro | Oui, dans ARB §2–§6 | **Vérifié par décompte** : P01–P10 (10), A01–A05 (5), C01–C08 (8), CL01–CL05 (5), FR01–FR08 (8), AD01–AD10 (10) = **46**. |
 | `zumradeals/dgafrique-core` (référence) | INS | Oui, lecture seule, clone superficiel de la branche par défaut (791 fichiers) | Examiné : `composer.json`, `package.json`, `AGENTS.md`, ADR-001, structure `app/`, un service de registre, un client de paiement, un contrôleur, les composants Blade, le test de fondation. Analyse en `02` §2. |
 | Dépôt `zumradeals/freeci` | INS | Oui | `README.md` seul (commit `727c834`). Branche par défaut `main` = `origin/main` = `727c834`. Aucun travail existant à préserver au-delà de ce README. Dépôt **public**. |
 | Documentation fournisseur de paiement | CDC §9 | **Non consultée** | Hors périmètre ; le prestataire n'est pas qualifié. |
 | Versions des outils | INS | Partiellement | Versions de paquets vérifiées auprès de Packagist et npm le 2026-10-05 (voir `02` §8). Cycles de support PHP/PostgreSQL/Laravel **non vérifiés** (sites inaccessibles depuis l'environnement). |
 
-**Conséquence pour la suite.** Les maquettes validées et le SQL sont traités comme **inexistants pour ce dossier**. Les écrans sont conçus à partir de ARB + CDC + captures ; le modèle de données est conçu comme modèle conceptuel à partir de ARC (en prose). Si le client fournit les maquettes et le SQL, un écart sera établi avant tout développement (Q01, Q02).
+**Conséquence pour la suite (D13, D14).** On part de zéro pour la réalisation. Les trois documents sont des **bases de réflexion**, les quatre captures des **références visuelles partielles**. Les écrans sont conçus à partir de ARB + CDC + captures, puis seront présentés en maquettes haute fidélité ; le **modèle de données est conçu à partir des besoins et des invariants métier** (`02` §4) ; les **migrations Laravel seront produites à l'implémentation**. Aucun SQL ni maquette validée n'est attendu du client.
 
 ## 2. Compréhension de FreeCI
 
@@ -114,9 +114,16 @@ La V1 doit permettre **une transaction complète, de la recherche à la clôture
 | **D09** | Direction visuelle : conserver bleu marine, fonds clairs, cartes sobres, séparation des espaces ; améliorer identité, typographie, contraste, espacements, cohérence | `03`. |
 | **D10** | Mobile d'abord ; 360 / 390 / 768 / 1024 / 1440 px ; cible tactile 44 × 44 px ; WCAG AA ; zoom 200 % | `04` §0. |
 | **D11** | Pas de développement applicatif, de migration, d'installation de dépendances, de déploiement, de fusion automatique, ni d'activation de paiement à cette étape | Respecté : seuls des fichiers Markdown sont produits. |
-| **D12** | Dépôt public : documents client et contenus dérivés **en local** tant que non autorisés | Aucun envoi effectué. |
+| **D12** | *(supplantée par D19)* Dépôt public : documents client et dérivés en local tant que non autorisés | Levée par D19. |
+| **D13** | Départ de zéro : **maquettes validées et SQL n'existent pas** ; trois documents = bases de réflexion ; quatre captures = références visuelles partielles | Clôt Q01, Q02 ; `01` §1, C03, C04. |
+| **D14** | Modèle de données **conçu depuis les besoins et invariants métier** ; 55 tables **non** objectif ; migrations produites à l'implémentation | `02` §4. |
+| **D15** | Pile **validée** : PHP/Laravel, PostgreSQL, Blade + Livewire + Tailwind + Alpine, monolithe modulaire (présentation / actions métier / intégrations) ; **autonomie vis-à-vis de GAMAD** | Clôt Q08 ; `02` §1, §5. |
+| **D16** | **Conventions Laravel** pour les noms de tables ; **file de tâches sur PostgreSQL acceptable** pour démarrer, **sous réserve de documenter** concurrence, reprises et prévention des doubles effets financiers | Clôt Q11 (en partie) ; `02` §4.1, §8.3. |
+| **D17** | **Versions exactes à vérifier** (compatibilité, support) avant installation ; **aucune version citée dans ces documents n'est approuvée** | `02` §8.1. |
+| **D18** | **Direction visuelle validée** : marine et fonds clairs, orange en accent, actions prioritaires avant compteurs, administration distincte ; insistance sur beauté, intuitivité, responsivité, identité reconnaissable ; documents acceptés comme base de travail ; écrans à présenter et examiner visuellement ; règles métier côté serveur | `03`, `04`. |
+| **D19** | **Publication autorisée** des cinq documents et dérivés dans le dépôt public ; visibilité du dépôt inchangée ; **exclus** : secrets, identifiants, données personnelles réelles, pièces client originales | Clôt Q16. |
 
-**Direction proposée, non décidée.** Blade/Livewire, Tailwind et Alpine.js sont la **direction proposée** pour l'interface (INS §2) : leur place est expliquée en `02` §5 et reste à valider (Q08).
+**Pile d'interface validée (D15).** Blade/Livewire, Tailwind et Alpine.js : leur place est expliquée en `02` §5. Les versions restent à vérifier avant installation (D17).
 
 ## 5. Contradictions, écarts et points de vigilance entre sources
 
@@ -126,8 +133,8 @@ Sévérité : **B** = bloque une décision, **M** = à corriger dans la concepti
 |---|---|---|---|---|
 | C01 | Next.js/React/Route Handlers et authentification « Next.js » sont retenus par CDC §14 et ARC §1, §11, §12, réf. [1][5] ; INS impose Laravel. | CDC §14 ; ARC | **DEC prime.** On conserve : monolithe modulaire, PostgreSQL, worker + outbox, transactions locales, contrats d'actions, séparation public/privé/financier. On retire : App Router, Route Handlers, `/api/v1` comme architecture de pages. | M |
 | C02 | Le nom « Freelance CI » apparaît dans les captures ; CDC §18 propose « nom neutre jusqu'au choix de la marque ». | IMG-1..4 ; CDC | D01 : **FreeCI**. Logo « f. » à redessiner (`03` §2). | i |
-| C03 | ARC §16 affirme « maquettes principales validées le 3 octobre 2026 » ; ARB §15 et CDC N04 disent que l'identité visuelle et la charte restent à valider ; seules 4 captures existent. | ARC ; ARB ; CDC | **Validation non vérifiable** ; les captures sont des références partielles. | B (Q01) |
-| C04 | « SQL de 55 tables » absent. 55 noms de tables sont listés en prose, avec des **absences apparentes** : table de signalements (F37, F39, AD04), décision de modération avec motif (F10), préférences de notification (F38), réponse à un avis (F36), preuves de litige (F34), annulation après paiement (F33). | ARC §3–§6 ; CDC | À vérifier contre le SQL réel. Le modèle conceptuel de `02` §4 les prévoit explicitement. | M (Q02) |
+| C03 | ARC §16 affirme « maquettes principales validées le 3 octobre 2026 » ; ARB §15 et CDC N04 disent que l'identité visuelle et la charte restent à valider ; seules 4 captures existent. | ARC ; ARB ; CDC | **Résolu (D13)** : aucune maquette validée n'existe ; les captures sont des références partielles et les écrans seront présentés puis examinés visuellement. | i |
+| C04 | « SQL de 55 tables » inexistant. 55 noms de tables sont listés en prose, avec des **besoins non couverts** : table de signalements (F37, F39, AD04), décision de modération avec motif (F10), préférences de notification (F38), réponse à un avis (F36), preuves de litige (F34), annulation après paiement (F33). | ARC §3–§6 ; CDC | **Résolu (D14)** : il n'y a pas de SQL ; ces absences sont des **besoins à couvrir** par le modèle conçu en `02` §4. | i |
 | C05 | ARC §3 : identité déléguée (`auth_issuer`, `auth_subject`, fournisseur « maintenu ou délégué »). D07 interdit la dépendance à l'identité GAMAD. | ARC ; INS | Authentification locale Laravel. Colonnes de fédération **non reprises** en V1 (Q09). | M |
 | C06 | ARB utilise des routes de style Next.js (`/services/[slug]`) ; ARC des chemins `/api/v1/...`. | ARB ; ARC | Routes web Laravel nommées (`/services/{slug}`) ; les « contrats d'API » deviennent des **actions métier** ; JSON réservé aux notifications du prestataire et au rafraîchissement ciblé. | M |
 | C07 | **Menus des captures ≠ ARB §1.** Client : captures = Vue d'ensemble, Mes missions, Commandes, Paiements, Messages, Favoris (ARB : Mes missions / Commandes / Paiements / Favoris + messages communs). Freelance : captures = Vue d'ensemble, Mes services, Propositions, Commandes, Reversements, Messages, **Profil public** (ARB : Profil / Services / Propositions / Commandes / Reversements / **Bénéficiaire**). Admin : captures = 4 entrées (Publications, Commandes, Transactions, Support) ; ARB §6 = 10 écrans AD01–AD10. | IMG-2..4 ; ARB §1, §5, §6 | Les captures sont une **démonstration réduite**. Menus complets proposés en `04` §1. « Bénéficiaire » (FR08) est **absent des captures** alors qu'il conditionne le reversement : à rendre visible. | M |
@@ -149,4 +156,4 @@ Sévérité : **B** = bloque une décision, **M** = à corriger dans la concepti
 
 ## 7. Prochaine étape après revue
 
-Validation de ce dossier → arbitrage des **Q bloquantes** (`05` §5) → réception éventuelle des maquettes et du SQL → prompt de développement par lots (`02` §9). Aucun développement avant.
+Examen des documents par le porteur → **présentation visuelle des écrans** (maquettes haute fidélité, `04` §11.1) → arbitrage des questions restantes (`05` §5) → vérification des versions → prompt de développement par lots (`02` §9). Aucun développement applicatif avant.

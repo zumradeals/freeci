@@ -1,6 +1,6 @@
 # 04 — Parcours et écrans
 
-> **Statut : proposition de conception, non validée. Diffusion : LOCAL** (dérive de documents client ; dépôt public — voir `01`).
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
 > Les maquettes sont **décrites** (disposition, proportions, contenus, actions, variantes) ; aucune n'est dessinée ni codée. Les comportements responsives et d'accessibilité sont des **critères de conception** : **aucun n'a été testé**, il n'existe pas d'application.
 
 Étiquettes : **SRC** (avec repère F/N/P/A/C/CL/FR/AD) · **DEC** · **PROP** · **Q** (`05` §5). Jetons visuels : `03`. Actions métier : `02` §6 et rubriques « Contrats métier appelés » de chaque écran.
@@ -943,3 +943,5 @@ Les files **sans habilitation** n'apparaissent pas. Les indicateurs distinguent 
 1. **Lot 1** : P01, P02, P03 (§2–§3). 2. **Lot 2** : CL03, FR06, CL04 (§4–§5). 3. **Lot 3** : C05, C06 dans leurs états (§8–§9), mobile et ordinateur. 4. **Lot 4** : CL01, FR01 (§6–§7). 5. **Lot 5** : AD01, AD02 et le gabarit file + dossier (§10). 6. **Lot 6** : comptes (A01–A05, C01), puis écrans « I » de l'inventaire avec les mêmes composants.
 
 Chaque maquette sera livrée avec : contenu réel de démonstration **étiqueté**, états vide/chargement/erreur/succès/accès interdit, versions **360 et 1440 px** au minimum (390/768/1024 pour les écrans à comportement spécifique : comparaison, commande, paiement), et la liste des **contrats métier** appelés.
+
+**Revue visuelle obligatoire (D18).** Chaque lot est **présenté en maquettes haute fidélité puis examiné par le porteur** avant son développement. L'examen porte sur : identité FreeCI reconnaissable (`03` §2.4), proportions (`03` §2.5), lisibilité, clarté des trois questions (`04` §0.1), parcours sur téléphone **et** ordinateur. Aucune règle métier n'est portée par la maquette ni par l'interface : **le serveur reste l'autorité** (`02` P3).

@@ -1,7 +1,7 @@
 # 02 — Architecture proposée (Laravel / PostgreSQL)
 
-> **Statut : proposition de conception, non validée. Diffusion : LOCAL** (dérive de documents client ; dépôt public — voir `01`).
-> Aucune installation, migration ni code n'a été produit. Les versions citées sont des constats du 2026-10-05, à revérifier avant toute installation.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> Aucune installation, migration ni code n'a été produit. **Les versions citées sont des constats du 2026-10-05, non approuvés** (D17) : à vérifier avant toute installation.
 
 Étiquettes : **SRC** exigence d'une source · **DEC** décision du porteur · **PROP** proposition · **Q** question (`05` §5).
 
@@ -116,11 +116,13 @@ Integrations (adaptateurs)
 
 ## 4. Données (adaptation PostgreSQL)
 
-### 4.1 Statut du modèle
+### 4.1 Statut du modèle (D13, D14, D16)
 
-Le SQL de 55 tables n'étant pas disponible (`01` §1), ce qui suit est un **modèle conceptuel** déduit de ARC §3–§6, à comparer avec le SQL si fourni (Q02). **PROP** : régénérer le schéma en **migrations Laravel** (une par module), avec `DB::statement` pour ce que le constructeur de schéma ne couvre pas (index uniques partiels, contraintes `CHECK`, déclencheurs, contraintes différées).
+Il n'existe **ni SQL ni schéma validé** : le modèle est **conçu à partir des besoins (F01–F42, N01–N18) et des invariants métier** (`01` §2.1). Les noms de tables de ARC §3–§6 sont une **base de réflexion** ; **le nombre de tables n'est pas un objectif** (les 55 noms de ARC sont regroupés en 4.2 à titre indicatif, et le modèle peut en compter plus ou moins). Les **migrations Laravel seront produites à l'implémentation** (une série par module), avec `DB::statement` pour ce que le constructeur de schéma ne couvre pas (index uniques partiels, contraintes `CHECK`, déclencheurs, contraintes différées).
 
-### 4.2 Répartition des 55 tables nommées par ARC
+**Convention de nommage (D16).** Conventions Laravel : tables en **snake_case au pluriel** (`orders`, `order_agreements`, `outbox_events`), clé `id`, clés étrangères `<singulier>_id`, horodatages `created_at`/`updated_at`. **Dans les documents `02`–`05`, les noms de tables au singulier (`order_record`, `file_asset`, `outbox_event`…) sont des noms conceptuels hérités de ARC** : ils désignent les tables pluriel correspondantes (`order_record` → `orders`) ; le mot réservé `order` n'est jamais utilisé seul comme nom de colonne ou d'alias non cité.
+
+### 4.2 Regroupement indicatif des noms de tables de ARC (base de réflexion, non contraignant)
 
 | Module | Tables (noms ARC) | n |
 |---|---|---|
@@ -132,9 +134,9 @@ Le SQL de 55 tables n'étant pas disponible (`01` §1), ce qui suit est un **mod
 | Finance | `beneficiary`, `financial_operation`, `provider_event`, `reconciliation_case`, `ledger_account`, `ledger_batch`, `ledger_entry` | 7 |
 | Administration | `policy_version`, `support_ticket`, `ticket_message`, `ticket_file`, `dispute`, `dispute_decision`, `sensitive_action_approval`, `audit_event` | 8 |
 | Shared | `file_asset`, `outbox_event`, `command_receipt` | 3 |
-| **Total** | | **55** |
+| **Total des noms listés par ARC** | | 55 |
 
-**Tables que les écrans et exigences imposent mais que ARC ne nomme pas (PROP, à confirmer contre le SQL) :**
+**Besoins que les écrans et exigences imposent et que ARC ne nomme pas (le modèle conçu devra les couvrir) :**
 
 | Besoin | Source | Table proposée |
 |---|---|---|
@@ -146,13 +148,13 @@ Le SQL de 55 tables n'étant pas disponible (`01` §1), ce qui suit est un **mod
 | Annulation après paiement (demande motivée, examen contradictoire) | F33 | `cancellation_request` |
 | Sessions, jetons de récupération, jobs, cache | Laravel | tables du framework (hors périmètre métier) |
 
-**Écarts de nommage** : `order_record` (éviter le mot réservé `order`) est conservé ; **PROP** adopter des noms de tables au pluriel (`orders`, `services`…) pour suivre les conventions Laravel et éviter la configuration, avec un tableau de correspondance dans les migrations. Décision de nommage unique à prendre avant la première migration (Q11).
+**Nommage** : décidé en 4.1 (conventions Laravel, D16). Le modèle définitif — nombre et découpage des tables — sera établi **avant la première migration**, par module, avec ses contraintes et ses essais PostgreSQL.
 
 ### 4.3 Types et conventions (reprise de ARC §2, adaptée)
 
 | Sujet | Règle |
 |---|---|
-| Clés | UUID pour les objets métier (version v4 ou v7 à fixer : Q11), identifiants croissants pour les historiques volumineux. |
+| Clés | UUID pour les objets métier (**v4 ou v7 : à fixer à l'amorçage**, avec la version de Laravel retenue), identifiants croissants pour les historiques volumineux. |
 | Dates | `timestamptz`, stockées en UTC ; affichées « heure d'Abidjan » (N01). Départ et échéance calculés **une seule fois** (F21). |
 | Montants | `bigint` en francs XOF entiers ; objet `Money` côté PHP ; **aucun flottant**. JSON : chaîne décimale. Format d'affichage `100 000 FCFA` avec espace insécable (`03` §5). |
 | Taux | Points de base (`1 000` = 10 %) figés dans l'accord (F19). |
@@ -162,7 +164,7 @@ Le SQL de 55 tables n'étant pas disponible (`01` §1), ce qui suit est un **mod
 | Équilibre du registre | Lot ≥ 2 lignes, somme nulle, vérifiée par **contrainte différée** à la fin de transaction (ARC §6). |
 | Unicités critiques | `proposal_active_uq` (une proposition active ou sélectionnée par mission et freelance) ; `order_mission_live_uq` (une commande vivante par mission) ; clé d'opération et référence prestataire uniques ; **un seul reversement actif ou confirmé par commande** (ARC §5, §6). |
 | Séparation public / privé / financier | Projections publiques par **liste explicite de champs** ; données privées dans des tables dédiées ; références du bénéficiaire masquées (ARC §3). |
-| Schéma | ARC propose un schéma `marketplace` ; **PROP** : schéma dédié FreeCI ou `public`, à trancher avec l'hébergement (Q11) ; comptes de base distincts pour migration, application, worker et lecture (ARC §13). |
+| Schéma | Schéma dédié FreeCI ou `public` : **à fixer à l'amorçage** avec l'hébergement ; comptes de base distincts pour migration, application, worker et lecture (ARC §13). |
 
 ### 4.4 États de la commande (SRC CDC §8, ARC §7)
 
@@ -203,7 +205,7 @@ Les listes privées sont toujours **bornées par relation** (`where client_id = 
 
 ## 5. Interface : place de Blade, Livewire, Tailwind et Alpine.js
 
-> **Direction proposée, à valider (Q08).** Versions et contraintes en §8.
+> **Pile validée par le porteur (D15).** Versions et contraintes en §8 (non approuvées, D17).
 
 | Technologie | Rôle dans FreeCI | Limites posées |
 |---|---|---|
@@ -295,7 +297,7 @@ Lectures (requêtes) par écran : voir les « Contrats métier appelés » de `0
 
 ## 8. Adaptation Laravel / PostgreSQL et versions
 
-### 8.1 Versions constatées le 2026-10-05 (sources : API Packagist, registre npm)
+### 8.1 Versions constatées le 2026-10-05 (sources : API Packagist, registre npm) — **constats, non approuvés (D17)**
 
 | Composant | Dernière version stable constatée | Contrainte relevée |
 |---|---|---|
@@ -307,7 +309,7 @@ Lectures (requêtes) par écran : voir les « Contrats métier appelés » de `0
 | `alpinejs` (npm) | 3.17.4 | **non nécessaire** : Alpine est embarqué par Livewire |
 | Environnement d'observation | PHP 8.3.6, PostgreSQL 16.14, Node 22.22 | Constat de l'environnement de conception, **pas** une décision d'hébergement |
 
-**Non vérifié** (sites inaccessibles depuis cet environnement) : cycles de support de PHP 8.3/8.4, de Laravel 13 et des versions majeures de PostgreSQL ; compatibilité fine Livewire 4 ↔ Laravel 13 au-delà des contraintes déclarées. **À faire avant installation** : lire les pages officielles de support, fixer la version PHP/PostgreSQL de production, figer par fichiers de verrouillage.
+**Non vérifié** (sites inaccessibles depuis cet environnement) : cycles de support de PHP 8.3/8.4, de Laravel 13 et des versions majeures de PostgreSQL ; compatibilité fine Livewire 4 ↔ Laravel 13 au-delà des contraintes déclarées. **À faire avant installation (D17)** : lire les pages officielles de support, **vérifier la compatibilité** de chaque version (Laravel ↔ Livewire ↔ Tailwind/Vite ↔ PHP ↔ PostgreSQL), fixer les versions de production, figer par fichiers de verrouillage, puis les faire **approuver par le porteur**.
 
 ### 8.2 Points d'adaptation
 
@@ -317,11 +319,29 @@ Lectures (requêtes) par écran : voir les « Contrats métier appelés » de `0
 | **Rôles / espace actif** | Rôles commerciaux = données ; espace actif = valeur de session d'affichage (sans effet sur les droits). Personnel = `staff_grant` (auteur, motif, échéance, révocation). |
 | **Concurrence** | `DB::transaction` + verrouillage `FOR UPDATE` dans un **ordre fixe** (mission → proposition → commande → opérations) ; réessai borné sur interblocage avec la **même** clé d'opération ; index uniques en dernier rempart (ARC §8). |
 | **Idempotence** | `command_receipt` (acteur + action + clé + empreinte de la requête) écrit dans la même transaction que l'effet. |
-| **Outbox et tâches** | Chaque transaction écrit `outbox_event` ; un répartiteur alimente la file Laravel. Pilote de file : **base PostgreSQL** (aucune dépendance Redis) ou Redis — Q11. Consommateurs idempotents par `event_key`. |
+| **Outbox et tâches** | Chaque transaction écrit `outbox_event` ; un répartiteur alimente la file Laravel. Pilote de file : **base PostgreSQL** pour démarrer (D16), sans dépendance Redis ; migration possible vers Redis derrière le même répartiteur. Consommateurs idempotents par `event_key`. Garanties détaillées en **§8.3**. |
 | **Recherche** | Recherche plein texte PostgreSQL (configuration française, accents) avec index adaptés, pagination ≤ 20 (F11) ; mesurée contre N06 (10 000 comptes, 5 000 services, 1 000 missions). Aucun moteur externe en V1. |
 | **Fichiers** | Disque privé ; contrôle du type **réel** ; quarantaine ; URL temporaires ; quotas 100 Mo / 500 Mo (propositions) ; Q13 pour les gros fichiers. |
 | **Cache** | Pages privées : `Cache-Control: private, no-store` ; aucun cache partagé de pages personnalisées (N09). |
 | **Qualité** | Pint ; analyse statique ; tests de politiques par ressource (T16/N10) ; tests de concurrence avec deux sessions PostgreSQL (ARC §14) ; tests de rendu des composants. Outils précis à choisir à l'amorçage. |
+
+### 8.3 File de tâches sur PostgreSQL : concurrence, reprises, doubles effets financiers (D16)
+
+La file sur PostgreSQL est **acceptée pour démarrer** à la condition que ce qui suit soit **appliqué et testé**. Les comportements exacts du pilote de file Laravel (verrouillage à la prise d'une tâche, délai de reprise, nombre d'essais) sont **à vérifier dans la version installée** avant de s'y fier.
+
+**Principe.** `outbox_event` est la **source de vérité** : il est écrit **dans la même transaction** que l'effet métier. Un répartiteur le transforme en tâche **après validation de la transaction**. La livraison est **au moins une fois** : *tout consommateur doit donc être idempotent*.
+
+| Sujet | Règle |
+|---|---|
+| **Concurrence entre workers** | Une tâche n'est prise que par **un** worker à la fois (verrouillage de ligne de type « sauter les lignes verrouillées ») ; plusieurs workers autorisés. Le **traitement** d'un événement ne repose jamais sur ce verrou seul : il **revérifie** l'état métier sous verrou `FOR UPDATE` dans l'**ordre fixe** de §8.2 (mission → proposition → commande → opérations). |
+| **Reprises** | Le délai de reprise d'une tâche prise mais non terminée est **supérieur à sa durée maximale** ; un **délai d'expiration** par tâche est plus court que ce délai. Nombre d'essais et **attente croissante** définis par type de tâche ; échecs définitifs conservés et **alertés**. Arrêt brutal d'un worker : la tâche redevient disponible et est rejouée **sans effet en double**. |
+| **Idempotence** | Chaque événement porte un `event_key` unique ; le consommateur **ne refait pas** un effet déjà enregistré (reçu de commande, clé d'opération, `event_key` du lot du registre). |
+| **Appels sortants financiers** | (1) La **référence sortante** et la **clé d'opération** sont **générées et enregistrées avant** l'appel au prestataire. (2) L'opération passe `created → pending` par une **mise à jour conditionnelle** (`WHERE état = 'created'`) : seule la tâche qui l'obtient (1 ligne modifiée) a le droit d'appeler. (3) L'appel a lieu **hors transaction longue**. (4) Les tâches d'écriture chez le prestataire ne sont **pas rejouées automatiquement** : un délai dépassé ou une réponse illisible laisse l'opération en `unknown` ; la reprise passe par la **recherche par référence** (`lookup`) et le rapprochement, **jamais** par un nouvel envoi à l'aveugle. (5) Si le prestataire accepte l'idempotence par référence, elle est utilisée **en plus**, pas à la place. |
+| **Pas de double versement** | **Un seul reversement actif ou confirmé par commande** (index unique partiel) ; même verrou de commande que l'ouverture d'un litige ; éligibilité recalculée à la **prise** de la tâche, pas seulement à sa création. Un envoi déjà accepté par le prestataire est suivi comme incident, jamais « annulé ». |
+| **Pas de double confirmation** | Notification du prestataire **dédoublonnée** (`provider_event`), vérifiée côté serveur, **état non régressif** ; un seul lot de registre par `event_key`. |
+| **Panne après acceptation, avant écriture** | Cas prévu : le prestataire a agi, FreeCI n'a pas enregistré le résultat → l'opération reste `pending`/`unknown` → **rapprochement** par la référence enregistrée avant l'appel. |
+| **Limites connues** | Latence d'interrogation de la file ; **croissance** des tables de tâches (purge des tâches terminées à prévoir) ; **pool de connexions** partagé entre web et workers ; nécessité de **surveiller le retard** (âge de la plus ancienne tâche) et les échecs. Si ces limites se confirment à la recette, passage à Redis **sans changer** le contrat des tâches. |
+| **Essais exigés** | Deux workers sur la même tâche ; **arrêt forcé** d'un worker au milieu d'un reversement ; rejeu d'une notification ; expiration de commande pendant un paiement `pending` ; demande de litige et reversement simultanés ; réponse du prestataire perdue. Résultat attendu : **un seul effet financier**, état explicable, rapprochement possible (T08, T09, T12, T13). |
 
 ---
 
@@ -351,5 +371,6 @@ Lectures (requêtes) par écran : voir les « Contrats métier appelés » de `0
 | Livewire v4 peu documenté dans la référence ; téléversements > 100 Mo | Prototype de téléversement et de composant de comparaison avant le lot 1 ; chemin dédié pour gros fichiers (Q13). |
 | Règles métier dispersées dans l'interface | Test d'architecture + revue d'Action par fonctionnalité. |
 | Résultat financier inconnu → double envoi | Port `PaymentProvider` avec `lookup` ; aucune nouvelle tentative avant rapprochement (F26, F27). |
-| Déclencheurs SQL perdus lors de la conversion en migrations | Tests de contraintes sur PostgreSQL réel (ARC §14), pas sur SQLite. |
-| Dérive de nommage (singulier/pluriel, FR/EN) | Décision unique avant la première migration (Q11). |
+| Garde-fous SQL (contraintes, déclencheurs, index partiels) oubliés lors de la rédaction des migrations | Tests de contraintes sur PostgreSQL réel (ARC §14), pas sur SQLite. |
+| Dérive de nommage (singulier/pluriel, FR/EN) | Conventions Laravel (D16, §4.1) ; revue du modèle avant la première migration. |
+| File PostgreSQL : double effet financier, reprise après arrêt d'un worker, retard de traitement | Garanties et essais de §8.3 ; surveillance du retard de file ; migration possible vers Redis. |

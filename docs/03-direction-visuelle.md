@@ -1,6 +1,7 @@
 # 03 — Direction visuelle de FreeCI
 
-> **Statut : proposition de conception, non validée (identité à valider par le porteur : CDC N04, ARB §15).** Diffusion : **LOCAL**.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Validé comme direction (D18)** : marine et fonds clairs, orange en accent, actions prioritaires avant compteurs, administration distincte. **À examiner visuellement** : valeurs exactes des jetons, logo, proportions, maquettes.
 > Les ratios de contraste ci-dessous sont **calculés** (formule WCAG 2.x) sur des valeurs **mesurées dans les captures** (marquées *mesuré*) ou **proposées** (*prop.*). Rien n'est « testé » sur une application : aucune n'existe.
 
 Étiquettes : **SRC** · **DEC** · **PROP** · **Q** (voir `01` §0).
@@ -69,6 +70,36 @@ Valeurs échantillonnées sur les pixels des captures ; elles décrivent une **d
 | **Interdits** | Dégradé, ombre portée, rotation, orange en fond plein derrière du texte blanc. |
 
 **Q** : le dessin définitif (forme du monogramme, choix de couleur de « CI ») reste à valider par le porteur ; le présent texte est une spécification, pas un fichier de logo.
+
+---
+
+### 2.4 Ce qui rend FreeCI reconnaissable (D18 — PROP)
+
+Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblerait à n'importe quelle marketplace.
+
+| Signature | Description | Où | Contrainte |
+|---|---|---|---|
+| **Le point orange** | Reprise du point de « f. » : monogramme **F•**, et **point final orange** après le H1 du bandeau d'accueil (« …prochain projet**.** ») | Logo, hero P01, un titre de confirmation par parcours | Décoratif (`aria-hidden`) ; compte dans la limite de 2 occurrences d'accent |
+| **Marine en aplat** | Les « moments de marque » (bandeau d'accueil, bandeau d'administration, pied de page) sont en `marine-900` **uni** | P01, coque admin, pied | Jamais de dégradé ni de motif |
+| **Le filet d'action** | Tout bloc « **Action attendue** / À faire » porte un **filet vertical marine de 4 px** sur son bord gauche, sur fond blanc, rayon 12 px | CL01, FR01, C05, C06 | Réservé aux blocs qui demandent une action ; aucun autre usage |
+| **Le fil d'étapes** | Fil textuel « Accord ▸ Paiement ▸ Brief ▸ Réalisation ▸ Livraison ▸ Validation ▸ Clôture » (étape courante en gras + marqueur ●) | C05, C06, formulaires par étapes | Le texte porte le sens (pas la couleur seule) |
+| **Le montant FreeCI** | Montants en 600, chiffres tabulaires, « FCFA » en 400 sur la même ligne de base, **jamais séparés** par un retour à la ligne | Cartes, récapitulatifs, finances | Alignement à droite dans les tableaux |
+
+### 2.5 Proportions soignées (D18 — PROP, à examiner sur maquettes)
+
+| Sujet | Règle |
+|---|---|
+| **Grille** | 12 colonnes ; gouttières 16 / 24 / 32 px ; contenu + rail en **8/12 + 4/12** (détail de service, commande, tableaux de bord) ou **7/12 + 5/12** (bandeau d'accueil, paiement) ; largeur utile ≤ 1200 (public) / 1280 (privé) |
+| **Hauteurs** | En-tête 56 / 64 px · champ 48 · bouton 44 (48 pour l'action principale mobile) · ligne de liste à deux niveaux ≥ 64 · bandeau d'accueil ≈ 440 px (ordinateur), hauteur du contenu avec 24 px de marge verticale (mobile) |
+| **Images** | Carte de service **4:3** ; galerie **16:9** ; avatars cercle 40 / 56 / 96 |
+| **Rythme vertical** | Éléments liés ≤ 16 px ; blocs 24–32 px ; sections 48–64 px — **aucune valeur hors échelle** (`03` §5.1) |
+| **Hiérarchie** | **Un seul point focal** par écran (H1 ou bloc d'action) ; rapport d'échelle ≈ 1,2–1,25 entre niveaux typographiques (`03` §4) |
+| **Lisibilité** | Mesure ≤ 68 caractères ; texte courant 16/24 ; contraste ≥ 4,5:1 (secondaire ≥ 6:1 visé) ; aucune information essentielle < 14 px |
+| **Alignement** | Un seul axe gauche par écran ; montants alignés sur la même ligne de base ; icônes alignées sur la hauteur de ligne du texte |
+
+### 2.6 Examen visuel avant développement (D18)
+
+Cette direction est une **base de travail**. Avant tout développement, les écrans prioritaires (`04` §11.1) seront **présentés en maquettes haute fidélité** — au minimum à **360 et 1440 px**, et à 390 / 768 / 1024 px pour la comparaison, la commande et le paiement — puis **examinés visuellement** par le porteur : proportions, lisibilité, reconnaissance de l'identité, parcours sur téléphone et ordinateur. Le format de présentation est à convenir (Q19). Les jetons exacts, le logo et les ratios seront ajustés à l'issue de cet examen.
 
 ---
 

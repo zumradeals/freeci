@@ -1,6 +1,6 @@
 # 05 — Décisions, couverture et critères de validation
 
-> **Statut : proposition de conception, non validée. Diffusion : LOCAL** (dérive de documents client ; dépôt public).
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
 > Ce document consigne ce qui est **décidé**, **proposé**, **ouvert** ; il ne déclare rien « testé » : aucune application n'existe.
 
 Étiquettes : **DEC** décision du porteur · **PROP** proposition · **Q** question · **SRC** source.
@@ -20,7 +20,14 @@
 | D07 | Données propres ; aucune dépendance à l'identité, la fédération ou le paiement de GAMAD sans décision explicite | `02` P7, §7 |
 | D08–D10 | Beauté, intuitivité, responsivité traduites en choix vérifiables ; 360/390/768/1024/1440 ; 44 × 44 px ; WCAG AA ; zoom 200 % | `03`, `04` §0 |
 | D11 | Aucune application, migration, dépendance, déploiement, fusion ni activation de paiement à cette étape | Respecté |
-| D12 | Dépôt public : documents client et dérivés **en local** | `01` en-tête ; §6 |
+| D12 | *(supplantée par D19)* Dépôt public : documents client et dérivés en local tant que non autorisés | `01` §4 |
+| D13 | **Départ de zéro** : maquettes validées et SQL n'existent pas ; trois documents = bases de réflexion ; quatre captures = références visuelles partielles (**clôt Q01, Q02**) | `01` §1, C03, C04 |
+| D14 | Modèle de données **conçu depuis les besoins et invariants** ; 55 tables non objectif ; migrations à l'implémentation | `02` §4 |
+| D15 | Pile **validée** : Laravel, PostgreSQL, Blade + Livewire + Tailwind + Alpine, monolithe modulaire ; autonomie vis-à-vis de GAMAD (**clôt Q08**) | `02` §1, §5 |
+| D16 | **Conventions Laravel** pour les noms de tables ; file de tâches **sur PostgreSQL** acceptable, sous réserve de documenter concurrence, reprises, prévention des doubles effets financiers (**clôt Q11 en partie**) | `02` §4.1, §8.3 |
+| D17 | **Versions exactes à vérifier** avant installation ; aucune version citée n'est approuvée | `02` §8.1 |
+| D18 | **Direction visuelle validée** (marine, fonds clairs, orange en accent, actions avant compteurs, administration distincte) ; beauté, intuitivité, responsivité, identité reconnaissable ; écrans à présenter et examiner visuellement | `03`, `04` |
+| D19 | **Publication autorisée** des cinq documents dans le dépôt public (visibilité inchangée) ; exclus : secrets, identifiants, données personnelles réelles, pièces client originales (**clôt Q16**) | §6 |
 
 ### 1.2 Arbitrages proposés (PROP) — à valider
 
@@ -31,8 +38,8 @@
 | A03 | Interface | Blade + Livewire (îlots) + Tailwind v4 (jetons) + Alpine **fourni par Livewire** | SPA ; Alpine séparé | SEO, performance mobile, formulaires sans JS ; une seule version d'Alpine | `02` §5 |
 | A04 | Livewire | Adaptateur **mince** appelant une Action ; propriétés sensibles verrouillées ; prototype avant lot 1 | Règles dans les composants | La référence n'exerce pas Livewire (aucun composant) | `02` §5, §9.3 |
 | A05 | Authentification | Locale (Laravel), MFA pour le personnel, **sans** fédération | Identité déléguée (ARC §3) | D07 | `01` C05 ; `02` §8.2 |
-| A06 | Modèle de données | **Régénérer en migrations Laravel** depuis le modèle conceptuel, **sauf** si le SQL réel est fourni (alors : comparaison) | Reprendre un SQL non disponible | SQL absent | `02` §4 |
-| A07 | Tables manquantes | Ajouter `report`, `moderation_decision`, `notification_preference`, `review_response`, `dispute_evidence`, `cancellation_request` | Les laisser implicites | Exigences F10, F33–F39 sans table | `02` §4.2 |
+| A06 | Modèle de données | **Concevoir depuis les besoins et invariants** ; migrations Laravel produites à l'implémentation | Reprendre un SQL (inexistant) | D13, D14 | `02` §4 |
+| A07 | Besoins non couverts par ARC | Couvrir : signalements, décision de modération, préférences de notification, réponse à un avis, preuves de litige, annulation après paiement (forme à décider dans le modèle) | Les laisser implicites | Exigences F10, F33–F39 | `02` §4.2 |
 | A08 | Paiement | **Port** `PaymentProvider` + adaptateur **simulé** étiqueté ; réel après qualification | Client lié à un prestataire (modèle `GeniusPayClient`) | D07 ; prestataire non qualifié | `02` §7 |
 | A09 | Confirmation | Webhook authentifié + vérification serveur ; retour navigateur **sans effet** ; pas de bouton « Payer » pendant `pending`/`unknown` | Confirmation au retour | F25, T07 | `04` §9 |
 | A10 | Recherche | Plein texte PostgreSQL, pagination ≤ 20 | Moteur externe | Simplicité V1 ; mesure N06 | `02` §8.2 |
@@ -45,7 +52,9 @@
 | A17 | Comparaison | Tri prix/délai/date ; côte à côte ≤ 3 ; **aucun score** | Classement algorithmique | Pas de promesse de qualité | `04` §5.2 |
 | A18 | Administration | **Coque distincte**, habilitations, MFA ; sélecteur de rôle de IMG-4 = démonstration seulement | Même coque que le public | ARB §6 ; INS | `01` C10 |
 | A19 | Démonstration | Bandeau permanent, `DEMO-`, identités manifestement fictives, hors statistiques | Faux avis/volumes | N04 ; INS §5 | `04` §0.4 |
-| A20 | Documents | Dossier **local** ; non poussé | Publier dans le dépôt public | D12 | §6 |
+| A20 | Documents | **Publiés** dans le dépôt public (D19), sans pièces client originales | Dossier local | D19 | §6 |
+| A21 | File de tâches | **PostgreSQL** au démarrage ; garanties et essais documentés ; migration possible vers Redis | Redis d'emblée | D16 ; simplicité | `02` §8.3 |
+| A22 | Noms de tables | Conventions Laravel (pluriel, `snake_case`) ; noms de ARC = conceptuels | Noms de ARC | D16 | `02` §4.1 |
 
 ---
 
@@ -142,6 +151,7 @@ Chaque critère est vérifié **en revue de conception** par examen des maquette
 | Version/validité périmées **jamais acceptées silencieusement** | Bandeau « Modifiée (v2 → v3) » ; expirée/retirée | T05 |
 | Accord **figé** ; paramètres commerciaux sans effet rétroactif | Accord en lecture seule ; `policy_version` | T06, T14 |
 | **Retour navigateur sans effet financier** ; vérification serveur | C06 : état lu en base ; pas de « Payer » pendant la vérification | T07, T08 |
+| **Arrêt d'un worker ou rejeu** → un seul effet financier ; état explicable ; rapprochement possible | Garanties `02` §8.3 | T08, T09, T12, T13 |
 | Notification répétée → **un seul** effet ; paiement tardif/doublon isolé | Écran « en cours d'examen » ; `RecordLatePayment` | T08, T09 |
 | Livraison **formelle** et versionnée ; fichier de messagerie ≠ livraison | Rappel en C05 Messages ; versions v1…vn | T10 |
 | **Silence du client ≠ validation ni reversement** | Bandeau « rien n'est validé automatiquement » | T11 |
@@ -182,22 +192,35 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 | V18 | Contenus de démonstration **étiquetés** ; aucun faux avis/volume/badge | Revue de contenu | Maquette |
 | V19 | Perf. N05 : contenu principal catalogue/détail < 3 s (5 Mbit/s, 150 ms) | Profil réseau simulé | Application |
 | V20 | Lecture de l'écran à **390 px** équivalente à 360 px (même structure) | Revue | Maquette |
+| V21 | **Maquettes haute fidélité présentées et examinées par le porteur** avant chaque lot (≥ 360 et 1440 px ; 390/768/1024 pour comparaison, commande, paiement) | Séance de revue ; décision consignée | Avant développement |
+| V22 | **Identité reconnaissable** : les cinq signatures `03` §2.4 sont présentes et non diluées | Revue : logo masqué, l'écran reste identifiable à marine + filet d'action + point orange + montants | Maquette |
+| V23 | **Proportions** conformes à `03` §2.5 (grille, hauteurs, rythme, un point focal) | Revue sur gabarit superposé | Maquette |
 
 ---
 
 ## 5. Questions
 
-### 5.1 Questions **réellement bloquantes** pour l'écriture du prompt de développement
+### 5.1 Questions tranchées par le porteur (2026-10-05)
 
-| Réf. | Question | Réponse minimale attendue | Recommandation |
-|---|---|---|---|
-| **Q01** | Les « maquettes principales validées le 3 octobre » existent-elles ? Que couvre exactement la validation ? | Fournir les fichiers, **ou** confirmer qu'il n'existe que les 4 captures et que la présente direction visuelle prévaut | Traiter les captures comme **références partielles** ; faire valider `03`–`04` |
-| **Q02** | Le **SQL de 55 tables** existe-t-il ? | Fournir le fichier, **ou** autoriser la **régénération** en migrations Laravel depuis le modèle conceptuel | Régénérer, puis comparer avec le SQL s'il arrive (A06, A07) |
-| **Q08** | **Blade + Livewire + Tailwind + Alpine** : validé comme pile d'interface ? | Oui / non / ajustement | Oui, avec prototype Livewire avant le lot 1 (A03–A04) |
-| **Q11** | **Choix d'amorçage** : version PHP et PostgreSQL cibles ; UUID v4/v7 ; noms de tables **au pluriel** ; schéma ; file de tâches **base PostgreSQL** ou Redis | Accepter les défauts proposés ou les remplacer | Défauts : versions **vérifiées avant installation** (cycles de support à lire, `02` §8.1) ; noms au **pluriel** ; file sur **PostgreSQL** en V1 |
-| **Q16** | **Sauvegarde et publication** : ce dossier n'est pas poussé (dépôt **public**). Autoriser la publication, rendre le dépôt privé, ou conserver ailleurs ? | Une des trois | **Rendre le dépôt privé** puis pousser, ou stocker le dossier dans un espace privé ; **sinon rien n'est sauvegardé hors de la session** |
+| Réf. | Question | Décision |
+|---|---|---|
+| Q01 | Maquettes validées ? | **N'existent pas** ; on part de zéro (D13) |
+| Q02 | SQL de 55 tables ? | **N'existe pas** ; modèle conçu depuis les besoins, 55 non objectif, migrations à l'implémentation (D13, D14) |
+| Q08 | Pile Blade + Livewire + Tailwind + Alpine ? | **Validée** (D15) |
+| Q11 | Choix d'amorçage | **Noms de tables : conventions Laravel** ; **file sur PostgreSQL** acceptable sous réserve de documentation (`02` §8.3) ; versions à vérifier, non approuvées (D16, D17). **Reste ouvert** : UUID v4/v7 et schéma (à l'amorçage) |
+| Q16 | Publication des documents ? | **Autorisée** dans le dépôt public, hors secrets, identifiants, données personnelles réelles, pièces client originales ; visibilité inchangée (D19) |
 
-### 5.2 Questions non bloquantes (à traiter avant les lots concernés)
+### 5.2 À trancher avant le prompt de développement
+
+| Réf. | Question | Recommandation |
+|---|---|---|
+| Q11 (reste) | **Versions exactes** (PHP, PostgreSQL, Laravel, Livewire, Tailwind, Vite) après vérification de compatibilité et de support ; UUID v4/v7 ; schéma | Vérifier les pages officielles, proposer un tableau de versions **à approuver**, puis figer |
+| Q19 | **Format de présentation** des maquettes haute fidélité (images, PDF, prototype statique jetable séparé de l'application) | Images/PDF aux largeurs de `04` §0.2 pour le lot 1 |
+| Q05 (présentation) | Répartition des frais et ce que voit chaque partie, avant les maquettes C05/C06 | Valeurs d'exemple étiquetées, paramétrables |
+
+Aucune question ne bloque l'**examen** des documents.
+
+### 5.3 Questions non bloquantes (à traiter avant les lots concernés)
 
 | Réf. | Question | Quand | Défaut proposé |
 |---|---|---|---|
@@ -221,8 +244,8 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 
 | Élément | Impact | Responsable présumé |
 |---|---|---|
-| SQL de 55 tables | Migrations, déclencheurs, index (Q02) | Client |
-| Maquettes validées | Références visuelles, étendue de la validation (Q01) | Client |
+| **Maquettes haute fidélité** des écrans prioritaires (n'existent pas : à produire, puis à examiner) | Examen visuel avant développement (D18) | Conception |
+| **Modèle de données détaillé** (n'existe pas : à concevoir depuis les besoins) | Avant la première migration (D14) | Conception |
 | Contrat et documentation du prestataire de paiement ; liste des moyens activés | Modèle de fonds, états, adaptateur (Q03) | Porteur / prestataire |
 | Textes légaux : mentions de l'opérateur, conditions, confidentialité, règles de commande/commission/remboursement/litige, durées de conservation | N15–N18, P10 | Porteur / conseil |
 | Statut juridique de l'opérateur ; traitement fiscal et facturation | Reçu ≠ facture (CDC §9) | Conseil comptable |
@@ -230,35 +253,37 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 | Logo (fichier vectoriel), éventuelle photographie, contenus éditoriaux réels (services pilotes) | Identité, page d'accueil | Porteur |
 | Liste des **extensions de fichiers métiers** autorisées (DWG, IFC, RVT, TEKLA…) | Règles de fichiers (CDC §10) | Porteur / pilote |
 | Hébergement, budget, volumétrie réelle | N06–N08 | Porteur / équipe |
-| Cycles de support PHP / Laravel 13 / PostgreSQL (sites inaccessibles depuis l'environnement de conception) | Choix de versions | Équipe (avant installation) |
+| **Vérification des versions** : support et compatibilité PHP / Laravel / Livewire / Tailwind / Vite / PostgreSQL (sites de support inaccessibles depuis l'environnement de conception) | Approbation des versions (D17) | Équipe, avant installation |
 
-### Diffusion et sauvegarde (Git)
+### Diffusion (Git)
 
-- Dépôt `zumradeals/freeci` : **public** ; branche par défaut `main` ; branche de conception `claude/happy-ride-x3wxdg` issue de `main` (**aucun écrasement**).
-- Les cinq fichiers de `docs/` sont **commités localement** et **non poussés** (D12). **Ils n'existent donc que dans l'environnement de cette session** : voir **Q16**.
-- Aucune installation de dépendance, aucune migration, aucun frontend codé, aucun déploiement, aucune fusion, aucune activation de paiement.
-- Le clone de `dgafrique-core` (`/home/user/zumradeals/dgafrique-core`) est **en dehors** du dépôt FreeCI et en lecture seule.
+- Publication des cinq documents autorisée par le porteur (D19) dans `zumradeals/freeci` (public) ; **visibilité inchangée**.
+- **Exclus** de la publication : secrets, identifiants d'accès, données personnelles réelles, pièces client originales (les trois .docx et les captures ne sont pas versionnés).
+- Aucune installation de dépendance, aucune migration, aucun frontend codé, aucun déploiement, aucune activation de paiement.
+- Le clone de `dgafrique-core` est **en dehors** du dépôt FreeCI et en lecture seule.
 
 ---
 
 ## 7. Éléments précis à faire valider au client
 
+Le porteur a validé les **principes** de la direction (D18) et la pile (D15). Les éléments ci-dessous restent à **présenter visuellement** et à faire valider ; la colonne « Réponse attendue » indique ce qui est déjà acquis.
+
 | N° | Élément | Où | Réponse attendue |
 |---|---|---|---|
 | V-1 | Nom **FreeCI**, signature « Des compétences en Côte d'Ivoire », logotype (« CI » en accent) | `03` §2 | Valider / ajuster |
-| V-2 | Palette de **19 jetons**, orange réservé à l'accent, statuts sémantiques | `03` §3 | Valider |
+| V-2 | Palette de **19 jetons**, orange réservé à l'accent, statuts sémantiques | `03` §3 | Principes validés (D18) ; **jetons exacts à examiner sur maquettes** |
 | V-3 | Marqueur d'action **distinct** du badge d'état (« Examiner la livraison ») | `03` §3.4 | Valider |
-| V-4 | Tableaux de bord **actions d'abord**, compteurs en dernier | `04` §6–§7 | Valider (modifie les captures) |
+| V-4 | Tableaux de bord **actions d'abord**, compteurs en dernier | `04` §6–§7 | **Validé (D18)** ; à montrer sur maquette |
 | V-5 | Accueil : promesse sans chiffre ni avis fictifs ; carte « Services récents » remplacée par « Comment ça marche » si < 3 services | `04` §2 | Valider |
 | V-6 | Formulaire de demande de service en **3 étapes** liées à la version du service | `04` §3 | Valider |
 | V-7 | Mission en **5 étapes** (mobile), aperçu public, détection de coordonnées privées bloquante | `04` §4 | Valider ; Q18 |
 | V-8 | Comparaison **sans score**, côte à côte ≤ 3, récapitulatif d'accord avant paiement | `04` §5 | Valider |
 | V-9 | Dossier de commande : bloc « Action attendue », 7 onglets, confirmations à 3 parties | `04` §8 | Valider |
 | V-10 | Paiement : **pas de bouton « Payer » pendant la vérification** ; page de résultat pilotée par l'état serveur ; paiement **simulé** étiqueté | `04` §9 | Valider |
-| V-11 | **Administration séparée** (coque, MFA, habilitations, accès journalisé) | `04` §10 | Valider ; Q07, Q15 |
+| V-11 | **Administration séparée** (coque, MFA, habilitations, accès journalisé) | `04` §10 | Principe **validé (D18)** ; détail : Q07, Q15 |
 | V-12 | **Valeurs commerciales** : commission 10 % déduite du freelance ; frais de paiement supportés par la plateforme ; montants 5 000–500 000 FCFA ; 48 h / 24 h / 7 j / 14 j ; seuil de double validation (à fixer) | CDC §18 | Valider ou remplacer (Q05) |
 | V-13 | **Transparence** : le client voit prix + frais affichés ; le freelance voit aussi commission et part attribuée | `04` §8.2 | Valider |
 | V-14 | Favoris (C08) et préférences de notification : **reportables** ? | CDC §2 | Décider |
 | V-15 | Formulation des promesses de paiement (« après paiement confirmé… ») **uniquement après qualification** du prestataire | `04` §2.3 | Valider |
-| V-16 | Pile **Blade + Livewire + Tailwind + Alpine** ; **aucune** dépendance à GAMAD (identité, fédération, paiement) | `02` §5, §7 | Valider (Q08, Q10) |
-| V-17 | Sort des documents : **non publiés** tant que non autorisés | §6 | Décider (Q16) |
+| V-16 | Pile **Blade + Livewire + Tailwind + Alpine** ; **aucune** dépendance à GAMAD (identité, fédération, paiement) | `02` §5, §7 | **Validé (D15, D07)** ; Q10 : rattachement à GAMAD à confirmer |
+| V-17 | Sort des documents : publication dans le dépôt public (hors secrets, données personnelles, pièces client) | §6 | **Résolu (D19)** : publication autorisée |
