@@ -47,6 +47,15 @@ return [
         'bio' => [50, 1500], 'skills_max' => 10, 'skill' => [2, 40],
     ],
 
+    // Missions et propositions : PARAMÈTRES PROVISOIRES (docs/04 §4), non des règles commerciales approuvées.
+    'missions' => [
+        'title' => [15, 100], 'description' => [150, 5000], 'budget_xof' => [5000, 5000000], 'deadline_max_days' => 60,
+        'client_inputs_max' => 8, 'line_max' => 200,
+        // Après la date limite de candidature, le client dispose de N jours pour choisir ; passé ce délai la mission expire.
+        'selection_days' => 14,
+        'proposal' => ['price_xof' => [5000, 5000000], 'delivery_days' => [1, 180], 'revisions' => [0, 10], 'scope' => [50, 3000], 'validity_days' => [1, 30], 'deliverables_max' => 10],
+    ],
+
     'files' => [
         // « clamav » = contrôle antivirus ; « none » (défaut) = aucun contrôle disponible : le dépôt de fichiers est désactivé.
         'scanner' => env('FREECI_FILE_SCANNER', 'none'),

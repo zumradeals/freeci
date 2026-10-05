@@ -38,11 +38,12 @@ class DemoPurge extends Command
 
         DB::transaction(function () {
             // Ce qui est référencé par une commande est CONSERVÉ (accord et historique sont en ajout seul).
-            Service::where('is_demo', true)->whereNotIn('id', Order::select('service_id'))->delete();
+            Service::where('is_demo', true)->whereNotIn('id', Order::whereNotNull('service_id')->select('service_id'))->delete();
             // Un profil de démonstration lié à un service restant est conservé.
             FreelanceProfile::where('is_demo', true)->whereDoesntHave('services')->delete();
             User::where('is_demo', true)->whereDoesntHave('freelanceProfile')
-                ->whereNotIn('id', Order::select('client_id'))->whereNotIn('id', Order::select('freelancer_id'))->delete();
+                ->whereNotIn('id', Order::select('client_id'))->whereNotIn('id', Order::select('freelancer_id'))
+                ->whereNotIn('id', DB::table('missions')->select('client_id'))->whereNotIn('id', DB::table('proposals')->select('freelancer_id'))->delete();      // missions et propositions sont conservées avec leurs auteurs
         });
 
         $this->info('Données de démonstration supprimées.');

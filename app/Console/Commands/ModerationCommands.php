@@ -7,6 +7,8 @@ use App\Modules\Catalog\Exceptions\ModerationDenied;
 use App\Modules\Catalog\Exceptions\ServiceStateConflict;
 use App\Modules\Catalog\Models\ServiceVersion;
 use App\Modules\Catalog\Moderation\ServiceModeration;
+use App\Modules\Missions\Exceptions\MissionConflict;
+use App\Modules\Missions\Models\MissionVersion;
 use Illuminate\Console\Command;
 
 /**
@@ -33,7 +35,7 @@ abstract class ModerationCommands extends Command
     {
         try {
             $do();
-        } catch (ModerationDenied|ServiceStateConflict $e) {
+        } catch (ModerationDenied|ServiceStateConflict|MissionConflict $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
@@ -46,6 +48,19 @@ abstract class ModerationCommands extends Command
     protected function confirmed(string $question): bool
     {
         return (bool) $this->option('yes') || $this->confirm($question, false);
+    }
+
+    protected function describeMission(MissionVersion $v): void
+    {
+        $m = $v->mission;
+        $this->line("Version  {$v->id}  (mission {$m->id}, v{$v->number}, état : {$v->state})");
+        $this->line('Client   '.$m->client->name.' <'.$m->client->email.'>'.($m->is_demo ? ' [démonstration]' : ''));
+        $this->line("Titre    {$v->title}  ·  catégorie : ".$v->category?->name);
+        $this->line('Budget   '.number_format((int) $v->budget_xof, 0, ',', ' ').' FCFA · date limite '.($v->application_deadline?->format('Y-m-d') ?? '—').' · brief avec fichier : '.($v->brief_requires_files ? 'oui' : 'non'));
+        $this->line("Description\n{$v->description}");
+        $this->line('Éléments du brief : '.implode(' | ', $v->client_inputs));
+        $live = MissionVersion::query()->where('mission_id', $v->mission_id)->where('state', 'published')->first();
+        $this->line('Version publiée actuelle : '.($live ? 'v'.$live->number : 'aucune (premier envoi)'));
     }
 
     protected function describe(ServiceVersion $v): void

@@ -18,6 +18,7 @@ use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Models\Order;
 use App\Shared\Dates;
 use App\Shared\Money;
+use Illuminate\Support\Facades\DB;
 
 /** `Orders\GetOrderDossier` : lecture BORNÉE AUX PARTIES. Inexistant et interdit répondent pareil (docs/04 §8.5). */
 final class GetOrderDossier
@@ -71,6 +72,7 @@ final class GetOrderDossier
                 'closed' => 'Commande clôturée (clôture commerciale)',
                 'disagreement_reported' => "Désaccord signalé par {$who} (livraison v".($e->meta['delivery_version'] ?? '?').') : besoin de suivi enregistré',
                 'review_overdue' => 'Délai d’examen dépassé : besoin de suivi enregistré',
+                'proposal_selected' => 'Proposition v'.($e->meta['proposal_version'] ?? '?')." retenue par {$who}",
                 'declined' => "Demande refusée par {$who}",
                 'withdrawn' => "Demande retirée par {$who}",
                 'cancelled' => "Commande annulée par {$who}",
@@ -128,7 +130,7 @@ final class GetOrderDossier
             clientName: $order->client->name, freelancerName: $order->freelancer->name,
             price: Money::xof($a->price_xof), deliveryDays: $a->delivery_days, revisionsIncluded: $a->revisions_included,
             scope: $a->scope, deliverables: $a->deliverables, exclusions: $a->exclusions,
-            serviceVersion: $a->service_row_version, conditionsVersion: $a->conditions_version, conditionsAcceptedAt: $a->conditions_accepted_at,
+            serviceVersion: (int) $a->service_row_version, conditionsVersion: $a->conditions_version, conditionsAcceptedAt: $a->conditions_accepted_at,
             requestedAt: $order->requested_at, responseDeadline: $order->response_deadline_at, acceptedAt: $order->accepted_at,
             paymentDeadline: $order->payment_deadline_at, closureReason: $order->closure_reason?->label(), closureNote: $order->closure_note,
             briefItems: $items->all(), briefNotes: $order->brief->notes, briefComplete: $brief['complete'], briefMissing: $brief['missing'],
@@ -148,6 +150,8 @@ final class GetOrderDossier
             briefRequiresFiles: (bool) $a->brief_requires_files,
             uploadLimits: $this->uploadLimits(),
             delivery: ($this->deliverySection)($order, $viewer, $isFreelancer),
+            origin: $order->origin, proposalNumber: $order->origin === 'mission' ? (int) DB::table('proposal_versions')->where('id', $order->proposal_version_id)->value('number') : null,
+            missionId: $order->origin === 'mission' && ! $isFreelancer ? $order->mission_id : null,
         );
     }
 

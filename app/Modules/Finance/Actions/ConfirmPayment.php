@@ -6,6 +6,7 @@ use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\LedgerBatch;
 use App\Modules\Finance\Models\Payment;
 use App\Modules\Finance\Models\ReconciliationCase;
+use App\Modules\Missions\Actions\MissionLifecycle;
 use App\Modules\Orders\Actions\StartOrderIfReady;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Models\Order;
@@ -65,6 +66,9 @@ final class ConfirmPayment
             }
 
             $order->events()->create(['type' => 'payment_confirmed', 'actor_id' => null, 'note' => 'Paiement simulé confirmé ('.$payment->provider_reference.').']);
+            if ($order->mission_id !== null) {
+                app(MissionLifecycle::class)->onPaymentConfirmed($order);        // la mission n'est attribuée QU'ICI, paiement vérifié côté serveur
+            }
             ($this->start)($order);
 
             return 'applied';

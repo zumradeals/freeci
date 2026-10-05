@@ -4,6 +4,7 @@ namespace App\Modules\Finance;
 
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Orders\Models\Order;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Porte du simulateur de paiement. Il n'est utilisable QUE si TOUT ce qui suit est vrai :
@@ -38,8 +39,10 @@ final class SandboxGate
         if (! $order->client->is_demo || ! $order->freelancer->is_demo) {
             return 'party_not_demo';
         }
-        if (! (bool) Service::query()->whereKey($order->service_id)->value('is_demo')) {
-            return 'service_not_demo';
+        // Origine « mission » : la mission doit elle aussi être une mission de démonstration (même exigence que le service).
+        $source = $order->origin === 'mission' ? DB::table('missions')->where('id', $order->mission_id)->value('is_demo') : Service::query()->whereKey($order->service_id)->value('is_demo');
+        if (! (bool) $source) {
+            return $order->origin === 'mission' ? 'mission_not_demo' : 'service_not_demo';
         }
         if (! $order->client->sandbox_payments) {
             return 'account_not_authorized';

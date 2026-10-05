@@ -66,5 +66,8 @@ final readonly class OrderDossier
         public string $uploadLimits = '',
         /** Livraisons, corrections, reports, délai d'examen : voir Queries\DeliverySection. */
         public array $delivery = [],
+        public string $origin = 'service',               // service | mission
+        public ?int $proposalNumber = null,
+        public ?string $missionId = null,
     ) {}
 }

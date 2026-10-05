@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\AdminHomeController;
+use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProposalController;
 use Illuminate\Support\Facades\Route;
 
 // Espace privé : toute route ici exige une session authentifiée ; réponses jamais mises en cache partagé.
@@ -34,6 +36,24 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/commandes/{reference}/brief/fichiers', [OrderFileController::class, 'store'])->middleware('throttle:20,1')->name('orders.files.store');
     Route::post('/commandes/{reference}/brief/fichiers/{file}/retirer', [OrderFileController::class, 'destroy'])->name('orders.files.destroy');
     Route::get('/commandes/{reference}/fichiers/{file}', [OrderFileController::class, 'download'])->middleware('signed')->name('orders.files.download');
+
+    // Missions (client) : propriétaire seulement. Les routes fixes passent avant les routes à paramètre.
+    Route::get('/espace/missions', [ClientMissionController::class, 'index'])->name('client.missions');
+    Route::get('/espace/missions/nouvelle', [ClientMissionController::class, 'create'])->name('client.missions.new');
+    Route::post('/espace/missions', [ClientMissionController::class, 'store'])->middleware('throttle:20,1')->name('client.missions.store');
+    Route::get('/espace/missions/{mission}', [ClientMissionController::class, 'show'])->name('client.missions.show');
+    Route::get('/espace/missions/{mission}/modifier', [ClientMissionController::class, 'edit'])->name('client.missions.edit');
+    Route::post('/espace/missions/{mission}/modifier', [ClientMissionController::class, 'update'])->middleware('throttle:60,1')->name('client.missions.update');
+    Route::get('/espace/missions/{mission}/apercu', [ClientMissionController::class, 'preview'])->name('client.missions.preview');
+    Route::get('/espace/missions/{mission}/propositions', [ClientMissionController::class, 'proposals'])->name('client.missions.proposals');
+    Route::get('/espace/missions/{mission}/propositions/{version}/choisir', [ClientMissionController::class, 'selectForm'])->name('client.missions.select');
+    Route::post('/espace/missions/{mission}/propositions/{version}/choisir', [ClientMissionController::class, 'select'])->middleware('throttle:10,1')->name('client.missions.select.store');
+    Route::get('/espace/missions/{mission}/{kind}', [ClientMissionController::class, 'confirm'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'fermer', 'annuler', 'rouvrir'])->name('client.missions.confirm');
+    Route::post('/espace/missions/{mission}/{kind}', [ClientMissionController::class, 'act'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'fermer', 'annuler', 'rouvrir'])->middleware('throttle:20,1')->name('client.missions.act');
+
+    // Propositions (freelance) : auteur seulement.
+    Route::get('/missions/{slug}/proposition', [ProposalController::class, 'form'])->name('missions.proposal');
+    Route::post('/missions/{slug}/proposition', [ProposalController::class, 'store'])->middleware('throttle:20,1')->name('missions.proposal.store');
 
     // Livraison, corrections, report d'échéance, validation. Les routes fixes passent AVANT {action} (contraint) : aucun conflit.
     Route::get('/commandes/{reference}/livraison', [DeliveryController::class, 'edit'])->name('orders.delivery');
@@ -72,6 +92,9 @@ Route::middleware(['auth', 'no-store'])->group(function () {
         Route::post('/services/{service}/{kind}', [ServiceManagementController::class, 'act'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'retirer-du-catalogue', 'remettre-en-ligne'])->middleware('throttle:20,1')->name('freelance.services.act');
         Route::post('/profil/publier', [FreelanceController::class, 'publish'])->middleware('throttle:10,1')->name('freelance.profile.publish');
         Route::get('/profil', [FreelanceController::class, 'profile'])->name('freelance.profile');
+        Route::get('/propositions', [ProposalController::class, 'index'])->name('freelance.proposals');
+        Route::get('/propositions/{proposal}/retirer', [ProposalController::class, 'withdrawForm'])->name('freelance.proposals.withdraw');
+        Route::post('/propositions/{proposal}/retirer', [ProposalController::class, 'withdraw'])->middleware('throttle:10,1')->name('freelance.proposals.withdraw.store');
     });
 });
 

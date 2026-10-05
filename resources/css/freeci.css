@@ -854,3 +854,17 @@ html:has(body.has-sticky-buy) { scroll-padding-bottom: 104px; }
   .app .rail { position: static; }
 }
 @media (min-width: 1280px) { .app .cols { grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; } }
+
+/* Lot 6 — comparaison de propositions : tableau dès 768 px, pile par critère sur mobile. */
+.cmp-table { display: none; overflow-x: auto; }
+.cmp { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.cmp th, .cmp td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.cmp thead th { background: var(--surface-2); font-weight: 650; }
+.cmp tbody th { font-weight: 600; color: var(--ink-700); white-space: nowrap; }
+.cmp ul { margin: 0; padding-left: 16px; }
+.cmp-stack { display: grid; gap: 12px; }
+.cmp-row dl { margin: 6px 0 0; display: grid; gap: 4px; }
+.cmp-row dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.cmp-row dt { color: var(--ink-700); }
+.cmp-row dd { margin: 0; font-weight: 600; text-align: right; }
+@media (min-width: 768px) { .cmp-table { display: block; } .cmp-stack { display: none; } }

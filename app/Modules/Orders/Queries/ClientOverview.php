@@ -4,6 +4,7 @@ namespace App\Modules\Orders\Queries;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\SandboxGate;
+use App\Modules\Missions\Queries\ClientMissions;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use App\Modules\Orders\Data\OrderCard;
@@ -60,7 +61,12 @@ final class ClientOverview
         $extensions = $orders->filter(fn (Order $o) => $o->pendingExtension !== null && in_array($o->state, [OrderState::InProgress, OrderState::RevisionRequested], true))->map(fn (Order $o) => new TaskItem(
             'Report d’échéance à décider', $o->agreement->service_title.' · '.$o->reference, $o->due_at, 'Échéance actuelle : '.Dates::format($o->due_at),
             'L’échéance ne change que si vous acceptez.', 'Répondre au report', route('orders.show', $o->reference), 'clock'))->values()->all();
-        $tasks = collect(array_merge($review, $extensions, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
+        // Missions : propositions à comparer, sélection terminée à trancher, correction demandée par la modération.
+        $missionTasks = collect(app(ClientMissions::class)->list($client))->filter(fn ($m) => $m['needsAction'] || ($m['proposals'] > 0 && $m['status'] === 'Ouverte'))->map(fn ($m) => new TaskItem(
+            $m['needsAction'] ? ($m['status'] === 'À corriger' ? 'Corriger votre mission' : 'Rouvrir ou fermer la mission') : $m['proposals'].' proposition'.($m['proposals'] > 1 ? 's' : '').' à examiner',
+            $m['title'], null, $m['needsAction'] ? (string) $m['note'] : 'Comparez les propositions puis retenez-en une.', 'Rien n’est rouvert, retenu ou validé à votre place.',
+            $m['needsAction'] ? 'Ouvrir la mission' : 'Comparer les propositions', $m['needsAction'] ? route('client.missions.show', $m['id']) : route('client.missions.proposals', $m['id']), 'briefcase'))->values()->all();
+        $tasks = collect(array_merge($review, $extensions, $missionTasks, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
 
         return [
             'tasks' => $tasks,

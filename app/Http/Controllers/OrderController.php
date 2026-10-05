@@ -55,6 +55,9 @@ class OrderController extends Controller
             return redirect()->route('orders.show', $reference)->with('error', 'Cette action n’est plus disponible : la commande a changé.');
         }
         [$title, $text, $button] = self::CONSEQUENCES[$action];
+        if ($action === 'cancel' && $d->origin === 'mission') {
+            $text .= ' La proposition retenue est libérée et la mission passe en « sélection terminée » : elle n’est PAS rouverte automatiquement. Vous choisirez ensuite, depuis « Mes missions », de la rouvrir (si la période de sélection court encore) ou de la fermer.';
+        }
 
         return view('orders.confirm', ['d' => $d, 'action' => $action, 'title' => $title, 'consequences' => $text, 'button' => $button, 'operationKey' => (string) Str::uuid(), 'space' => $d->perspective]);
     }

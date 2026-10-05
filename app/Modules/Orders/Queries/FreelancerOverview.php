@@ -5,6 +5,7 @@ namespace App\Modules\Orders\Queries;
 use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Models\ServiceVersion;
+use App\Modules\Missions\Queries\FreelancerProposals;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use App\Modules\Orders\Data\OrderCard;
@@ -54,7 +55,9 @@ final class FreelancerOverview
         $profile = $freelancer->freelanceProfile;
         $profileTask = $profile !== null && $profile->published_at === null ? [new TaskItem('Terminer et publier votre profil', 'Manque : '.(implode(', ', array_map('mb_strtolower', PublishFreelanceProfile::missing($profile))) ?: 'rien, il ne reste qu’à le publier'), null,
             'Sans profil publié, vos services ne peuvent pas être soumis.', 'Votre profil public affiche vos informations publiques et vos services publiés.', 'Compléter mon profil', route('freelance.profile'), 'user')] : [];
-        $tasks = collect(array_merge($work, $fixes, $profileTask, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
+        $stale = collect(app(FreelancerProposals::class)->list($freelancer))->filter(fn ($p) => $p['stale'] && $p['missionOpen'])->map(fn ($p) => new TaskItem(
+            'Reconfirmer votre proposition', $p['missionTitle'].' · version '.$p['number'], null, 'Le besoin a été modifié depuis votre proposition.', 'Sans reconfirmation, le client ne peut pas la retenir.', 'Reconfirmer', route('missions.proposal', $p['missionSlug']), 'pencil'))->values()->all();
+        $tasks = collect(array_merge($work, $fixes, $stale, $profileTask, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
 
         $waitingStates = [OrderState::AwaitingPayment, OrderState::AwaitingBrief, OrderState::Delivered];
 

@@ -4,6 +4,7 @@ namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\SandboxGate;
+use App\Modules\Missions\Actions\MissionLifecycle;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\InvalidTransition;
@@ -68,6 +69,9 @@ abstract class ChangesOrder
                     $updates['payment_deadline_at'] = $paymentOpen ? $now->copy()->addHours($locked->agreement->payment_hours) : null;
                 }
                 $locked->forceFill($updates)->save();
+                if ($locked->mission_id !== null && in_array($to, [OrderState::Cancelled, OrderState::Expired], true)) {
+                    app(MissionLifecycle::class)->onOrderEnded($locked, 'Commande annulée avant paiement : la proposition retenue est libérée.');
+                }
                 $locked->events()->create([
                     'type' => $eventType, 'actor_id' => $actor->getKey(), 'from_state' => $from->value, 'to_state' => $to->value,
                     'note' => $note, 'meta' => $startsPaymentWindow ? ['payment_open' => $paymentOpen ?? false] : (is_array($guardMeta) ? $guardMeta : null),

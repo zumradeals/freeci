@@ -1,0 +1,33 @@
+# Lot 6 — missions et propositions
+
+Statut : **projet de travail**. Les bornes et délais (`config/freeci.php`, clé `missions`) sont des **paramètres provisoires**, non des règles commerciales approuvées. Décision de prestataire de paiement : voir `01-cadrage.md` D37 (Genius Pay retenu ; **intégration du bac à sable dans un lot dédié**, rien n'est intégré ici, le simulateur garde toutes ses restrictions).
+
+## 1. Missions (client)
+- **Brouillon** : titre (15–100), catégorie, description (150–5000), budget indicatif en FCFA (5 000–5 000 000), date limite de candidature (demain à +60 jours), éléments du brief (intitulés), brief avec fichier ou non. Brouillon incomplet admis, jamais mal formé ; coordonnées privées (e-mail, téléphone) refusées dans les textes publics.
+- **Publication par la modération existante** : soumission → contrôle → approbation / refus motivé, par commandes console (`freeci:moderation:mission-queue`, `mission-approve`, `mission-refuse`), mêmes garde-fous que pour les services (administrateur en vigueur, jamais sa propre mission, historique, motif). Aucune administration web.
+- **« Mes missions »** : états (brouillon, en contrôle, à corriger, ouverte, réservée, attribuée, sélection terminée, fermée, annulée, expirée), détail, historique ; actions : modifier, aperçu, soumettre, retirer la soumission, nouvelle version, fermer (publiée), annuler (jamais publiée), rouvrir (explicite).
+- **Données privées** : seuls les intitulés du brief sont publics ; les réponses sont saisies à la sélection et ne vont qu'au freelance retenu (dans la commande). **Aucune pièce jointe n'est publiée avec la mission** (pas de pièces jointes de mission dans ce lot).
+
+## 2. Versions et modification après propositions
+Le contenu vit dans `mission_versions` (brouillon → en contrôle → publiée ; refus → à corriger ; remplacée). Une version soumise, publiée ou remplacée est immuable (déclencheur). Modifier une mission publiée = **nouvelle version** soumise au contrôle ; la version publiée reste en ligne. À l'approbation, chaque proposition est liée à la version du besoin qu'elle visait : celles qui visent une version antérieure **ne sont plus sélectionnables** (« Besoin modifié depuis cette proposition ») tant que leur auteur ne les a pas **reconfirmées** (nouvelle version de proposition liée à la nouvelle version du besoin). Pas de modification possible tant que la mission est réservée ou attribuée.
+
+## 3. Découverte et propositions
+- `/missions` : catalogue public des missions **ouvertes** (version publiée, date limite non dépassée), recherche par mots (accents ignorés) et filtre par catégorie ; fiche publique sans identité ni coordonnées du client.
+- **Proposition** (freelance activé, profil publié) : prix ferme, délai, corrections incluses, périmètre, livrables, **mode de livraison** (fichier / message, figé dans l'accord), durée de validité (1–30 jours), message. **Une proposition active par freelance et par mission** ; chaque révision est une **version** conservée (ajout seul, déclencheur) ; retrait avant sélection (versions conservées) ; une nouvelle version réactive une proposition retirée ou libérée. Formulaires protégés contre les écrans périmés.
+- Impossible de candidater à sa propre mission (action **et** déclencheur SQL). Une proposition n'est visible que de son auteur et du client : un candidat ne voit ni les propositions ni le nombre de ses concurrents.
+
+## 4. Comparaison et sélection
+Le client compare ses propositions (6 critères étiquetés : prix, délai, corrections, livrables, validité, version ; tableau dès 768 px, pile par critère sur mobile ; tri par prix, pas de classement de qualité), puis **retient une version précise** après lecture des conditions, saisie du brief et confirmation. La sélection exige : mission ouverte, version courante et valide de sa proposition, **besoin inchangé depuis la proposition**, validité non dépassée, période de sélection en cours. **Exclusivité** : verrous (mission → proposition), clé d'opération, index unique partiel `order_mission_live_uq` (une commande vivante par mission) — testé : deuxième sélection refusée, rejouer la même clé renvoie la même commande.
+
+Effets (même transaction) : mission **réservée**, proposition **retenue**, **une commande** `awaiting_payment` dont l'**accord est figé** par copie de la proposition (prix, délai, corrections, périmètre, livrables, mode de livraison) et du besoin (titre, brief) ; le brief est déjà complet. La proposition vaut acceptation du freelance (pas de délai de réponse).
+
+## 5. Raccordement au cycle de commande
+`orders.origin` (`service` | `mission`), `mission_id`, `proposal_version_id` ; `service_id` devient nullable avec une contrainte de cohérence ; **aucun service fictif**. Les commandes et accords existants gardent l'origine `service` (valeur par défaut, aucune donnée modifiée). Paiement, brief, démarrage, fichiers, livraison, corrections, report, validation : **mêmes actions et mêmes règles**. Le simulateur exige en plus que **la mission soit une mission de démonstration** (comme le service) : une commande réelle issue d'une mission n'est jamais payable par le simulateur et n'a aucune échéance de paiement ; rien ne démarre sans paiement confirmé côté serveur ET brief complet.
+
+## 6. Annulation ou expiration avant paiement (sans ambiguïté)
+- Paiement confirmé côté serveur → mission **attribuée** (jamais avant) ; les autres propositions actives sont closes.
+- Commande **annulée** par le client ou **expirée** (délai de paiement) avant paiement → la proposition retenue est **libérée** et la mission passe en **« sélection terminée »** : elle n'est **pas rouverte automatiquement** et n'est plus visible du public. Le client choisit, depuis « Mes missions » : **rouvrir** (si la période de sélection court encore ; les autres propositions valides redeviennent retenables, la proposition libérée doit être reconfirmée par son auteur) ou **fermer** (définitif). La confirmation d'annulation de la commande le dit explicitement.
+- Période de sélection (provisoire) : 14 jours après la date limite de candidature ; passé ce délai une mission non attribuée **expire** (à la lecture et par `freeci:orders:expire`, planifié) et ne peut plus être rouverte (il faut une nouvelle version avec une nouvelle date limite, ou fermer).
+
+## 7. Limites
+Pas d'administration web de modération, de messagerie, de pièces jointes de mission, de notification, d'avis ; pas de reversement ni de remboursement ; budget indicatif unique (pas de fourchette) ; propositions non modifiables après sélection ; une seule commande par mission ; la purge de démonstration conserve missions et propositions avec leurs auteurs.
