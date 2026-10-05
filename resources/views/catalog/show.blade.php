@@ -19,8 +19,7 @@
           <li><x-fc.icon name="pencil" /><span><b>{{ $rev }}</b><small>{{ $revLabel }}</small></span></li>
           <li><x-fc.icon name="package" /><span><b>{{ count($service->deliverables) }} {{ count($service->deliverables) > 1 ? 'éléments' : 'élément' }}</b><small>Livrables</small></span></li>
         </ul>
-        <button class="btn btn-primary btn-lg btn-block" id="buy-cta" type="button" data-open="request">Demander cette prestation <x-fc.soon /></button>
-        <p class="effect"><strong>La demande de prestation n’est pas encore ouverte.</strong> Aucune commande ni aucun paiement ne peut être créé dans cette version.</p>
+        @include('catalog._cta', ['service' => $service, 'id' => 'buy-cta'])
       </section>
 
       <figure class="gallery" @if(count($service->images) > 1) data-gallery @endif>
@@ -63,23 +62,11 @@
           <div><dt><x-fc.icon name="pencil" />{{ $revLabel }}</dt><dd>{{ $rev }}</dd></div>
           <div><dt><x-fc.icon name="package" />Livrables</dt><dd>{{ count($service->deliverables) }}</dd></div>
         </dl>
-        <button class="btn btn-primary btn-lg btn-block" type="button" data-open="request">Demander cette prestation <x-fc.soon /></button>
-        <p class="effect"><strong>La demande de prestation n’est pas encore ouverte.</strong> Aucune commande ni aucun paiement ne peut être créé dans cette version.</p>
+        @include('catalog._cta', ['service' => $service, 'id' => null])
       </div>
     </aside>
   </div>
 </div>
-<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div><button class="btn btn-primary btn-lg" type="button" data-open="request">Demander</button></div>
+<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@endif</div>
 
-<dialog class="modal" id="request" aria-labelledby="req-title">
-  <div class="modal-inner">
-    <div class="modal-head"><h2 class="t-h2" id="req-title">Bientôt disponible</h2>
-      <button class="icon-btn" type="button" data-close aria-label="Fermer" style="border:0"><x-fc.icon name="close" :size="24" /></button></div>
-    <div class="modal-body">
-      <div class="notice tone-info"><x-fc.icon name="info" /><p><strong>Rien n’est envoyé ni enregistré.</strong> La demande de prestation, le paiement et la livraison arrivent dans un prochain lot. Pour l’instant, vous pouvez parcourir les services et préparer votre besoin.</p></div>
-      <p class="muted">Service : <strong style="color:var(--ink-900)">{{ $service->title }}</strong> — {{ $service->price->formatted() }} FCFA, {{ $days }}.</p>
-    </div>
-    <div class="modal-foot"><button class="btn btn-primary" type="button" data-close>J’ai compris</button></div>
-  </div>
-</dialog>
 </x-layouts.public>

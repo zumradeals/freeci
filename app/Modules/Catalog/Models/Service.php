@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 
 class Service extends Model
 {
@@ -23,6 +25,26 @@ class Service extends Model
 
     protected $hidden = ['search_document'];
 
+    /** Champs qui constituent les conditions commerciales : toute modification crée une nouvelle « version » du service. */
+    public const COMMERCIAL_FIELDS = ['title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'status'];
+
+    protected static function booted(): void
+    {
+        // Incrément atomique en base (pas de lecture-puis-écriture) : deux modifications concurrentes ne partagent jamais une version.
+        static::updating(function (self $service): void {
+            if (! $service->isDirty('row_version') && $service->isDirty(self::COMMERCIAL_FIELDS)) {
+                $service->row_version = DB::raw('row_version + 1');
+            }
+        });
+        static::updated(function (self $service): void {
+            if ($service->row_version instanceof Expression) {
+                $service->setRawAttributes(array_merge($service->getAttributes(), [
+                    'row_version' => (int) static::query()->whereKey($service->getKey())->value('row_version'),
+                ]), true);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -36,6 +58,7 @@ class Service extends Model
             'images' => 'array',
             'published_at' => 'datetime',
             'is_demo' => 'boolean',
+            'accepts_requests' => 'boolean',
         ];
     }
 

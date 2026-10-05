@@ -3,3 +3,5 @@
 17 2 * * * APP_DIR=/var/www/freeci BACKUP_DIR=/var/backups/freeci /var/www/freeci/deploy/backup.sh quotidienne >> /var/log/freeci-backup.log 2>&1
 # Purge hebdomadaire des jetons de réinitialisation expirés
 31 3 * * 0 cd /var/www/freeci && php artisan auth:clear-resets >> /var/log/freeci-backup.log 2>&1
+# Facultatif : persistance des expirations de demandes (l'exactitude ne dépend pas de ce passage)
+* * * * * cd /var/www/freeci && php8.3 artisan schedule:run >> /dev/null 2>&1

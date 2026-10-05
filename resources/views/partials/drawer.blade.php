@@ -9,10 +9,7 @@
       <nav aria-label="Navigation principale"><div class="nav-list"><x-fc.menu-links :drawer="true" /></div></nav>
       @auth
         <div><p class="nav-title">Mon espace</p>
-          <nav aria-label="Espace client"><div class="nav-list">
-            <a href="{{ route('account.dashboard') }}"><x-fc.icon name="grid" />Vue d’ensemble</a>
-            <a href="{{ route('coming-soon', 'commandes') }}"><x-fc.icon name="clipboard" />Commandes <x-fc.soon /></a>
-            <a href="{{ route('coming-soon', 'messages') }}"><x-fc.icon name="message" />Messages <x-fc.soon /></a>
+          <nav aria-label="Mon espace"><div class="nav-list"><x-fc.space-nav :space="$space ?? 'client'" :drawer="true" />
             <a href="{{ route('coming-soon', 'compte') }}"><x-fc.icon name="user" />Compte <x-fc.soon /></a>
             <a href="{{ route('coming-soon', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
           </div></nav>

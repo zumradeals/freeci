@@ -50,6 +50,9 @@ final class GetPublishedService
             clientInputs: $service->client_inputs,
             images: $service->images,
             isDemo: $service->is_demo,
+            version: $service->row_version,
+            acceptsRequests: $service->accepts_requests,
+            sellerUserId: $p->user_id,
         );
     }
 }

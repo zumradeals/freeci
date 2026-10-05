@@ -120,4 +120,21 @@
     bar.classList.add("is-off");
     io.observe(cta);
   }
+
+  // Double soumission : un formulaire marqué data-once ne part qu'une fois (le serveur la refuse aussi : clé d'opération).
+  document.addEventListener("submit", function (e) {
+    var f = e.target.closest("form[data-once]");
+    if (!f) return;
+    if (f.dataset.sent === "1") { e.preventDefault(); return; }
+    f.dataset.sent = "1";
+    f.querySelectorAll("button[type=submit]").forEach(function (b) {
+      b.setAttribute("aria-busy", "true");
+      b.disabled = true;
+      if (b.dataset.onceLabel) b.textContent = b.dataset.onceLabel;
+    });
+  });
+  window.addEventListener("pageshow", function (e) {
+    if (!e.persisted) return;
+    document.querySelectorAll("form[data-once]").forEach(function (f) { f.dataset.sent = "0"; f.querySelectorAll("button[type=submit]").forEach(function (b) { b.disabled = false; b.removeAttribute("aria-busy"); }); });
+  });
 })();

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Models\FreelanceProfile;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Orders\Models\Order;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -36,10 +37,12 @@ class DemoPurge extends Command
         }
 
         DB::transaction(function () {
-            Service::where('is_demo', true)->delete();
-            // Un profil de démonstration lié à un service réel est conservé : on ne supprime que les profils sans service restant.
+            // Ce qui est référencé par une commande est CONSERVÉ (accord et historique sont en ajout seul).
+            Service::where('is_demo', true)->whereNotIn('id', Order::select('service_id'))->delete();
+            // Un profil de démonstration lié à un service restant est conservé.
             FreelanceProfile::where('is_demo', true)->whereDoesntHave('services')->delete();
-            User::where('is_demo', true)->whereDoesntHave('freelanceProfile')->delete();
+            User::where('is_demo', true)->whereDoesntHave('freelanceProfile')
+                ->whereNotIn('id', Order::select('client_id'))->whereNotIn('id', Order::select('freelancer_id'))->delete();
         });
 
         $this->info('Données de démonstration supprimées.');

@@ -36,6 +36,12 @@ class UserFactory extends Factory
         ];
     }
 
+    /** Tout compte inscrit a le rôle client (comme à l'inscription réelle). */
+    public function configure(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->roles()->firstOrCreate(['role' => 'client']));
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

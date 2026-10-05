@@ -32,5 +32,8 @@ final readonly class ServiceDetail
         public array $clientInputs,
         public array $images,
         public bool $isDemo,
+        public int $version = 1,
+        public bool $acceptsRequests = true,
+        public string $sellerUserId = '',
     ) {}
 }

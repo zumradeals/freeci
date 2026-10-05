@@ -49,6 +49,7 @@ class DemoCatalogSeeder extends Seeder
                 'status' => $s['status'] ?? ServiceStatus::Published->value,
                 'published_at' => now()->startOfDay()->subDays(2 + $i * 2),
                 'is_demo' => true,
+                'accepts_requests' => false, // vendeurs d'exemple non connectables : pas de demande possible
             ];
             if (isset($s['gallery'])) {
                 $payload['images'] = $s['gallery'];

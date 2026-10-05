@@ -56,7 +56,7 @@ class CatalogVisibilityTest extends TestCase
     {
         $s = Service::factory()->create();
 
-        $this->get('/services/'.$s->slug)->assertSee('n’est pas encore ouverte')->assertSee('Bientôt');
+        $this->get('/services/'.$s->slug)->assertSee('Demander cette prestation')->assertSee('Vous ne payez rien à cette étape');
     }
 
     public function test_empty_catalog_is_honest(): void

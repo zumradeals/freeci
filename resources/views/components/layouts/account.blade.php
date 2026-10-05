@@ -1,4 +1,4 @@
-@props(['title'=>null])
+@props(['title'=>null, 'space'=>'client'])
 <!doctype html>
 <html lang="fr">
 <head>
@@ -12,17 +12,17 @@
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
     <a class="cat-link" href="{{ route('services.index') }}"><x-fc.icon name="search" />Catalogue</a>
-    <a class="account-chip" href="{{ route('account.dashboard') }}" aria-current="page"><span class="avatar" aria-hidden="true">{{ auth()->user()->initials() }}</span><span>{{ auth()->user()->name }}<small>Espace client</small></span></a>
+    <a class="account-chip" href="{{ route('account.dashboard') }}" aria-current="page"><span class="avatar" aria-hidden="true">{{ auth()->user()->initials() }}</span><span>{{ auth()->user()->name }}<small>{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}</small></span></a>
     <button class="menu-btn" type="button" data-open="drawer" aria-haspopup="dialog"><x-fc.icon name="menu" :size="22" /><span>Menu</span></button>
   </div>
 </header>
 <div class="app">
-<aside class="sidebar" aria-label="Espace client"><div class="side-sticky">
-  <nav class="side-nav" aria-label="Espace client">
-    <a href="{{ route('account.dashboard') }}" aria-current="page"><x-fc.icon name="grid" />Vue d’ensemble</a>
-    <a href="{{ route('coming-soon', 'commandes') }}"><x-fc.icon name="clipboard" />Commandes <x-fc.soon /></a>
-    <a href="{{ route('coming-soon', 'missions') }}"><x-fc.icon name="briefcase" />Missions <x-fc.soon /></a>
-    <a href="{{ route('coming-soon', 'messages') }}"><x-fc.icon name="message" />Messages <x-fc.soon /></a>
+<aside class="sidebar" aria-label="{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}"><div class="side-sticky">
+  <nav class="side-nav" aria-label="{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}"><x-fc.space-nav :space="$space" /></nav>
+  <nav class="side-nav" aria-label="Changer d’espace">
+    @if($space === 'freelancer')<a href="{{ route('account.dashboard') }}"><x-fc.icon name="user" />Espace client</a>
+    @elseif(auth()->user()->hasRole('freelance'))<a href="{{ route('freelance.dashboard') }}"><x-fc.icon name="briefcase" />Espace freelance</a>
+    @else<a href="{{ route('freelance.activate') }}"><x-fc.icon name="briefcase" />Activer l’espace freelance</a>@endif
   </nav>
   @if(auth()->user()->isAdministrator())
   <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration <x-fc.soon /></a></nav>
@@ -34,6 +34,8 @@
   </nav>
 </div></aside>
 <main id="contenu" class="main"><div class="main-inner">
+@if(session('status'))<div class="notice tone-success" role="status"><x-fc.icon name="check-circle" /><p>{{ session('status') }}</p></div>@endif
+@if(session('error'))<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ session('error') }}</p></div>@endif
 {{ $slot }}
 </div></main>
 </div>
@@ -41,7 +43,7 @@
   <p>FreeCI · démonstration (données fictives)</p>
   <ul><li><a href="{{ route('coming-soon', 'aide') }}">Aide</a></li><li><a href="{{ route('coming-soon', 'conditions') }}">Conditions</a></li><li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li></ul>
 </div></footer>
-@include('partials.drawer')
+@include('partials.drawer', ['space' => $space])
 @livewireScripts
 </body>
 </html>

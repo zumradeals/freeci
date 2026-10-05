@@ -18,4 +18,14 @@ return [
     // ni « preload » : FreeCI ne doit pas engager les autres sous-domaines du domaine parent.
     'hsts_max_age' => (int) env('FREECI_HSTS_MAX_AGE', 2592000),
 
+    'orders' => [
+        // Délais de réponse (freelance) et de paiement (client), figés dans chaque accord à la demande (docs/04 §3.2).
+        'response_hours' => (int) env('FREECI_RESPONSE_HOURS', 48),
+        'payment_hours' => (int) env('FREECI_PAYMENT_HOURS', 24),
+        // Version des conditions de demande affichées et acceptées (le texte juridique définitif reste à rédiger).
+        'conditions_version' => '2026-10-v1',
+        // Le paiement n'existe pas dans ce lot : tant que false, AUCUNE échéance de paiement ne court
+        // (une commande acceptée reste « en attente de paiement » sans expirer). Pas une variable d'environnement.
+        'payments_open' => false,
+    ],
 ];
