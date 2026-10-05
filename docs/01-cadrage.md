@@ -1,6 +1,6 @@
 # 01 — Cadrage de FreeCI
 
-> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales. **Base acceptée ≠ tous les détails approuvés** : seules les décisions **DEC** (D01–D22) sont validées ; le reste est **proposition (PROP)** ou **question (Q)**, révisable après rendu.
 > Ce dossier cite les documents client comme **bases de réflexion** ; les pièces originales ne sont pas versionnées. Dépôt `zumradeals/freeci` public ; visibilité inchangée.
 
 ## 0. Conventions de lecture
@@ -121,6 +121,9 @@ La V1 doit permettre **une transaction complète, de la recherche à la clôture
 | **D16** | **Conventions Laravel** pour les noms de tables ; **file de tâches sur PostgreSQL acceptable** pour démarrer, **sous réserve de documenter** concurrence, reprises et prévention des doubles effets financiers | Clôt Q11 (en partie) ; `02` §4.1, §8.3. |
 | **D17** | **Versions exactes à vérifier** (compatibilité, support) avant installation ; **aucune version citée dans ces documents n'est approuvée** | `02` §8.1. |
 | **D18** | **Direction visuelle validée** : marine et fonds clairs, orange en accent, actions prioritaires avant compteurs, administration distincte ; insistance sur beauté, intuitivité, responsivité, identité reconnaissable ; documents acceptés comme base de travail ; écrans à présenter et examiner visuellement ; règles métier côté serveur | `03`, `04`. |
+| **D20** | **Format des maquettes (Q19)** : prototype statique haute fidélité, navigable et responsive, dans `design/prototype-v01/` (HTML, CSS, JavaScript de présentation minimal ; aucune dépendance ni framework ; **pas** le socle Laravel) | `design/prototype-v01/README.md`. |
+| **D21** | **Versions, UUID, modèle détaillé de données** : traités avant migrations et développement ; **ne bloquent pas V01** | `05` §5.2. |
+| **D22** | Les choix graphiques des documents (signatures, proportions, tokens) **restent ajustables après rendu** ; toute adaptation est **justifiée** par lisibilité, cohérence ou usage ; une règle décorative n'est pas une contrainte absolue | `03` §2.4–§2.6. |
 | **D19** | **Publication autorisée** des cinq documents et dérivés dans le dépôt public ; visibilité du dépôt inchangée ; **exclus** : secrets, identifiants, données personnelles réelles, pièces client originales | Clôt Q16. |
 
 **Pile d'interface validée (D15).** Blade/Livewire, Tailwind et Alpine.js : leur place est expliquée en `02` §5. Les versions restent à vérifier avant installation (D17).

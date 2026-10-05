@@ -1,6 +1,6 @@
 # 05 — Décisions, couverture et critères de validation
 
-> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales. **Base acceptée ≠ tous les détails approuvés** : seules les décisions **DEC** (D01–D22) sont validées ; le reste est **proposition (PROP)** ou **question (Q)**, révisable après rendu.
 > Ce document consigne ce qui est **décidé**, **proposé**, **ouvert** ; il ne déclare rien « testé » : aucune application n'existe.
 
 Étiquettes : **DEC** décision du porteur · **PROP** proposition · **Q** question · **SRC** source.
@@ -27,6 +27,9 @@
 | D16 | **Conventions Laravel** pour les noms de tables ; file de tâches **sur PostgreSQL** acceptable, sous réserve de documenter concurrence, reprises, prévention des doubles effets financiers (**clôt Q11 en partie**) | `02` §4.1, §8.3 |
 | D17 | **Versions exactes à vérifier** avant installation ; aucune version citée n'est approuvée | `02` §8.1 |
 | D18 | **Direction visuelle validée** (marine, fonds clairs, orange en accent, actions avant compteurs, administration distincte) ; beauté, intuitivité, responsivité, identité reconnaissable ; écrans à présenter et examiner visuellement | `03`, `04` |
+| D20 | **Q19 résolue** : prototype statique haute fidélité dans `design/prototype-v01/` (HTML/CSS/JS de présentation, sans dépendance ni backend) | `design/prototype-v01/` |
+| D21 | Versions exactes, UUID, modèle détaillé : avant migrations ; **ne bloquent pas V01** | §5.2 |
+| D22 | Choix graphiques **ajustables après rendu**, adaptations justifiées (lisibilité, cohérence, usage) | `03` §2.4 |
 | D19 | **Publication autorisée** des cinq documents dans le dépôt public (visibilité inchangée) ; exclus : secrets, identifiants, données personnelles réelles, pièces client originales (**clôt Q16**) | §6 |
 
 ### 1.2 Arbitrages proposés (PROP) — à valider
@@ -208,6 +211,7 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 | Q02 | SQL de 55 tables ? | **N'existe pas** ; modèle conçu depuis les besoins, 55 non objectif, migrations à l'implémentation (D13, D14) |
 | Q08 | Pile Blade + Livewire + Tailwind + Alpine ? | **Validée** (D15) |
 | Q11 | Choix d'amorçage | **Noms de tables : conventions Laravel** ; **file sur PostgreSQL** acceptable sous réserve de documentation (`02` §8.3) ; versions à vérifier, non approuvées (D16, D17). **Reste ouvert** : UUID v4/v7 et schéma (à l'amorçage) |
+| Q19 | Format des maquettes ? | **Prototype statique** `design/prototype-v01/` (D20) |
 | Q16 | Publication des documents ? | **Autorisée** dans le dépôt public, hors secrets, identifiants, données personnelles réelles, pièces client originales ; visibilité inchangée (D19) |
 
 ### 5.2 À trancher avant le prompt de développement
@@ -215,7 +219,6 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 | Réf. | Question | Recommandation |
 |---|---|---|
 | Q11 (reste) | **Versions exactes** (PHP, PostgreSQL, Laravel, Livewire, Tailwind, Vite) après vérification de compatibilité et de support ; UUID v4/v7 ; schéma | Vérifier les pages officielles, proposer un tableau de versions **à approuver**, puis figer |
-| Q19 | **Format de présentation** des maquettes haute fidélité (images, PDF, prototype statique jetable séparé de l'application) | Images/PDF aux largeurs de `04` §0.2 pour le lot 1 |
 | Q05 (présentation) | Répartition des frais et ce que voit chaque partie, avant les maquettes C05/C06 | Valeurs d'exemple étiquetées, paramétrables |
 
 Aucune question ne bloque l'**examen** des documents.

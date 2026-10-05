@@ -1,6 +1,6 @@
 # 03 — Direction visuelle de FreeCI
 
-> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales. **Base acceptée ≠ tous les détails approuvés** : seules les décisions **DEC** (D01–D22) sont validées ; le reste est **proposition (PROP)** ou **question (Q)**, révisable après rendu.
 > **Validé comme direction (D18)** : marine et fonds clairs, orange en accent, actions prioritaires avant compteurs, administration distincte. **À examiner visuellement** : valeurs exactes des jetons, logo, proportions, maquettes.
 > Les ratios de contraste ci-dessous sont **calculés** (formule WCAG 2.x) sur des valeurs **mesurées dans les captures** (marquées *mesuré*) ou **proposées** (*prop.*). Rien n'est « testé » sur une application : aucune n'existe.
 
@@ -75,7 +75,7 @@ Valeurs échantillonnées sur les pixels des captures ; elles décrivent une **d
 
 ### 2.4 Ce qui rend FreeCI reconnaissable (D18 — PROP)
 
-Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblerait à n'importe quelle marketplace.
+Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblerait à n'importe quelle marketplace. **Ce sont des propositions, ajustables après rendu (D22)** : aucune n'est une contrainte absolue ; toute adaptation est justifiée par la lisibilité, la cohérence ou l'usage (voir `design/prototype-v01/README.md` pour les ajustements décidés au rendu).
 
 | Signature | Description | Où | Contrainte |
 |---|---|---|---|
@@ -99,7 +99,7 @@ Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblera
 
 ### 2.6 Examen visuel avant développement (D18)
 
-Cette direction est une **base de travail**. Avant tout développement, les écrans prioritaires (`04` §11.1) seront **présentés en maquettes haute fidélité** — au minimum à **360 et 1440 px**, et à 390 / 768 / 1024 px pour la comparaison, la commande et le paiement — puis **examinés visuellement** par le porteur : proportions, lisibilité, reconnaissance de l'identité, parcours sur téléphone et ordinateur. Le format de présentation est à convenir (Q19). Les jetons exacts, le logo et les ratios seront ajustés à l'issue de cet examen.
+Cette direction est une **base de travail**. Avant tout développement, les écrans prioritaires (`04` §11.1) seront **présentés en maquettes haute fidélité** — au minimum à **360 et 1440 px**, et à 390 / 768 / 1024 px pour la comparaison, la commande et le paiement — puis **examinés visuellement** par le porteur : proportions, lisibilité, reconnaissance de l'identité, parcours sur téléphone et ordinateur. Le format est un **prototype statique** (`design/prototype-v01/`, D20). Les jetons exacts, le logo et les ratios seront ajustés à l'issue de cet examen.
 
 ---
 

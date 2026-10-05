@@ -1,6 +1,6 @@
 # 02 — Architecture proposée (Laravel / PostgreSQL)
 
-> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales. **Base acceptée ≠ tous les détails approuvés** : seules les décisions **DEC** (D01–D22) sont validées ; le reste est **proposition (PROP)** ou **question (Q)**, révisable après rendu.
 > Aucune installation, migration ni code n'a été produit. **Les versions citées sont des constats du 2026-10-05, non approuvés** (D17) : à vérifier avant toute installation.
 
 Étiquettes : **SRC** exigence d'une source · **DEC** décision du porteur · **PROP** proposition · **Q** question (`05` §5).
@@ -13,7 +13,7 @@
 |---|---|---|
 | P1 | Monolithe modulaire Laravel : un dépôt, un processus web, un processus de tâches, une base PostgreSQL. Transactions locales à la base. | DEC D02–D04 ; SRC CDC §14, ARC §1 |
 | P2 | Trois couches : **Interface** (HTTP, Blade, Livewire) → **Actions métier** (règles, droits, transactions) → **Intégrations** (paiement, fichiers, courriel, analyse antivirus). L'interface n'applique aucune règle ; elle appelle des actions. | DEC D04 |
-| P3 | Les montants, droits, états et échéances sont **toujours recalculés côté serveur** depuis les données de référence. Aucun état financier n'est modifiable par une requête générique. | SRC CDC §14, N10, F25 |
+| P3 | **Autorisations et conditions de transition sont revérifiées côté serveur à chaque action** (rôle, relation au dossier, état, version attendue). Les **conditions commerciales figées** de l'accord (prix, taux de commission, frais, périmètre, délai, corrections) **ne sont jamais recalculées depuis les paramètres courants** : elles sont **lues dans l'accord**. La **date de départ et l'échéance sont enregistrées une seule fois** ; un **report accepté** modifie l'échéance **avec historique** (ancienne échéance conservée). Aucun état financier n'est modifiable par une requête générique ; le navigateur ne fournit jamais un montant. | SRC CDC §14, N10, F19, F21, F22, F25 |
 | P4 | Toute action sensible est **autorisée, transactionnelle, idempotente et tracée** (clé d'opération, historique, outbox, audit). | SRC F23, ARC §8, §11 |
 | P5 | Le moindre pouvoir : chaque rôle et chaque compte technique n'a que ce dont il a besoin ; la séparation conception / validation / exécution est conservée. | PROP (cohérent avec N10, F40, CDC §12) |
 | P6 | Les composants externes sont **remplaçables** derrière des ports (prestataire de paiement non qualifié ; stockage, courriel, analyse de fichiers à choisir). | DEC (paiement à qualifier) ; PROP |
@@ -155,7 +155,7 @@ Il n'existe **ni SQL ni schéma validé** : le modèle est **conçu à partir de
 | Sujet | Règle |
 |---|---|
 | Clés | UUID pour les objets métier (**v4 ou v7 : à fixer à l'amorçage**, avec la version de Laravel retenue), identifiants croissants pour les historiques volumineux. |
-| Dates | `timestamptz`, stockées en UTC ; affichées « heure d'Abidjan » (N01). Départ et échéance calculés **une seule fois** (F21). |
+| Dates | `timestamptz`, stockées en UTC ; affichées « heure d'Abidjan » (N01). Départ (`started_at`) et échéance (`due_at`) **enregistrés une seule fois** (F21) ; seul un **report accepté** modifie `due_at`, **avec historique** (ancienne échéance, demandeur, réponse — F22) ; le nombre de jours de l'accord reste inchangé. |
 | Montants | `bigint` en francs XOF entiers ; objet `Money` côté PHP ; **aucun flottant**. JSON : chaîne décimale. Format d'affichage `100 000 FCFA` avec espace insécable (`03` §5). |
 | Taux | Points de base (`1 000` = 10 %) figés dans l'accord (F19). |
 | Commission | `(prix × bp + 5 000) / 10 000` en division entière (arrondi au franc le plus proche, demi vers le haut) — ARC §10 ; contrôlé par les cas T14 (100 000 → 10 000 / 90 000 ; remboursement 20 000 → base 80 000 → 8 000 / 72 000). |
@@ -180,10 +180,12 @@ Il n'existe **ni SQL ni schéma validé** : le modèle est **conçu à partir de
 | `in_progress` | `delivered` | Freelance | `Orders\DeliverOrder` |
 | `delivered` | `revision_requested` / `validated` | Client | `Orders\RequestCorrection` / `Orders\ValidateDelivery` |
 | `revision_requested` | `delivered` | Freelance | `Orders\DeliverOrder` (version suivante) |
-| `validated` | `closed` | Serveur | clôture commerciale ; le reversement reste séparé |
-| `in_progress`, `delivered`, `revision_requested` | `disputed` | Client ou freelance | `Orders\OpenDispute` |
+| `validated` | `closed` | Serveur | **clôture commerciale** ; **indépendante** de l'exécution financière (le reversement est un suivi séparé) |
+| commande payée, **reversement non encore exécuté** (`in_progress`, `delivered`, `revision_requested`, `validated`, `closed`) | `disputed` | Client ou freelance | `Orders\OpenDispute` |
 | `disputed` | `validated` / `revision_requested` / `cancelled` | Support habilité | `Administration\ResolveDispute` |
 | après paiement | `cancelled` | Décision motivée | `Orders\RequestCancellation` → `ResolveDispute` |
+
+**Litige et réclamation** (F34) : un **litige** n'existe que **tant que le reversement n'est pas exécuté** ; il le bloque. Après un reversement envoyé, il n'y a plus de blocage possible : la partie dépose une **réclamation** auprès du support, dont **le traitement financier dépend du prestataire** et n'est pas garanti. La **clôture commerciale** (`closed`) et l'**exécution financière** (reversement) sont **deux suivis indépendants**.
 
 Le **retard** n'est pas un état : c'est un indicateur calculé sur `due_at` (F22). Le **silence** après 7 jours ouvre un dossier de support sans valider ni reverser (F32). Les états de paiement (`created`, `pending`, `confirmed`, `failed`, `expired`, `unknown`), de remboursement et de reversement (`non éligible`, `éligible`, `demandé`, `en cours`, `confirmé`, `échoué`, + « à rapprocher ») sont **trois suivis séparés** ; l'éligibilité est **calculée**, jamais stockée comme un versement (ARC §7).
 
@@ -247,13 +249,13 @@ Chaque action suit le même gabarit : **acteur/droit · entrées · préconditio
 | `Orders\RequestCorrection` | Client | `deliveryId`, motif | État `delivered` ; **compteur** de corrections ; dernière livraison | Demande liée à la version, état `revision_requested` | Oui | F31 |
 | `Orders\ValidateDelivery` | Client | `deliveryId`, `expectedVersion`, `operationKey` | État `delivered` ; aucun litige | `validated` puis `closed` ; **éligibilité** recalculée ; aucun versement direct | Oui | F32 |
 | `Orders\RequestExtension` / `AnswerExtension` | Une partie / l'autre | jours, motif / réponse | Une seule demande en attente | Nouvelle échéance **seulement après acceptation** ; ancienne conservée | Oui | F22 |
-| `Orders\OpenDispute` | Client ou freelance | motif, preuves | Commande payée non clôturée par reversement | Litige, **gel** du reversement non exécuté (même verrou que le reversement), notifications | Oui | F33–F34 |
+| `Orders\OpenDispute` | Client ou freelance | motif, preuves | Commande payée ; **reversement non encore exécuté** (la clôture commerciale n'est pas un critère). **Après versement**, `OpenDispute` est refusé : la partie dépose une **réclamation** via le support (`Support\OpenClaim`, F34) | Litige, **blocage du reversement non exécuté** (même verrou que le reversement), notifications. **Aucun gel de fonds déjà envoyés n'est promis** : un versement déjà accepté par le prestataire est suivi comme incident | Oui | F33–F34 |
 | `Administration\ResolveDispute` | Support/administrateur habilité | décision, part retenue, remboursement | Authentification renforcée ; motif ; **double approbation au-delà du seuil** | Décision versionnée ; exécution financière suivie séparément | Empreinte d'approbation | F35, F26 |
 | `Finance\InitiateRefund` | Habilité | décision | Plafond cumulé ≤ encaissement confirmé | Opération `refund` ; réservation, **pas** affiché « remboursé » avant confirmation | Clé d'opération | F27 |
 | `Finance\InitiatePayout` | Tâche autorisée / habilité | commande | Validée, sans litige actif, bénéficiaire vérifié, fonds rapprochés, aucun reversement concurrent | Opération `payout` + événement worker, **atomique** | Clé unique ; résultat inconnu → rapprochement | F26 |
 | `Finance\ReconcileUnknown` | Habilité / tâche | référence | Opération `unknown` | Recherche chez le prestataire **avant** toute nouvelle tentative | Oui | F25–F27 |
 | `Files\IssueDownload` | Utilisateur autorisé | `fileId`, contexte | Fichier `clean` ; lien utilisateur–fichier–dossier | URL **courte et signée** ; jamais de clé de stockage permanente | — | F30, N13 |
-| `Communication\SendMessage` | Participant | texte, pièces | Participant non bloqué ; fichiers autorisés | Message, non-lus, notification | Oui | F37 |
+| `Communication\SendMessage` | Participant de la conversation | texte, pièces | Participant **explicite** de la conversation ; fichiers `clean` autorisés. **Blocage d'un contact** : il empêche les échanges **non nécessaires** (nouvelle conversation de service ou de mission) mais **ne supprime ni les échanges nécessaires aux obligations d'une commande active, ni l'accès au support** (CDC §11) | Message, non-lus, notification | Oui | F37 |
 | `Orders\SubmitReview` | Partie d'une commande validée et clôturée | note, texte | Un avis par auteur et commande | Avis ; publication différée (2 dépôts ou 14 j) | Oui | F36 |
 | `Administration\ChangePolicy` | Administrateur | nouvelle politique | Authentification renforcée ; motif | Nouvelle `policy_version` ; **sans effet** sur les accords existants | Oui | F42 |
 
@@ -274,6 +276,7 @@ Chaque action suit le même gabarit : **acteur/droit · entrées · préconditio
 | `Orders\RequestCancellation` | Partie de la commande payée | Examen contradictoire ; reversement bloqué | F33 |
 | `Communication\StartConversation` | Utilisateur connecté | Conversation privée liée à un service, une mission ou une commande | F13, F37 |
 | `Files\UploadPrivateFile` | Utilisateur autorisé | `file_asset` en quarantaine, clé opaque | N13 |
+| `Support\OpenClaim` | Partie d'une commande | **Réclamation après versement** : dossier de support ; traitement financier dépendant du prestataire, sans promesse de gel ni de récupération | F34 |
 | `Administration\ReportContent` | Utilisateur connecté | `report` | F37, F39 |
 | `Administration\AssignCase` | Habilité | Affectation d'un dossier (responsable, priorité) | F41 |
 | `Administration\ApproveSensitiveAction` | Approbateur **distinct** | Consomme une approbation liée à l'empreinte de l'action | CDC §12 |

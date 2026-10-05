@@ -1,6 +1,6 @@
 # 04 — Parcours et écrans
 
-> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales.
+> **Statut : base de travail acceptée par le porteur (revue du 2026-10-05).** Les écrans restent à présenter en maquettes haute fidélité et à examiner visuellement avant tout développement ; les règles métier sont portées par le serveur. **Publication** dans le dépôt public autorisée par le porteur (D19), hors secrets, identifiants, données personnelles réelles et pièces client originales. **Base acceptée ≠ tous les détails approuvés** : seules les décisions **DEC** (D01–D22) sont validées ; le reste est **proposition (PROP)** ou **question (Q)**, révisable après rendu.
 > Les maquettes sont **décrites** (disposition, proportions, contenus, actions, variantes) ; aucune n'est dessinée ni codée. Les comportements responsives et d'accessibilité sont des **critères de conception** : **aucun n'a été testé**, il n'existe pas d'application.
 
 Étiquettes : **SRC** (avec repère F/N/P/A/C/CL/FR/AD) · **DEC** · **PROP** · **Q** (`05` §5). Jetons visuels : `03`. Actions métier : `02` §6 et rubriques « Contrats métier appelés » de chaque écran.
@@ -707,7 +707,7 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | **Accord** | Parties · version de l'offre/proposition · périmètre · livrables · **prix** · délai · corrections · **versions des conditions** ; le client voit le **prix et les frais affichés**, le freelance voit aussi **commission et part attribuée** (*répartition à confirmer, Q05*) | Lire (figé) ; **demander un report** (action dédiée) |
 | **Brief** | Éléments requis (issus de l'accord) en **liste de contrôle** « Fourni / Manquant » ; réponses ; pièces ; message « Brief complet / 2 éléments manquants » | Client : compléter · Freelance : signaler ce qui manque |
 | **Livraisons** | Versions **v1, v2…** (plus récente d'abord) : date, message, **fichiers** (nom, taille, **résultat du contrôle**, téléchargement par lien court), corrections liées ; compteur « Corrections : 1 sur 2 » | Freelance : **Livrer** · Client : télécharger, **demander une correction**, **valider** |
-| **Messages** | Conversation liée à la commande ; non lus ; pièces ; rappel « *Un fichier envoyé ici n'est pas une livraison formelle* » ; signaler | Envoyer ; **les messages ne changent ni prix, ni commission, ni état financier** (CDC §11) |
+| **Messages** | Conversation liée à la commande ; non lus ; pièces ; **un contact bloqué ne coupe pas les échanges nécessaires à une commande active ni l'accès au support** ; rappel « *Un fichier envoyé ici n'est pas une livraison formelle* » ; signaler | Envoyer ; **les messages ne changent ni prix, ni commission, ni état financier** (CDC §11) |
 | **Finances** | **Trois blocs séparés : Paiement · Remboursement · Reversement**, chacun avec montant, **état**, **référence**, **dernier contrôle**, « ce que cela signifie » ; dernier état incertain → « **À rapprocher** » | Client : aller à C06 si autorisé ; **Contacter le support** |
 | **Historique** | Transitions : auteur, date, **état précédent → suivant**, motif ; reports ; décisions | Consulter ; lien vers la livraison/dossier |
 | **Avis** | Après clôture validée : note 1–5 + commentaire ; publication après deux dépôts ou 14 j | Déposer ; répondre ; signaler |
@@ -724,7 +724,7 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | Correction demandée | Préciser | **Déposer la nouvelle livraison** | Compteur de corrections |
 | Validée | Consulter la suite financière | Consulter commission, part, reversement | « Reversement : à vérifier / éligible » (état séparé) |
 | Clôturée | Déposer un avis | Déposer un avis | Avis publiés après 2 dépôts ou 14 j |
-| En litige | Déposer les preuves ; répondre | Idem | « **Reversement bloqué** » |
+| En litige | Déposer les preuves ; répondre | Idem | « **Reversement bloqué** » (litige ouvert **avant** exécution du reversement) |
 | Annulée / expirée | Consulter motif et remboursement | Consulter motif | Aucune livraison supplémentaire |
 
 **Indicateurs** : un **retard** affiche « En retard de N jours » + « Contacter le support » ; il **ne valide rien et ne reverse rien** (F22). Après **7 jours sans réponse** à une livraison : bandeau « Cette livraison attend votre examen depuis 7 jours. Le support a été saisi ; **rien n'est validé automatiquement**. » (F32).
@@ -738,7 +738,8 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | **Demander une correction** | « Correction n° 2 sur 2, liée à la v2 » | « Vous aurez utilisé toutes les corrections incluses. Une demande hors périmètre peut nécessiter une nouvelle commande. » | Envoyer la demande / Revenir |
 | **Annuler** (avant paiement) | « Annuler la demande » | « Aucun montant n'a été encaissé. La demande est fermée. » | Annuler la demande / Garder |
 | **Annuler** (après paiement) | « Demander l'annulation » | « Un examen contradictoire s'ouvre ; **le reversement est bloqué**. Le support décide du travail retenu et du remboursement éventuel. » | Demander l'annulation / Revenir |
-| **Ouvrir un litige** | « Ouvrir un litige sur DEMO-26018 » | « Le reversement non exécuté est bloqué. Ajoutez vos preuves : les deux parties voient motif, étapes et décision. » | Ouvrir le litige / Revenir |
+| **Ouvrir un litige** *(reversement non encore exécuté)* | « Ouvrir un litige sur DEMO-26018 » | « Le reversement non exécuté est bloqué. Ajoutez vos preuves : les deux parties voient motif, étapes et décision. » | Ouvrir le litige / Revenir |
+| **Déposer une réclamation** *(après versement)* | « Réclamation sur DEMO-26018 — reversement déjà envoyé » | « Le reversement a **déjà été envoyé** : FreeCI **ne peut pas le bloquer ni le récupérer**. Le support examine votre réclamation ; **le traitement financier dépend du prestataire de paiement et n'est pas garanti**. » | Déposer la réclamation / Revenir |
 | **Accepter un report** | « Reporter l'échéance au 18 oct. (+4 j) » | « La nouvelle échéance remplace l'ancienne **seulement après votre acceptation**. » | Accepter / Refuser |
 
 ### 8.5 États
