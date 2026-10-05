@@ -103,6 +103,10 @@
     }
     fromHash();
     window.addEventListener("hashchange", fromHash);
+    window.addEventListener("fc:tab", function (e) {
+      var t = tabs.filter(function (x) { return x.getAttribute("aria-controls") === "panel-" + e.detail; })[0];
+      if (t) select(t, false);
+    });
   });
 
   // Galerie du détail de service
@@ -118,4 +122,38 @@
       });
     });
   });
+
+  // Dépliants : ouverts par défaut sur écran large, repliés sur téléphone (l'utilisateur garde la main ensuite)
+  var wide = window.matchMedia("(min-width: 768px)");
+  function foldDefaults() {
+    document.querySelectorAll("details[data-open-desktop]").forEach(function (d) { d.open = wide.matches; });
+  }
+  foldDefaults();
+  if (wide.addEventListener) wide.addEventListener("change", foldDefaults);
+
+  // « Consulter les fichiers » : ouvre la rubrique, fait défiler jusqu'à la cible et y place le focus
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-goto]");
+    if (!g) return;
+    e.preventDefault();
+    var tab = g.getAttribute("data-goto-tab");
+    if (tab) window.dispatchEvent(new CustomEvent("fc:tab", { detail: tab }));
+    var target = document.getElementById(g.getAttribute("data-goto"));
+    if (!target) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    target.focus({ preventScroll: true });
+  });
+
+  // Barre d'achat fixe : visible seulement quand le bouton principal du résumé n'est plus à l'écran
+  var bar = document.querySelector(".sticky-buy"), cta = document.getElementById("buy-cta");
+  if (bar && cta && "IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (en) {
+      var inView = en[0].isIntersecting;
+      var above = en[0].boundingClientRect.top < 0;
+      bar.classList.toggle("is-off", inView || !above);
+    });
+    bar.classList.add("is-off");
+    io.observe(cta);
+  }
 })();

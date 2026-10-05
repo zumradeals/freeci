@@ -29,6 +29,7 @@ const measure = () => {
 
   const visible = (el) => {
     if (el.closest('[hidden], dialog:not([open]), .sr-only, .skip-link, script, style, template')) return false;
+    if (el.closest('.sr-only-m') && el.closest('.sr-only-m').getBoundingClientRect().width <= 1) return false; // masqué visuellement (≤ 767 px)
     const cd = el.closest('details:not([open])'); if (cd && !el.closest('summary')) return false;
     const cs = getComputedStyle(el);
     if (cs.display === 'none' || cs.visibility === 'hidden') return false;
@@ -50,7 +51,7 @@ const measure = () => {
   const clipped = [];
   const okClip = '.hero, .svc, .gallery .main, .gallery .th, .table-wrap, .card-flush, .thumb, .site-footer';
   document.querySelectorAll('body *').forEach((el) => {
-    if (!visible(el) || el.matches(okClip) || el.closest('.hero-grid-bg') || el.matches('.wm, .menu-btn span')) return; // .wm / libellé du menu : masqués visuellement à ≤ 300 px, nom accessible conservé
+    if (!visible(el) || el.matches(okClip) || el.closest('.hero-grid-bg') || el.matches('.wm, .menu-btn span, .sr-only-m')) return; // .wm / libellé du menu : masqués visuellement à ≤ 300 px, nom accessible conservé
     const cs = getComputedStyle(el);
     const hid = ['hidden', 'clip', 'auto', 'scroll'].includes(cs.overflowX);
     if (hid && el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0) clipped.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0]);
@@ -224,7 +225,7 @@ for (const w of [360, 1440]) {
 {
   const ctx = await ctxFor(360); const page = await ctx.newPage();
   await page.goto(`file://${root}/service.html`);
-  await page.click('.sticky-buy [data-open=request]');
+  await page.click('#buy-cta');
   const r = await page.evaluate(() => { const d = document.getElementById('request'); const b = d.getBoundingClientRect(); const f = d.querySelector('.dlg-form .modal-foot').getBoundingClientRect(); return { ouvert: d.open, largeur: Math.round(b.width), hauteur: Math.round(b.height), viewportH: innerHeight, pieDansViewport: f.bottom <= innerHeight + 1 && f.top >= 0, scrollCorps: getComputedStyle(document.body).overflow }; });
   I['dialogue-demande@360'] = r;
   await ctx.close();
@@ -252,6 +253,83 @@ for (const w of [360, 1440]) {
   await page.goto(`file://${root}/index.html`);
   I['reduced-motion'] = await page.evaluate(() => getComputedStyle(document.querySelector('.btn')).transitionDuration);
   await ctx.close();
+}
+
+// ---------- V01.1 : vérifications ciblées de la révision ----------
+{
+  const J = results.interactions;
+  // 1. Examen de livraison : l'action principale mène aux fichiers, validation non favorisée, aucune obligation de télécharger
+  for (const w of [360, 1440]) {
+    const ctx = await ctxFor(w); const page = await ctx.newPage();
+    await page.goto(`file://${root}/commande.html#finances`); await page.reload();
+    const base = await page.evaluate(() => {
+      const card = document.querySelector('.action-card');
+      const primary = [...card.querySelectorAll('.btn-primary')].map((b) => b.textContent.trim());
+      const dec = [...document.querySelectorAll('.choice .btn')].map((b) => ({ t: b.textContent.trim(), c: b.className }));
+      const reqDl = /obligatoire|doit télécharger|avant de valider/i.test(document.querySelector('.decision-wrap').textContent);
+      return { primaireCarteAction: primary, valideDansCarteAction: /Valider la livraison/.test(card.textContent), choix: dec.map((d) => d.t), memeStyleDesChoix: dec.length === 2 && dec[0].c === dec[1].c, aucuneObligationDeTelechargement: !reqDl };
+    });
+    await page.click('[data-goto]');
+    await page.waitForTimeout(700);
+    const after = await page.evaluate(() => { const t = document.getElementById('livraison-v2'); const r = t.getBoundingClientRect(); return { ongletLivraisons: document.querySelector('[role=tab][aria-selected=true]').id, focusSurLivraison: document.activeElement === t, cibleDansLEcran: r.top >= -2 && r.top < innerHeight }; });
+    const sec = await page.evaluate(() => ({ nbControles: document.querySelectorAll('.file-line .sec').length, noteDistincte: /Contrôle de sécurité ≠ qualité du travail/.test(document.getElementById('panel-livraisons').textContent), v1Replie: !document.querySelector('details.prev').open }));
+    J[`examen-livraison@${w}`] = { ...base, ...after, ...sec };
+    await ctx.close();
+  }
+  // 2. Dépliants : repliés sur téléphone, ouverts sur ordinateur
+  for (const w of [360, 1440]) {
+    const ctx = await ctxFor(w); const page = await ctx.newPage();
+    const res = {};
+    for (const n of ['index', 'service', 'commande']) {
+      await page.goto(`file://${root}/${n}.html`);
+      res[n] = await page.evaluate(() => [...document.querySelectorAll('details.fold')].map((d) => d.open ? 'ouvert' : 'replié').join(','));
+    }
+    J[`depliants@${w}`] = res; await ctx.close();
+  }
+  // 3. Barre d'achat : cachée tant que le bouton principal est visible
+  {
+    const ctx = await ctxFor(360); const page = await ctx.newPage();
+    await page.goto(`file://${root}/service.html`); await page.waitForTimeout(300);
+    const top = await page.evaluate(() => getComputedStyle(document.querySelector('.sticky-buy')).display);
+    await page.evaluate(() => window.scrollTo(0, 1500)); await page.waitForTimeout(300);
+    const mid = await page.evaluate(() => getComputedStyle(document.querySelector('.sticky-buy')).display);
+    await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300);
+    const back = await page.evaluate(() => getComputedStyle(document.querySelector('.sticky-buy')).display);
+    J['barre-achat@360'] = { enHaut: top, apresDefilement: mid, retourEnHaut: back };
+    // Prix, délai, corrections, livrables dans le premier écran + bouton principal visible sans défilement
+    const first = await page.evaluate(() => { const q = (sel) => { const e = document.querySelector(sel); const r = e && e.getBoundingClientRect(); return r ? Math.round(r.bottom) : null; }; return { hauteurEcran: innerHeight, bas_prix: q('.buy-summary .price-lg'), bas_faits: q('.buy-summary .facts-row'), bas_bouton: q('#buy-cta') }; });
+    J['service-premier-ecran@360'] = first;
+    await ctx.close();
+  }
+  // 4. Tableau de bord : ordre des sections et distinction des échéances
+  for (const w of [360, 1440]) {
+    const ctx = await ctxFor(w); const page = await ctx.newPage();
+    await page.goto(`file://${root}/tableau-de-bord.html`);
+    const r = await page.evaluate(() => {
+      const y = (id) => document.getElementById(id).getBoundingClientRect().top + scrollY;
+      const x = (id) => document.getElementById(id).getBoundingClientRect().left;
+      const dom = ['h-todo', 'h-orders', 'h-missions', 'h-stats'].map((id) => [...document.querySelectorAll('h2')].indexOf(document.getElementById(id)));
+      const tasks = [...document.querySelectorAll('.task')].map((t) => ({ titre: t.querySelector('.t').textContent, echeance: t.querySelector('.due').textContent.replace(/\s+/g, ' ').trim().slice(0, 70), info: t.querySelector('.due').classList.contains('due-info') }));
+      return { ordreDansLeDocument: dom.every((v, i) => i === 0 || v > dom[i - 1]), yActions: Math.round(y('h-todo')), yCommandes: Math.round(y('h-orders')), yAutres: Math.round(y('h-missions')), yChiffres: Math.round(y('h-stats')), xAutres: Math.round(x('h-missions')), xCommandes: Math.round(x('h-orders')), tasks, boutonsPleins: document.querySelectorAll('.task .btn-primary').length, enTeteSansPublier: !document.querySelector('.site-header .header-cta'), enTeteSansNavPrincipale: !document.querySelector('.site-header .main-nav'), lienCatalogue: !!document.querySelector('.site-header .cat-link'), hauteurPied: Math.round(document.querySelector('footer').getBoundingClientRect().height) };
+    });
+    J[`tableau-de-bord@${w}`] = r; await ctx.close();
+  }
+  // 5. Confiance : e-mail discret, pas de pastille « vérifié » ; démonstration non répétée
+  {
+    const ctx = await ctxFor(1440); const page = await ctx.newPage();
+    await page.goto(`file://${root}/service.html`);
+    J['confiance-service'] = await page.evaluate(() => ({ pastillesEmail: [...document.querySelectorAll('.badge')].filter((b) => /e-mail|vérifi/i.test(b.textContent)).length, noteEmail: document.querySelector('.note-email').textContent.replace(/\s+/g, ' ').trim(), marquesDemo: document.querySelectorAll('.tag-demo').length }));
+    await page.goto(`file://${root}/index.html`);
+    J['accueil'] = await page.evaluate(() => ({ cartesPrestations: document.querySelectorAll('.svc').length, imagesChargees: [...document.querySelectorAll('.svc img')].every((i) => i.complete && i.naturalWidth > 0), avisOuNotes: document.querySelectorAll('[class*=rating], [class*=review], [class*=star]').length, marquesDemo: document.querySelectorAll('.tag-demo').length }));
+    await ctx.close();
+  }
+  // 6. Onglets à 360 px : cinq rubriques visibles, équilibrées, onglet actif évident
+  {
+    const ctx = await ctxFor(360); const page = await ctx.newPage();
+    await page.goto(`file://${root}/commande.html`);
+    J['onglets-360'] = await page.evaluate(() => { const t = [...document.querySelectorAll('.tab')].map((b) => { const r = b.getBoundingClientRect(); return { n: b.textContent.trim().replace(/\d+$/, ''), l: Math.round(r.left), r: Math.round(r.right), top: Math.round(r.top), h: Math.round(r.height), actif: b.getAttribute('aria-selected') === 'true', ombre: getComputedStyle(b).boxShadow !== 'none', fond: getComputedStyle(b).backgroundColor }; }); return { onglets: t, tousDansLEcran: t.every((x) => x.l >= 0 && x.r <= innerWidth), lignes: [...new Set(t.map((x) => x.top))].length }; });
+    await ctx.close();
+  }
 }
 
 // ---------- liens internes ----------

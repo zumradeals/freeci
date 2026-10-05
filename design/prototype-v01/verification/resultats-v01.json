@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-05T17:44:02.795Z",
+ "generated": "2026-10-05T18:21:25.116Z",
  "tool": "playwright chromium",
  "pages": {
   "index@360": {
@@ -15,7 +15,7 @@
     "incomplete": [
      {
       "id": "color-contrast",
-      "nodes": 11
+      "nodes": 10
      }
     ]
    }
@@ -26,14 +26,10 @@
    "clipped": [],
    "textOverlaps": [],
    "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   },
    "fontsLoaded": true,
    "axe": {
     "violations": [],
-    "passes": 44,
+    "passes": 42,
     "incomplete": []
    }
   },
@@ -46,7 +42,7 @@
    "fontsLoaded": true,
    "axe": {
     "violations": [],
-    "passes": 43,
+    "passes": 40,
     "incomplete": []
    }
   },
@@ -103,10 +99,6 @@
    "clipped": [],
    "textOverlaps": [],
    "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   },
    "fontsLoaded": true
   },
   "tableau-de-bord@390": {
@@ -155,10 +147,6 @@
    "clipped": [],
    "textOverlaps": [],
    "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   },
    "fontsLoaded": true
   },
   "tableau-de-bord@768": {
@@ -281,7 +269,7 @@
    "fontsLoaded": true,
    "axe": {
     "violations": [],
-    "passes": 45,
+    "passes": 40,
     "incomplete": []
    }
   },
@@ -346,11 +334,7 @@
    "offViewport": [],
    "clipped": [],
    "textOverlaps": [],
-   "smallTargets": [],
-   "stickyBar": {
-    "height": 134,
-    "bodyPaddingBottom": 84
-   }
+   "smallTargets": []
   },
   "tableau-de-bord@zoom200-360": {
    "docScrollOverflow": 0,
@@ -392,11 +376,7 @@
    "offViewport": [],
    "clipped": [],
    "textOverlaps": [],
-   "smallTargets": [],
-   "stickyBar": {
-    "height": 116,
-    "bodyPaddingBottom": 84
-   }
+   "smallTargets": []
   },
   "tableau-de-bord@zoom200-390": {
    "docScrollOverflow": 0,
@@ -438,11 +418,7 @@
    "offViewport": [],
    "clipped": [],
    "textOverlaps": [],
-   "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   }
+   "smallTargets": []
   },
   "tableau-de-bord@zoom200-768": {
    "docScrollOverflow": 0,
@@ -484,11 +460,7 @@
    "offViewport": [],
    "clipped": [],
    "textOverlaps": [],
-   "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   }
+   "smallTargets": []
   },
   "tableau-de-bord@zoom200-1024": {
    "docScrollOverflow": 0,
@@ -530,11 +502,7 @@
    "offViewport": [],
    "clipped": [],
    "textOverlaps": [],
-   "smallTargets": [],
-   "stickyBar": {
-    "height": 69,
-    "bodyPaddingBottom": 84
-   }
+   "smallTargets": []
   },
   "tableau-de-bord@zoom200-1440": {
    "docScrollOverflow": 0,
@@ -567,51 +535,51 @@
  },
  "interactions": {
   "focus:index@360": {
-   "stops": 33,
-   "problems": []
-  },
-  "focus:service@360": {
-   "stops": 21,
-   "problems": []
-  },
-  "focus:tableau-de-bord@360": {
-   "stops": 29,
-   "problems": []
-  },
-  "focus:tableau-de-bord-vide@360": {
-   "stops": 17,
-   "problems": []
-  },
-  "focus:commande@360": {
-   "stops": 27,
-   "problems": []
-  },
-  "focus:commande-paiement-en-verification@360": {
-   "stops": 21,
-   "problems": []
-  },
-  "focus:index@1440": {
-   "stops": 38,
-   "problems": []
-  },
-  "focus:service@1440": {
-   "stops": 26,
-   "problems": []
-  },
-  "focus:tableau-de-bord@1440": {
-   "stops": 42,
-   "problems": []
-  },
-  "focus:tableau-de-bord-vide@1440": {
-   "stops": 30,
-   "problems": []
-  },
-  "focus:commande@1440": {
    "stops": 39,
    "problems": []
   },
+  "focus:service@360": {
+   "stops": 23,
+   "problems": []
+  },
+  "focus:tableau-de-bord@360": {
+   "stops": 22,
+   "problems": []
+  },
+  "focus:tableau-de-bord-vide@360": {
+   "stops": 12,
+   "problems": []
+  },
+  "focus:commande@360": {
+   "stops": 22,
+   "problems": []
+  },
+  "focus:commande-paiement-en-verification@360": {
+   "stops": 17,
+   "problems": []
+  },
+  "focus:index@1440": {
+   "stops": 44,
+   "problems": []
+  },
+  "focus:service@1440": {
+   "stops": 28,
+   "problems": []
+  },
+  "focus:tableau-de-bord@1440": {
+   "stops": 31,
+   "problems": []
+  },
+  "focus:tableau-de-bord-vide@1440": {
+   "stops": 21,
+   "problems": []
+  },
+  "focus:commande@1440": {
+   "stops": 30,
+   "problems": []
+  },
   "focus:commande-paiement-en-verification@1440": {
-   "stops": 33,
+   "stops": 25,
    "problems": []
   },
   "tiroir@360": {
@@ -646,7 +614,7 @@
    },
    "resultat": {
     "resultatVisible": true,
-    "texte": "Simulation : la commande n’a pas été modifiée",
+    "texte": "Simulation : commande non modifiée",
     "focusSurTitre": true
    }
   },
@@ -667,9 +635,195 @@
   "simulation-bouton-payer": {
    "memeUrl": true,
    "toastVisible": true,
-   "toast": "Simulation : le paiement de DEMO-26021 n’est pas inclus dans le prototype V01 (aucun paiem"
+   "toast": "Simulation : paiement non inclus dans ce prototype (aucun paiement réel)."
   },
-  "reduced-motion": "1e-05s"
+  "reduced-motion": "1e-05s",
+  "examen-livraison@360": {
+   "primaireCarteAction": [
+    "Consulter les fichiers de la livraison v2"
+   ],
+   "valideDansCarteAction": false,
+   "choix": [
+    "Demander une correction",
+    "Valider la livraison"
+   ],
+   "memeStyleDesChoix": true,
+   "aucuneObligationDeTelechargement": true,
+   "ongletLivraisons": "tab-livraisons",
+   "focusSurLivraison": true,
+   "cibleDansLEcran": true,
+   "nbControles": 5,
+   "noteDistincte": true,
+   "v1Replie": true
+  },
+  "examen-livraison@1440": {
+   "primaireCarteAction": [
+    "Consulter les fichiers de la livraison v2"
+   ],
+   "valideDansCarteAction": false,
+   "choix": [
+    "Demander une correction",
+    "Valider la livraison"
+   ],
+   "memeStyleDesChoix": true,
+   "aucuneObligationDeTelechargement": true,
+   "ongletLivraisons": "tab-livraisons",
+   "focusSurLivraison": true,
+   "cibleDansLEcran": true,
+   "nbControles": 5,
+   "noteDistincte": true,
+   "v1Replie": true
+  },
+  "depliants@360": {
+   "index": "replié,replié,replié",
+   "service": "replié,replié",
+   "commande": "replié,replié"
+  },
+  "depliants@1440": {
+   "index": "ouvert,ouvert,ouvert",
+   "service": "ouvert,ouvert",
+   "commande": "replié,replié"
+  },
+  "barre-achat@360": {
+   "enHaut": "none",
+   "apresDefilement": "flex",
+   "retourEnHaut": "none"
+  },
+  "service-premier-ecran@360": {
+   "hauteurEcran": 900,
+   "bas_prix": 449,
+   "bas_faits": 571,
+   "bas_bouton": 633
+  },
+  "tableau-de-bord@360": {
+   "ordreDansLeDocument": true,
+   "yActions": 349,
+   "yCommandes": 1295,
+   "yAutres": 1914,
+   "yChiffres": 2268,
+   "xAutres": 16,
+   "xCommandes": 16,
+   "tasks": [
+    {
+     "titre": "Payer votre commande",
+     "echeance": "À payer avant le 9 oct. à 09:00 dans 19 h",
+     "info": false
+    },
+    {
+     "titre": "Examiner la livraison",
+     "echeance": "À décider avant le 15 oct. à 11:15 (dans 6 j 21 h)",
+     "info": false
+    },
+    {
+     "titre": "Comparer les propositions",
+     "echeance": "Pas d’échéance de votre part. Candidatures ouvertes jusqu’au 12 oct. à",
+     "info": true
+    }
+   ],
+   "boutonsPleins": 1,
+   "enTeteSansPublier": true,
+   "enTeteSansNavPrincipale": true,
+   "lienCatalogue": true,
+   "hauteurPied": 94
+  },
+  "tableau-de-bord@1440": {
+   "ordreDansLeDocument": true,
+   "yActions": 272,
+   "yCommandes": 866,
+   "yAutres": 272,
+   "yChiffres": 672,
+   "xAutres": 1016,
+   "xCommandes": 296,
+   "tasks": [
+    {
+     "titre": "Payer votre commande",
+     "echeance": "À payer avant le 9 oct. à 09:00 dans 19 h",
+     "info": false
+    },
+    {
+     "titre": "Examiner la livraison",
+     "echeance": "À décider avant le 15 oct. à 11:15 (dans 6 j 21 h)",
+     "info": false
+    },
+    {
+     "titre": "Comparer les propositions",
+     "echeance": "Pas d’échéance de votre part. Candidatures ouvertes jusqu’au 12 oct. à",
+     "info": true
+    }
+   ],
+   "boutonsPleins": 1,
+   "enTeteSansPublier": true,
+   "enTeteSansNavPrincipale": true,
+   "lienCatalogue": true,
+   "hauteurPied": 73
+  },
+  "confiance-service": {
+   "pastillesEmail": 0,
+   "noteEmail": "Adresse e-mail confirmée. Cela ne vaut pas vérification d’identité, de compétence ou de qualité du travail.",
+   "marquesDemo": 1
+  },
+  "accueil": {
+   "cartesPrestations": 6,
+   "imagesChargees": true,
+   "avisOuNotes": 0,
+   "marquesDemo": 1
+  },
+  "onglets-360": {
+   "onglets": [
+    {
+     "n": "Livraisons",
+     "l": 16,
+     "r": 120,
+     "top": 1006,
+     "h": 48,
+     "actif": true,
+     "ombre": true,
+     "fond": "rgb(24, 59, 96)"
+    },
+    {
+     "n": "Accord",
+     "l": 128,
+     "r": 232,
+     "top": 1006,
+     "h": 48,
+     "actif": false,
+     "ombre": false,
+     "fond": "rgb(255, 255, 255)"
+    },
+    {
+     "n": "Brief",
+     "l": 240,
+     "r": 344,
+     "top": 1006,
+     "h": 48,
+     "actif": false,
+     "ombre": false,
+     "fond": "rgb(255, 255, 255)"
+    },
+    {
+     "n": "Finances",
+     "l": 16,
+     "r": 176,
+     "top": 1062,
+     "h": 48,
+     "actif": false,
+     "ombre": false,
+     "fond": "rgb(255, 255, 255)"
+    },
+    {
+     "n": "Historique",
+     "l": 184,
+     "r": 344,
+     "top": 1062,
+     "h": 48,
+     "actif": false,
+     "ombre": false,
+     "fond": "rgb(255, 255, 255)"
+    }
+   ],
+   "tousDansLEcran": true,
+   "lignes": 2
+  }
  },
  "links": {
   "index": {

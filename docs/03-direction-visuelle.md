@@ -63,13 +63,13 @@ Valeurs échantillonnées sur les pixels des captures ; elles décrivent une **d
 
 | Élément | Description |
 |---|---|
-| **Monogramme** | Carré aux angles arrondis (rayon 25 % du côté), fond `marine-700`, lettre **F** blanche en graisse 700, et **un point orange** (`accent-300`) en bas à droite de la lettre — reprise du point de « f. » existant. Taille minimale 24 px ; favicon 32 px. |
+| **Monogramme** | Carré aux angles arrondis (rayon 25 % du côté), fond `marine-700`, lettre **F** blanche en graisse 700, et **un point orange** (`accent-500`, `#F26B1D`) en bas à droite de la lettre — reprise du point de « f. » existant. Taille minimale 24 px ; favicon 32 px. |
 | **Logotype** | « **Free**CI » sur une ligne, graisse 700 : « Free » en `ink-900`, « CI » en `accent-700` (6,28:1 sur blanc). Sur fond marine : « Free » blanc, « CI » `accent-300`. |
 | **Zone de protection** | Au moins la hauteur du point orange ×2 autour de l'ensemble. |
 | **Mobile (360 px)** | Monogramme + logotype ≈ 128 px de large ; le logotype ne passe jamais à la ligne. |
 | **Interdits** | Dégradé, ombre portée, rotation, orange en fond plein derrière du texte blanc. |
 
-**Q** : le dessin définitif (forme du monogramme, choix de couleur de « CI ») reste à valider par le porteur ; le présent texte est une spécification, pas un fichier de logo.
+**Identité de travail (D23).** Le monogramme et « FreeCI » sont conservés **comme identité de travail**, sans être présentés comme un **logo définitivement validé par le client**. Le dessin définitif (forme du monogramme, couleur de « CI ») reste ouvert (Q04) ; le prototype V01.1 en donne un rendu, pas un fichier de logo.
 
 ---
 
@@ -80,7 +80,7 @@ Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblera
 | Signature | Description | Où | Contrainte |
 |---|---|---|---|
 | **Le point orange** | Reprise du point de « f. » : monogramme **F•**, et **point final orange** après le H1 du bandeau d'accueil (« …prochain projet**.** ») | Logo, hero P01, un titre de confirmation par parcours | Décoratif (`aria-hidden`) ; compte dans la limite de 2 occurrences d'accent |
-| **Marine en aplat** | Les « moments de marque » (bandeau d'accueil, bandeau d'administration, pied de page) sont en `marine-900` **uni** | P01, coque admin, pied | Jamais de dégradé ni de motif |
+| **Marine et trame discrète** | Les « moments de marque » (bandeau d'accueil, bandeau d'administration) sont en `marine-900` ; **le bandeau d'accueil porte une trame de points très discrète** (≈ 9 % de blanc, évoquant le papier millimétré des plans), **conservée après rendu (D23)** | P01 (trame), coque admin | Jamais de dégradé ; trame **réservée au bandeau d'accueil** |
 | **Le filet d'action** | Tout bloc « **Action attendue** / À faire » porte un **filet vertical marine de 4 px** sur son bord gauche, sur fond blanc, rayon 12 px | CL01, FR01, C05, C06 | Réservé aux blocs qui demandent une action ; aucun autre usage |
 | **Le fil d'étapes** | Fil textuel « Accord ▸ Paiement ▸ Brief ▸ Réalisation ▸ Livraison ▸ Validation ▸ Clôture » (étape courante en gras + marqueur ●) | C05, C06, formulaires par étapes | Le texte porte le sens (pas la couleur seule) |
 | **Le montant FreeCI** | Montants en 600, chiffres tabulaires, « FCFA » en 400 sur la même ligne de base, **jamais séparés** par un retour à la ligne | Cartes, récapitulatifs, finances | Alignement à droite dans les tableaux |
@@ -101,9 +101,21 @@ Cinq signatures, **sobres et répétées** : sans elles, l'interface ressemblera
 
 Cette direction est une **base de travail**. Avant tout développement, les écrans prioritaires (`04` §11.1) seront **présentés en maquettes haute fidélité** — au minimum à **360 et 1440 px**, et à 390 / 768 / 1024 px pour la comparaison, la commande et le paiement — puis **examinés visuellement** par le porteur : proportions, lisibilité, reconnaissance de l'identité, parcours sur téléphone et ordinateur. Le format est un **prototype statique** (`design/prototype-v01/`, D20). Les jetons exacts, le logo et les ratios seront ajustés à l'issue de cet examen.
 
+### 2.7 Révision V01.1 — ce qui est réellement retenu (D23–D25)
+
+| Élément | Décision |
+|---|---|
+| Police | **Inter** (variable, latin), conservée |
+| Palette | Marine et fonds clairs conservés ; accent orange conservé ; **+ `accent-500`** pour le point décoratif |
+| Accueil | **Trame de points** conservée ; **carte de suivi** conservée comme explication du fonctionnement ; **six illustrations** de prestations variées (plans DWG, identité visuelle, site web, traduction, montage vidéo, réseaux sociaux), dessinées dans la palette, **sans personne, note ni témoignage** |
+| Identité | Monogramme + « FreeCI » = **identité de travail** (non logo définitif) |
+| Rendu mobile | Cartes de prestations en **liste compacte** ; **dépliants** (repliés < 768 px, ouverts ≥ 768 px) pour les détails secondaires ; barre d'achat fixe **seulement après** le résumé d'offre |
+| Confiance | E-mail confirmé en **texte sobre** ; contrôle de sécurité des fichiers distingué de la qualité du travail |
+| Ajustements du rendu | Catégories en tuiles verticales sur téléphone ; fil d'Ariane réduit à un lien de retour ; onglets de commande en grille 3 + 2 ; colonne latérale droite de l'espace connecté seulement à partir de 1280 px |
+
 ---
 
-## 3. Palette (PROP) — 19 valeurs, rôles explicites
+## 3. Palette (PROP) — 20 valeurs, rôles explicites
 
 Toutes les valeurs sont des **jetons** ; aucune couleur « libre » dans les écrans. Ratios calculés.
 
@@ -131,6 +143,7 @@ Pas de troisième gris de texte : les contenus **désactivés** (non interactifs
 | Rôle | Jeton | Valeur | Usage | Contraste |
 |---|---|---|---|---|
 | Accent — texte sur clair | `accent-700` | `#A63F14` | Surtitres, « CI » du logotype, une mise en relief par page | **6,28:1** sur blanc ; 5,68:1 sur `#FFF1E8` |
+| Accent — décoratif | `accent-500` | `#F26B1D` | Point du monogramme et point final du titre d'accueil (**jamais** porteur de texte ni de statut) | graphique décoratif |
 | Accent — sur marine | `accent-300` | `#FFB48A` | Surtitres et point du logo sur fond marine | **8,10:1** sur `marine-900` |
 | Accent — fond léger | `accent-100` | `#FFF1E8` | Fond d'une mise en relief non statutaire (ex. « Nouveau ») | — |
 
@@ -162,6 +175,8 @@ Un **badge d'état** = **icône + libellé + couleur** ; la forme de l'icône ch
 | Succès | coche dans un cercle | Validée · Paiement confirmé · Reversement confirmé · Publié · Ouverte |
 | Avertissement | triangle « ! » | À accepter · À payer · En attente du brief · Vérification du paiement en cours · À corriger · En contrôle · À rapprocher |
 | Erreur | octogone « ! » | En litige · Paiement échoué · Reversement échoué · Suspendu |
+
+**Confiance (D25).** L'**adresse e-mail confirmée** n'est **jamais** une pastille colorée : c'est une ligne de texte sobre dans la fiche du vendeur, avec la précision « *cela ne vaut pas vérification d'identité, de compétence ou de qualité du travail* ». Aucune note, aucun avis, aucun badge de qualité n'est affiché sans donnée réelle.
 
 Un **marqueur d'action** est un élément **distinct** du badge d'état : étiquette pleine `marine-700` + texte blanc + flèche, intitulée par la tâche (« **Examiner la livraison** », « Payer avant le 7 oct. 14:30 »). Il n'apparaît que si **le spectateur** doit agir. Ainsi, une commande « Livrée » montre *Livrée* (badge d'état, ton information) à tous, et *Examiner la livraison* (marqueur d'action) **seulement** au client.
 
@@ -245,7 +260,8 @@ Par défaut les cartes n'ont **pas d'ombre** (bordure `line` seulement). **Aucun
 |---|---|
 | En-tête public | Logo à gauche ; liens **Services · Missions · Freelances · Comment ça marche** groupés (≥ 1024 px) ; à droite : **Publier une mission** (secondaire), messages et compte/Connexion. Entre 768 et 1023 px : liens en deuxième ligne défilante **interdite** → ils passent dans le tiroir. |
 | En-tête mobile | 56 px : monogramme + logotype, icône messages (si connecté, avec compteur textuel), bouton **Menu** (libellé visible « Menu » + icône). Le tiroir (plein écran < 768 px) contient : sélecteur d'espace (si deux rôles), navigation, « Publier une mission », compte. |
-| Menu d'espace privé | ≥ 1024 px : colonne latérale 248 px, repère « Où suis-je ? » (élément actif sur `marine-100` + barre de 3 px `marine-700` + `aria-current="page"`). < 1024 px : même contenu dans le tiroir ; **pas de barre d'onglets fixe** en bas en V1 (évite de masquer du contenu, DEC D10). |
+| **En-tête de l'espace connecté (V01.1)** | **Allégé** : monogramme + logotype, lien **Catalogue**, messages (compteur), compte (≥ 1024 px) ; **ni** liens publics (Services, Missions, Freelances), **ni** bouton « Publier une mission » (présent dans la page). Sur téléphone : logotype, messages, **Menu** ; le tiroir place « Catalogue des services » en premier. **Pied de page réduit à une ligne** (Aide · Conditions · Confidentialité). |
+| Menu d'espace privé | ≥ 1024 px : colonne latérale 256 px **dans l'ordre Vue d'ensemble · Commandes · Missions · Messages · Paiements · Favoris**, puis, séparés, **Compte · Aide** ; colonne latérale, repère « Où suis-je ? » (élément actif sur `marine-100` + barre de 3 px `marine-700` + `aria-current="page"`). < 1024 px : même contenu dans le tiroir ; **pas de barre d'onglets fixe** en bas en V1 (évite de masquer du contenu, DEC D10). |
 | Sélecteur d'espace | Contrôle segmenté à deux valeurs « Client | Freelance », **libellé complet**, hors administration ; indique en texte « Vous agissez en tant que client ». N'existe que pour un compte à deux rôles. |
 | Administration | **Coque distincte** : bandeau supérieur `marine-900` avec mention « Administration » et nom du rôle d'habilitation ; aucun lien vers l'espace public principal, aucun sélecteur d'espace ; menu latéral limité aux entrées autorisées. |
 
@@ -299,6 +315,18 @@ Dialogue modal (focus piégé, `Échap` ferme, retour du focus) à **trois parti
 Bandeau **permanent** sous l'en-tête : « **Démonstration** — Les données et paiements affichés sont fictifs. » (fond `surface-2`, texte `ink-900`, icône, 14 px, **non masquable**). Les entités fictives portent « (exemple) » dans leur titre ; les références commencent par **DEMO-** ; aucun faux avis, volume ou badge.
 
 ---
+
+### 6.9 Onglets d'une commande (V01.1)
+
+| Largeur | Présentation |
+|---|---|
+| < 768 px | **Grille équilibrée sur deux rangées** : 3 onglets d'égale largeur puis 2 (chacun de 48 px de haut) ; **aucune rubrique n'est masquée ni à faire défiler** ; **onglet actif** = fond `marine-700`, texte blanc **et soulignement orange de 4 px** (le texte et la forme portent le sens, pas seulement la couleur) |
+| ≥ 768 px | Une rangée de pastilles, même codage de l'onglet actif |
+| ≤ 300 px (zoom extrême) | Deux colonnes |
+
+### 6.10 Marquage de démonstration allégé (V01.1)
+
+Une **barre fine** (« Prototype V01.1 · simulé ») sur chaque écran, **une seule étiquette** « Démonstration · date simulée » par page de commande ou de tableau de bord, et **une seule étiquette** « Exemples fictifs » au-dessus des prestations d'accueil. Les messages de simulation sont **courts** (« Simulation : écran non inclus dans ce prototype. ») ; plus aucune explication technique répétée dans chaque bloc.
 
 ## 7. Gabarits et grille
 

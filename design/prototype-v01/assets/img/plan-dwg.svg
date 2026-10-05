@@ -71,8 +71,8 @@
 </g>
 <text x="30" y="235" transform="rotate(-90 30 235)" font-family="Arial, sans-serif" font-size="13" fill="#FFB48A" text-anchor="middle">8,50 m</text>
 <g font-family="Arial, sans-serif" font-size="12" fill="#D3DFEC">
-<rect x="440" y="440" width="12" height="12" fill="#EAF2FB"/><text x="458" y="451">MURS</text>
-<rect x="505" y="440" width="12" height="12" fill="#67C1FF"/><text x="523" y="451">MENUISERIES</text>
-<rect x="600" y="440" width="12" height="12" fill="#FFB48A"/>
+<rect x="70" y="451" width="12" height="12" fill="#EAF2FB"/><text x="88" y="462">MURS</text>
+<rect x="140" y="451" width="12" height="12" fill="#67C1FF"/><text x="158" y="462">MENUISERIES</text>
+<rect x="262" y="451" width="12" height="12" fill="#FFB48A"/><text x="280" y="462">COTATIONS</text>
 </g>
 </svg>

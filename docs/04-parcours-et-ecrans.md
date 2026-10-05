@@ -35,7 +35,7 @@ Mobile d'abord : les tâches essentielles (inscription, mission, proposition, pa
 | **Cartes et listes** | 1 colonne ; **chaque carte garde prix, délai, vendeur/état** ; titre sur ≤ 2 lignes, détail complet au clic | Idem | 2 colonnes de cartes ; listes en cartes | 3 colonnes (catalogue) ; **listes denses** possibles en tableau (commandes) avec mêmes colonnes | 3–4 colonnes ; tableaux à largeur bornée |
 | **Comparaison de propositions** | Cartes **empilées**, triables ; chaque carte porte **les 6 lignes étiquetées** (prix, délai, livrables, corrections, validité, version) | Idem | Cartes sur 2 colonnes ; mode **« Mettre côte à côte »** pour 2 propositions (lignes = critères) | Grille de 3 cartes ; mode côte à côte jusqu'à **3** (colonnes = propositions, lignes = critères, en-tête du critère répété) | Idem 1024, plus d'air |
 | **Formulaires** | 1 colonne ; **étapes** pour les formulaires longs (mission : 5 étapes) avec « Étape n sur 5 » ; barre d'actions **non masquante** ; brouillon automatique | Idem | 1 colonne ≤ 640 px centrée ; sections visibles | Formulaire (640) + **panneau d'aperçu/récapitulatif collant** (320–360) | Idem 1024 |
-| **Commande (C05)** | En-tête compact (réf., **état, échéance, montant** toujours visibles) ; bloc « Action attendue » ; **onglets en puces sur 2 rangées** ; barre d'action collante **seulement** si action attendue | Idem | Onglets sur 1 rangée ; résumé en en-tête | **2 colonnes** : contenu (8/12) + **résumé collant** (4/12) | Idem, largeur bornée |
+| **Commande (C05)** | En-tête compact (réf., **état, échéance, montant** toujours visibles) ; bloc « Action attendue » ; **onglets en grille équilibrée 3 + 2** (actif : plein + soulignement orange) ; barre d'action collante **seulement** si action attendue | Idem | Onglets sur 1 rangée ; résumé en en-tête | **2 colonnes** : contenu (8/12) + **résumé collant** (4/12) | Idem, largeur bornée |
 | **Messages et fichiers** | Liste → conversation en écran distinct ; zone de saisie **fixe en bas avec marge compensée** ; ajout de fichier depuis l'appareil (galerie/fichiers) ; progression et résultat de contrôle par fichier | Idem | Liste (320) + conversation côte à côte | Idem + panneau de contexte (commande/mission) à droite | Idem, largeur bornée |
 | **Suivi financier** | Lignes financières en **cartes** : libellé, **montant**, **état**, **référence**, **date de dernier contrôle** | Idem | Cartes sur 2 colonnes ou tableau 4 colonnes | **Tableau** (mêmes champs) + totaux | Idem |
 
@@ -146,7 +146,7 @@ Routes : reprises de ARB, **notation Laravel** `{param}` (PROP, voir `01` C06). 
 | Espace | Entrées (ordre) |
 |---|---|
 | Public | Services · Missions · Freelances · Comment ça marche — [Publier une mission] |
-| Client | Vue d'ensemble · Mes missions · Commandes · Paiements · Messages · Favoris · Compte |
+| Client | Vue d'ensemble · **Commandes · Missions · Messages** · Paiements · Favoris — puis, séparés : **Compte · Aide** ; accès **Catalogue** dans l'en-tête (V01.1) |
 | Freelance | Vue d'ensemble · Mes services · Propositions · Commandes · Reversements · Bénéficiaire · Messages · Profil public · Compte |
 | Commun (en-tête) | Messages (compteur en texte) · Notifications · Aide |
 | Administration | Files de travail · Publications · Signalements · Litiges · Support · Commandes · Transactions · Utilisateurs · Paramètres · Journal — **filtré par habilitation** |
@@ -293,7 +293,7 @@ Pas de barre fixe en bas. Les libellés de catégorie passent à la ligne (jamai
 │ Services › BTP et Architecture › Convertir vos plans PDF en fichiers AutoCAD            │ fil d'Ariane
 ├───────────────────────────────────────────────┬───────────────────────────────────────┤
 │ H1 Convertir vos plans PDF en fichiers AutoCAD│  ┌ Offre ───────────────────────────┐  │ colonne droite ≈ 360 px
-│ [avatar] Vendeur · Abidjan · [E-mail vérifié] │  │ 35 000 FCFA        (Montant 24/30)│ │ collante (top 80 px)
+│ [avatar] Vendeur · Abidjan                   │  │ 35 000 FCFA        (Montant 24/30)│ │ collante (top 80 px)
 │                                               │  │ ⏱ Délai : 5 jours                 │ │
 │ ┌ Galerie 16:9 (≤ 8 médias) ───────────────┐  │  │ ✎ 2 corrections incluses          │ │
 │ │                                           │  │  │ 📦 Livrables : DWG, PDF de contrôle│ │
@@ -486,7 +486,7 @@ Présentation : **panneau latéral 480 px** (≥ 1024) ou **écran plein** « D�
 │               │ Trier : Prix croissant ▾          [Mettre côte à côte (0/3)]               │
 │               │ ┌ Proposition A ─────────┐┌ Proposition B ─────────┐┌ Proposition C ────┐ │ 3 cartes ≈ 31 %
 │               │ │ ◉ Nom · Abidjan        ││ ◉ Nom · Bouaké         ││ ◉ …               │ │
-│               │ │ [E-mail vérifié]       ││ [E-mail vérifié]       ││                   │ │
+│               │ │                        ││                        ││                   │ │
 │               │ │ 120 000 FCFA  (28/32)  ││ 150 000 FCFA           ││ 135 000 FCFA      │ │
 │               │ │ Délai : 12 jours       ││ Délai : 8 jours        ││ Délai : 15 jours  │ │
 │               │ │ ⚠ Après votre échéance ││ Corrections : 2        ││ ⚠ Après échéance  │ │
@@ -500,7 +500,7 @@ Présentation : **panneau latéral 480 px** (≥ 1024) ou **écran plein** « D�
 └───────────────┴───────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Tri** : prix, délai, date de réception — **pas de « score » ni de classement opaque** (aucune promesse de qualité, SRC F04 badge ne promet pas la qualité). Le **badge** précise **ce qui est vérifié** (« Adresse e-mail vérifiée »), jamais « qualifié ».
+**Tri** : prix, délai, date de réception — **pas de « score » ni de classement opaque** (aucune promesse de qualité, SRC F04 badge ne promet pas la qualité). Le profil indique **discrètement** que l'adresse e-mail est confirmée, **sans pastille** ni formule évoquant une certification d'identité, de compétence ou de qualité (D25).
 
 **Mode « côte à côte »** (≥ 768 px) : tableau à **lignes = critères** (Prix, Délai, Livrables, Corrections, Validité, Version, Profil) et colonnes = 2–3 propositions ; en-tête de colonne répété au défilement vertical ; **aucun défilement horizontal** (largeur partagée en parts égales ; 2 propositions à 768 px). **< 768 px** : mêmes critères en **cartes empilées**, chaque carte conservant ses 6 lignes étiquetées.
 
@@ -530,41 +530,39 @@ Présentation : **panneau latéral 480 px** (≥ 1024) ou **écran plein** « D�
 |---|---|
 | **Acteur** | Client (compte avec rôle client actif) |
 | **Objectif** | Savoir **immédiatement ce qu'il faut faire** et pour quand ; retrouver missions, propositions et commandes |
-| **Informations prioritaires** | **Actions attendues avec échéance** · commandes en cours · missions · (en dernier) compteurs |
+| **Informations prioritaires** | **Actions attendues** (échéances de la part du client d'abord) · **commandes** · autres informations (missions, messages) · **chiffres de synthèse en dernier** |
 | **Action principale** | **Celle de l'élément le plus urgent** de « À faire maintenant » ; à défaut **Publier une mission** |
 | **Secondaires** | Voir toutes les commandes · Mes missions · Messages |
 | **Effet annoncé** | Chaque ligne « À faire » nomme l'effet : « *Examiner la livraison* — Vous pourrez la valider ou demander une correction (1 sur 2 restante). » |
 
 **Différence avec IMG-2** (`01` C08) : la capture présente trois **compteurs** (Commandes actives 1 · Propositions reçues 3 · Missions ouvertes 1) **avant** « Commandes à suivre ». La conception inverse l'ordre : les compteurs sont **conservés**, mais en dernière position et cliquables.
 
-### 6.1 Maquette — ordinateur 1440 px
+### 6.1 Maquette — ordinateur 1440 px (V01.1)
 
 ```text
-┌ Espace client ┬────────────────────────────────────────────────────────────────────────────────┐
-│ ▎Vue d'ensemble│ ESPACE CLIENT   [Client | Freelance]  (sélecteur d'espace, si deux rôles)       │
-│  Mes missions │ H1 Vos projets                                         [Publier une mission]   │
-│  Commandes    │ ┌ À faire maintenant (3) ───────────────────────────────────────┐ ┌ Missions ─┐ │
-│  Paiements    │ │ ▸ Examiner la livraison v2  · Convertir vos plans PDF… DEMO-26018│ │ Plans char…│ │
-│  Messages (2) │ │   Décidez avant le 14 oct. 12:00 (dans 6 j) [Examiner la livraison]│ │ [Ouverte]  │ │
-│  Favoris      │ │ ▸ Comparer les propositions (3) · Plans de charpente métallique │ │ 3 proposi- │ │
-│  Compte       │ │   Date limite de candidature : 12 oct. [Comparer les propositions]│ │ tions      │ │
-│               │ │ ▸ Payer avant 7 oct. 14:30 (dans 22 h) · Logo… [Payer 25 000 FCFA]│ │ [Gérer]    │ │
-│               │ └───────────────────────────────────────────────────────────────┘ │ ───────────│ │
-│               │ ┌ En attente de l'autre partie (1) ─────────────────────────────┐ │ Voir toutes│ │
-│               │ │ Site vitrine · En cours · échéance 20 oct. · 120 000 FCFA        │ └───────────┘ │
-│               │ └───────────────────────────────────────────────────────────────┘               │
-│               │ Vos chiffres :  Commandes actives 2 ›   Propositions reçues 3 ›   Missions ouvertes 1 › │
-└───────────────┴────────────────────────────────────────────────────────────────────────────────┘
-        menu 248 px          zone principale 8/12 (≈ 700 px)                  rail 4/12 (≈ 340 px)
+┌ En-tête allégé : [F•] FreeCI   🔍 Catalogue                          ✉(2)  [FB] Fanta Bamba ┐
+├ Espace ─────────┬────────────────────────────────────────────────────────────────────────────┤
+│ ▎Vue d'ensemble │ ESPACE CLIENT                                                              │
+│  Commandes      │ H1 Vos projets                                      [Publier une mission]  │ (secondaire)
+│  Missions       │ [Client|Freelance]                  Démonstration · jeudi 8 oct. 14:00     │
+│  Messages (2)   │ ┌ À faire maintenant ─────────────────────────┐ ┌ Autres informations ───┐ │
+│  Paiements      │ │▌Payer votre commande · à payer avant 9 oct. 09:00 (dans 19 h) [Payer 45 000]│ │ Mission · 3 propositions│ │
+│  Favoris        │ │▌Examiner la livraison · à décider avant 15 oct. 11:15  [Examiner la livraison]│ │ ✉ 2 messages non lus   │ │
+│ ───────────     │ │▌Comparer les propositions · PAS d'échéance de votre part ·                  │ │ Chiffres : 3 · 3 · 1  │ │
+│  Compte · Aide  │ │▌ candidatures ouvertes jusqu'au 12 oct. 18:00   [Voir les propositions]      │ │  (en dernier)          │ │
+│                 │ └──────────────────────────────────────────────┘ └────────────────────────┘ │
+│                 │ Commandes — cartes : titre · réf. · freelance · état · échéance · montant › │
+└─────────────────┴────────────────────────────────────────────────────────────────────────────┘
+   rail droit : seulement à partir de 1280 px ; entre 1024 et 1279 px tout est en une colonne
 ```
 
-**Téléphone** : une colonne — H1 · **[Publier une mission]** (secondaire, 44 px) · **À faire maintenant** (cartes pleine largeur ; chaque carte : icône, **verbe + objet**, **échéance en date + « dans 22 h »**, **bouton complet** 48 px) · En attente de l'autre partie · Missions · compteurs (3 liens en liste). Le sélecteur d'espace est dans le tiroir **et** en tête de page pour un compte à deux rôles.
+**Téléphone (V01.1)** : une colonne dans l'ordre **actions attendues → commandes → autres informations → chiffres de synthèse**. Une seule action **pleine** (la première tâche) ; les autres boutons sont secondaires. Les **commandes** sont des **cartes entièrement cliquables** (pas de bouton « Ouvrir » répété). Pied de page réduit à une ligne.
 
 ### 6.2 Règles de contenu
 
 | Règle | Détail |
 |---|---|
-| **Tri de « À faire »** | Échéance la plus proche d'abord ; à égalité, **blocage par le client** avant attente d'autrui |
+| **Tri de « À faire »** | **Échéances de la part du client** d'abord (la plus proche en tête) ; puis les actions **sans échéance** du client. **Une fin de candidatures n'est pas une échéance d'action** : elle s'affiche en information (« Pas d'échéance de votre part. Candidatures ouvertes jusqu'au… ») et **n'oblige pas** à choisir avant cette date |
 | **Types d'éléments** (SRC ARB §4, §10) | *Compléter le brief* (commande `awaiting_brief`) · *Payer avant …* (`awaiting_payment`, → C06) · *Examiner la livraison* (`delivered`, → onglet Livraisons de C05) · *Comparer les propositions* · *Répondre à la demande de report* · *Répondre à une question* (message non lu) · *Corriger votre mission* (motif de modération) · *Un paiement est en vérification* (information, **sans** action de relance) |
 | **Échéances** | **Date + heure d'Abidjan** et durée relative ; un retard est un **indicateur** « En retard de 2 j », pas un état |
 | **Séparation** | « Missions de recrutement » et « Commandes conclues » distinctes (ARB §4) |
@@ -671,34 +669,32 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | **Secondaires** | Messages · demander un report · ouvrir un litige · contacter le support · télécharger |
 | **Effet annoncé** | Phrase d'effet dans le bloc d'action et **dans chaque confirmation** (§8.4) |
 
-### 8.1 Maquette — ordinateur 1440 px (client, commande « Livrée »)
+### 8.1 Maquette — ordinateur 1440 px (client, commande « Livrée », V01.1)
 
 ```text
-┌ Espace client ┬──────────────────────────────────────────────────────────────────────────────┐
-│               │ Commandes › DEMO-26018                                                       │
-│               │ H1 Convertir vos plans PDF en fichiers AutoCAD                               │
-│               │ ┌ En-tête ──────────────────────────────────────────────────────────────┐   │
-│               │ │ [Livrée] ⓘ  Freelance : Nom · Abidjan   Échéance : 14 oct. 12:00 (dans 6 j)│   │
-│               │ │ Montant : 35 000 FCFA     Réf. DEMO-26018                               │   │
-│               │ │ Accord ▸ Paiement ▸ Brief ▸ Réalisation ▸ [Livraison] ▸ Validation ▸ Clôture│   │ stepper textuel
-│               │ └───────────────────────────────────────────────────────────────────────┘   │
-│               │ ┌ ACTION ATTENDUE ─────────────────────────────────────────────────────┐    │
-│               │ │ Examiner la livraison v2 — décidez avant le 14 oct.                   │    │
-│               │ │ [Valider la livraison]   [Demander une correction (1 sur 2 restante)]  │    │
-│               │ │ Ce qui se passera : valider clôture la commande et rend le reversement  │    │
-│               │ │ éligible ; vous ne pourrez plus demander de correction.                │    │
-│               │ └───────────────────────────────────────────────────────────────────────┘    │
-│               │ [Accord][Brief][Livraisons ●][Messages (2)][Finances][Historique][Avis]       │ onglets
-│               │ ┌ Contenu de l'onglet (8/12) ─────────────────┐ ┌ Résumé collant (4/12) ─┐   │
-│               │ │ Livraison v2 · 12 oct. 09:40                 │ │ État · Échéance        │   │
-│               │ │ Message du freelance …                       │ │ Montant · Autre partie │   │
-│               │ │ Fichiers : plan-RDC.dwg 4,2 Mo [Vérifié] [⬇] │ │ Prochaine étape        │   │
-│               │ │ v1 (8 oct.) · correction demandée : …        │ │ Aide · Contacter le    │   │
-│               │ └──────────────────────────────────────────────┘ │ support · Litige ▾     │   │
-└───────────────┴──────────────────────────────────────────────────────────────────────────────┘
+┌ En-tête allégé ───────────────────────────────────────────────────────────────────────────┐
+├ Espace ────────┬───────────────────────────────────────────────────────────────────────────┤
+│ …              │ ‹ Vue d'ensemble › Commande DEMO-26018                                    │
+│                │ ┌ [Livrée] Réf. DEMO-26018                 [Démonstration · 8 oct. 14:00]┐ │
+│                │ │ H1 Convertir vos plans PDF en fichiers AutoCAD (DWG)                   │ │
+│                │ │ Freelance · Montant · Échéance (report accepté)                        │ │
+│                │ │ Accord ▸ Paiement ▸ Brief ▸ Réalisation ▸ [Livraison] ▸ Validation ▸ Clôture│ │
+│                │ └────────────────────────────────────────────────────────────────────────┘ │
+│                │ ┌▌ACTION ATTENDUE — Examiner la livraison v2 ───────────────────────────┐ │
+│                │ │▌ 3 fichiers déposés le 8 oct. · à décider avant le 15 oct. 11:15       │ │
+│                │ │▌ [ Consulter les fichiers de la livraison v2 ↓ ]  ← seule action pleine │ │
+│                │ │▌ Ensuite : valider la livraison ou demander une correction (1 sur 2)   │ │
+│                │ └────────────────────────────────────────────────────────────────────────┘ │
+│                │ [Livraisons ②][Accord][Brief][Finances][Historique]          ┌ Contact et aide ┐ │
+│                │ ┌ Livraison v2 ───────────────────────────────┐             │ Kader · Écrire   │ │
+│                │ │ message · note « sécurité ≠ qualité »        │             │ Support · Litige │ │
+│                │ │ fichiers (nom · taille · contrôle de sécurité · Télécharger)│ └─────────────────┘ │
+│                │ │ ── Votre décision ──                         │                                   │
+│                │ │ [Demander une correction]  [Valider la livraison]  (même poids visuel)         │ │
+│                │ └──────────────────────────────────────────────┘                                   │
+│                │ ▸ Livraison v1 (replié par défaut)                                                 │
+└────────────────┴───────────────────────────────────────────────────────────────────────────┘
 ```
-
-**Téléphone (360/390)** : en-tête **compact** (titre, **état, échéance, montant** sur 3 lignes étiquetées, jamais coupés) · stepper en **liste verticale repliée** sur l'étape courante (« Étape 5 sur 7 : Livraison » + « Voir toutes les étapes ») · **bloc d'action** pleine largeur · onglets en **puces sur 2 rangées** (« Messages (2 non lus) ») · contenu · **barre d'action collante** (uniquement si une action est attendue : bouton primaire + « Autres actions ▾ ») ; marge basse compensée ; barre retirée quand le clavier est ouvert.
 
 ### 8.2 Contenu des onglets (SRC ARB §9)
 
@@ -720,7 +716,7 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | À payer | **Payer** (→ C06) · annuler | *(attendre la confirmation)* | Payer avant (24 h proposées) |
 | En attente du brief | **Compléter le brief** | Signaler ce qui manque | « 2 éléments manquants » |
 | En cours | Répondre à un report | **Livrer** · proposer un report | Échéance de livraison ; **retard** = indicateur |
-| Livrée | **Valider** · demander une correction | *(attendre)* | Examen avant (7 j proposés ; **sans libération automatique**) |
+| Livrée | **Consulter les fichiers** de la dernière livraison, puis **choisir** : demander une correction **ou** valider (même poids visuel) | *(attendre)* | Examen avant (7 j proposés ; **sans libération automatique**) |
 | Correction demandée | Préciser | **Déposer la nouvelle livraison** | Compteur de corrections |
 | Validée | Consulter la suite financière | Consulter commission, part, reversement | « Reversement : à vérifier / éligible » (état séparé) |
 | Clôturée | Déposer un avis | Déposer un avis | Avis publiés après 2 dépôts ou 14 j |
@@ -768,6 +764,14 @@ C05 est **le dossier commun** aux deux parties et aux deux entrées (service, mi
 | Messages | `Communication\SendMessage` | F37 |
 | Téléchargement | `Files\IssueDownload` (lien court, fichier `clean`) | F30, N13 |
 | Avis | `Orders\SubmitReview` | F36 |
+
+### 8.7 Examen d'une livraison (V01.1, D25)
+
+1. **Action principale à l'arrivée** : « Consulter les fichiers de la livraison v2 » — ouvre la rubrique Livraisons et place le focus sur la livraison. La carte « Action attendue » **ne contient pas** le bouton « Valider ».
+2. **Fichiers** : nom, type, taille, **contrôle de sécurité**. Une note unique rappelle : *le contrôle de sécurité vérifie le format et l'absence de contenu dangereux ; il ne dit rien de la qualité du travail livré*.
+3. **Décision** (après les fichiers) : deux blocs de **même style** — « Demander une correction » (périmètre convenu ; corrections restantes ; nouvelle version) et « Valider la livraison » (clôture ; plus de correction ; reversement suivi séparément) — chacun avec ses conséquences et un bouton secondaire.
+4. **Aucune règle d'obligation de téléchargement** : *un téléchargement ne prouve pas un examen*. Le client peut décider à tout moment avant l'échéance ; sans réponse, le support est saisi après 7 jours, **sans validation automatique**.
+5. **Versions précédentes** : accessibles, **repliées par défaut** (résumé : version, date, correction demandée).
 
 ---
 
@@ -945,6 +949,21 @@ Les files **sans habilitation** n'apparaissent pas. Les indicateurs distinguent 
 
 Chaque maquette sera livrée avec : contenu réel de démonstration **étiqueté**, états vide/chargement/erreur/succès/accès interdit, versions **360 et 1440 px** au minimum (390/768/1024 pour les écrans à comportement spécifique : comparaison, commande, paiement), et la liste des **contrats métier** appelés.
 
-**V01 réalisé (D20).** Un premier prototype statique, navigable et responsive couvre l'accueil, le détail de service, le tableau de bord client (+ état vide) et la commande livrée (+ variante « paiement en vérification ») : voir [`design/prototype-v01/README.md`](../design/prototype-v01/README.md). Les écrans d'inventaire restants, la comparaison de propositions, la publication de mission et l'administration restent à maquetter.
+**V01 et V01.1 réalisés (D20, D23–D25).** Le prototype statique (révision ciblée V01.1 incluse, voir §12), navigable et responsive couvre l'accueil, le détail de service, le tableau de bord client (+ état vide) et la commande livrée (+ variante « paiement en vérification ») : voir [`design/prototype-v01/README.md`](../design/prototype-v01/README.md). Les écrans d'inventaire restants, la comparaison de propositions, la publication de mission et l'administration restent à maquetter.
 
 **Revue visuelle obligatoire (D18).** Chaque lot est **présenté en maquettes haute fidélité puis examiné par le porteur** avant son développement. L'examen porte sur : identité FreeCI reconnaissable (`03` §2.4), proportions (`03` §2.5), lisibilité, clarté des trois questions (`04` §0.1), parcours sur téléphone **et** ordinateur. Aucune règle métier n'est portée par la maquette ni par l'interface : **le serveur reste l'autorité** (`02` P3).
+
+---
+
+## 12. Révision V01.1 — changements par écran (D23–D25)
+
+Prototype : `design/prototype-v01/` ; comparaison avant/après : `design/prototype-v01/captures/avant-apres/`. Hauteur des pages à 360 px (CSS) : accueil −29 %, service −22 %, tableau de bord −32 %, commande livrée −28 %, état vide −41 %, paiement en vérification −42 %.
+
+| Écran | Changements |
+|---|---|
+| **Accueil** | Six prestations illustrées (BTP, design, web, traduction, vidéo, marketing) ; **liste compacte** sur téléphone, cartes ≥ 768 px ; « Deux façons de démarrer » et « ce que vous retrouvez » **dépliables** (repliés sur téléphone) ; étiquette unique « Exemples fictifs » ; chips de recherche sans libellé répété ; pied de page en deux colonnes |
+| **Détail d'un service** | **Résumé d'offre juste sous le titre** (prix, délai, corrections, livrables, bouton, effet) sur téléphone ; colonne d'offre à droite ≥ 1024 px ; « Ce qui n'est pas inclus » et « Ce que vous devez fournir » **dépliables** ; **e-mail confirmé en texte sobre** ; barre d'achat fixe **seulement après** le résumé |
+| **Tableau de bord** | Ordre **actions → commandes → autres informations → chiffres** ; échéance d'action **distinguée** de la fin des candidatures ; **une seule action pleine** ; commandes en **cartes cliquables** ; en-tête et pied **allégés** |
+| **Commande** | Voir §8.7 ; **en-tête** réduit à Freelance · Montant · Échéance ; **onglets** en grille 3 + 2 ; carte « Contact et aide » unique ; **finances** condensées (détails du reversement dépliables) |
+| **Paiement en vérification** | Un seul message d'attente, **sans bouton « Payer »** ; effet et justification réunis en une phrase |
+| **État vide** | Un seul bloc « Commandes et missions » ; « Pour démarrer » en trois lignes |

@@ -30,6 +30,9 @@
 | D20 | **Q19 résolue** : prototype statique haute fidélité dans `design/prototype-v01/` (HTML/CSS/JS de présentation, sans dépendance ni backend) | `design/prototype-v01/` |
 | D21 | Versions exactes, UUID, modèle détaillé : avant migrations ; **ne bloquent pas V01** | §5.2 |
 | D22 | Choix graphiques **ajustables après rendu**, adaptations justifiées (lisibilité, cohérence, usage) | `03` §2.4 |
+| D23 | V01 retenu ; **V01.1** conserve Inter, palette, accent, trame, carte de suivi ; monogramme et « FreeCI » = **identité de travail** | `03` §2.7 |
+| D24 | **Mobile allégé** ; ordre du tableau de bord ; **échéance d'action ≠ fin des candidatures** ; illustrations variées sans preuve de confiance | `04` §6, §12 |
+| D25 | **Examen de livraison** guidé vers les fichiers, décision à poids égal, **aucune obligation de téléchargement** ; espace privé allégé ; **e-mail discret** | `04` §8.7 |
 | D19 | **Publication autorisée** des cinq documents dans le dépôt public (visibilité inchangée) ; exclus : secrets, identifiants, données personnelles réelles, pièces client originales (**clôt Q16**) | §6 |
 
 ### 1.2 Arbitrages proposés (PROP) — à valider
@@ -47,14 +50,18 @@
 | A09 | Confirmation | Webhook authentifié + vérification serveur ; retour navigateur **sans effet** ; pas de bouton « Payer » pendant `pending`/`unknown` | Confirmation au retour | F25, T07 | `04` §9 |
 | A10 | Recherche | Plein texte PostgreSQL, pagination ≤ 20 | Moteur externe | Simplicité V1 ; mesure N06 | `02` §8.2 |
 | A11 | Registre | Lots équilibrés, immuables, contrainte différée ; idée « additive » de la référence reprise | Mise à jour d'un solde | F28, ARC §6 | `02` §4.3 |
-| A12 | Identité visuelle | Marine + fonds clairs conservés ; **orange = accent uniquement** ; sémantique séparée ; 19 jetons | Orange pour statuts | `01` C11 ; INS §4 | `03` §3 |
+| A12 | Identité visuelle | Marine + fonds clairs conservés ; **orange = accent uniquement** ; sémantique séparée ; 20 jetons | Orange pour statuts | `01` C11 ; INS §4 | `03` §3 |
 | A13 | Statuts | **Badge d'état** (icône + libellé + ton) distinct du **marqueur d'action** | Couleur seule ; « Livrée » orange | N03 | `03` §3.4 |
 | A14 | Typographie | Une famille, auto-hébergée, échelle fixe, ≥ 14 px pour l'essentiel | Plusieurs polices | N05, lisibilité | `03` §4 |
-| A15 | Tableaux de bord | **Actions + échéances d'abord**, compteurs en dernier | Compteurs d'abord (IMG-2/3) | INS §4 ; C08 | `04` §6–§7 |
+| A15 | Tableaux de bord | **Actions + échéances d'abord, commandes, autres informations, chiffres en dernier** ; échéance d'action distinguée de la fin des candidatures | Compteurs d'abord (IMG-2/3) | INS §4 ; C08 ; D24 | `04` §6, §12 |
 | A16 | Navigation mobile | Tiroir ; **pas** de barre d'onglets fixe en V1 | Barre de 5 onglets (modèle de la référence) | ARB §1 ; éviter de masquer le contenu | `03` §6.1 |
 | A17 | Comparaison | Tri prix/délai/date ; côte à côte ≤ 3 ; **aucun score** | Classement algorithmique | Pas de promesse de qualité | `04` §5.2 |
 | A18 | Administration | **Coque distincte**, habilitations, MFA ; sélecteur de rôle de IMG-4 = démonstration seulement | Même coque que le public | ARB §6 ; INS | `01` C10 |
 | A19 | Démonstration | Bandeau permanent, `DEMO-`, identités manifestement fictives, hors statistiques | Faux avis/volumes | N04 ; INS §5 | `04` §0.4 |
+| A23 | Examen de livraison | Action principale = **consulter les fichiers** ; décision après les fichiers, **blocs de même style** ; pas d'obligation de télécharger ; v1 repliée ; sécurité ≠ qualité | « Valider » en bouton principal dans le bandeau d'action | D25 ; un téléchargement ne prouve pas un examen | `04` §8.7 |
+| A24 | Mobile | **Dépliants** pour les détails secondaires (repliés < 768 px) ; cartes compactes ; barre d'achat fixe après le résumé | Tout afficher en permanence | D24 ; lisibilité de l'essentiel conservée | `04` §12 |
+| A25 | Espace connecté | En-tête **allégé** (Catalogue, messages, compte), pied **réduit**, colonne droite seulement ≥ 1280 px | En-tête public complet | D25 ; largeur utile | `03` §6.1 |
+| A26 | Confiance | **E-mail confirmé en texte sobre**, sans pastille ; aucune note ni témoignage | Pastille « vérifié » | D25 ; N04 ; F04 | `03` §3.4 |
 | A20 | Documents | **Publiés** dans le dépôt public (D19), sans pièces client originales | Dossier local | D19 | §6 |
 | A21 | File de tâches | **PostgreSQL** au démarrage ; garanties et essais documentés ; migration possible vers Redis | Redis d'emblée | D16 ; simplicité | `02` §8.3 |
 | A22 | Noms de tables | Conventions Laravel (pluriel, `snake_case`) ; noms de ARC = conceptuels | Noms de ARC | D16 | `02` §4.1 |
@@ -198,6 +205,8 @@ Statut de tous les critères : **non testé — aucune application** (les ratios
 | V21 | **Maquettes haute fidélité présentées et examinées par le porteur** avant chaque lot (≥ 360 et 1440 px ; 390/768/1024 pour comparaison, commande, paiement) | Séance de revue ; décision consignée | Avant développement |
 | V22 | **Identité reconnaissable** : les cinq signatures `03` §2.4 sont présentes et non diluées | Revue : logo masqué, l'écran reste identifiable à marine + filet d'action + point orange + montants | Maquette |
 | V23 | **Proportions** conformes à `03` §2.5 (grille, hauteurs, rythme, un point focal) | Revue sur gabarit superposé | Maquette |
+| V24 | **Examen d'une livraison** : action principale vers les fichiers ; décision à poids égal ; aucune obligation de télécharger ; sécurité ≠ qualité ; v1 repliée | Test interactif (`verify.mjs`) et revue visuelle | Prototype V01.1 (testé) |
+| V25 | **Mobile allégé** : ordre actions → commandes → informations → chiffres ; échéance d'action ≠ fin de candidatures ; dépliants repliés < 768 px | Test interactif et revue visuelle | Prototype V01.1 (testé) |
 
 ---
 
@@ -273,8 +282,8 @@ Le porteur a validé les **principes** de la direction (D18) et la pile (D15). L
 
 | N° | Élément | Où | Réponse attendue |
 |---|---|---|---|
-| V-1 | Nom **FreeCI**, signature « Des compétences en Côte d'Ivoire », logotype (« CI » en accent) | `03` §2 | Valider / ajuster |
-| V-2 | Palette de **19 jetons**, orange réservé à l'accent, statuts sémantiques | `03` §3 | Principes validés (D18) ; **jetons exacts à examiner sur maquettes** |
+| V-1 | Nom **FreeCI**, signature « Des compétences en Côte d'Ivoire », logotype (« CI » en accent) | `03` §2 | **Identité de travail (D23)** ; logo définitif à valider (Q04) |
+| V-2 | Palette de **20 jetons**, orange réservé à l'accent, statuts sémantiques | `03` §3 | Principes validés (D18) ; **jetons exacts à examiner sur maquettes** |
 | V-3 | Marqueur d'action **distinct** du badge d'état (« Examiner la livraison ») | `03` §3.4 | Valider |
 | V-4 | Tableaux de bord **actions d'abord**, compteurs en dernier | `04` §6–§7 | **Validé (D18)** ; à montrer sur maquette |
 | V-5 | Accueil : promesse sans chiffre ni avis fictifs ; carte « Services récents » remplacée par « Comment ça marche » si < 3 services | `04` §2 | Valider |
