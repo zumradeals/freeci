@@ -32,6 +32,7 @@ class DeliveryCycleTest extends TestCase
         parent::setUp();
         Storage::fake('private_files');
         $this->setUpParties();
+        $this->service->update(['delivery_requires_files' => false]);      // la plupart des scénarios livrent par message seul
         $this->useFakeScanner();
     }
 
@@ -190,7 +191,7 @@ class DeliveryCycleTest extends TestCase
     public function test_delivery_is_blocked_until_required_files_are_available_and_scanned(): void
     {
         $order = $this->inProgress(['delivery_requires_files' => true]);
-        $this->assertTrue($order->agreement->fresh()->delivery_requires_files);
+        $this->assertSame('files', $order->agreement->fresh()->delivery_mode);
 
         // message seul : refusé, avec la raison en clair
         $this->draft($order, withFile: false);
@@ -244,6 +245,68 @@ class DeliveryCycleTest extends TestCase
         $this->draft($order, '   ', false);
         $this->submit($order)->assertRedirect()->assertSessionHas('error');
         $this->assertSame(0, Delivery::where('state', 'submitted')->count());
+    }
+
+    public function test_legacy_agreements_are_never_rewritten_and_do_not_silently_waive_promised_files(): void
+    {
+        $order = $this->inProgress();
+        $this->assertSame('message', $order->agreement->fresh()->delivery_mode, 'accord récent : choix explicite figé');
+        // accord antérieur à la règle : indicateur ambigu, conservé tel quel (la base interdit de le réécrire)
+        $this->dbRefuses(fn () => DB::table('order_agreements')->where('order_id', $order->id)->update(['delivery_mode' => 'files']), 'ajout seul');
+        DB::statement('ALTER TABLE order_agreements DISABLE TRIGGER order_agreements_append_only');
+        DB::table('order_agreements')->where('order_id', $order->id)->update(['delivery_mode' => 'legacy', 'delivery_requires_files' => false]);
+        DB::statement('ALTER TABLE order_agreements ENABLE TRIGGER order_agreements_append_only');
+        $this->assertSame('unspecified', $order->agreement->fresh()->deliveryMode());
+
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Accord antérieur à cette règle')->assertSee('pas contrôlée automatiquement');
+        $this->draft($order, withFile: false);
+        $this->submit($order)->assertRedirect()->assertSessionHas('status');      // non bloquant : l'obligation n'est pas appliquée rétroactivement
+
+        // un ancien accord qui exigeait déjà des fichiers (indicateur vrai) continue de les exiger
+        DB::statement('ALTER TABLE order_agreements DISABLE TRIGGER order_agreements_append_only');
+        DB::table('order_agreements')->where('order_id', $order->id)->update(['delivery_requires_files' => true]);
+        DB::statement('ALTER TABLE order_agreements ENABLE TRIGGER order_agreements_append_only');
+        $this->assertSame('files', $order->agreement->fresh()->deliveryMode());
+    }
+
+    public function test_exhausted_corrections_never_force_validation_and_a_disagreement_only_records_a_follow_up(): void
+    {
+        $order = $this->inProgress(['revisions_included' => 1]);
+        $v1 = $this->deliver($order);
+        $this->correct($order, $v1)->assertRedirect();
+        $v2 = $this->deliver($order);
+
+        $page = $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk();
+        $page->assertSee('Vous n’êtes pas obligé de valider')->assertSee('non validée')->assertSee('Signaler un désaccord');
+        $payload = fn ($note, $key = null) => ['delivery_id' => $v2->id, 'note' => $note, 'expected_version' => $order->fresh()->row_version, 'operation_key' => $key ?? (string) Str::uuid()];
+
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/desaccord", $payload('court'))->assertRedirect()->assertSessionHas('error');
+        $this->actingAs($this->freelancer)->post("/commandes/{$order->reference}/desaccord", $payload(str_repeat('a', 30)))->assertNotFound();
+        $key = (string) Str::uuid();
+        $p = $payload('Le calque COTATION manque toujours sur le plan 3.', $key);
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/desaccord", $p)->assertRedirect()->assertSessionHas('status');
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/desaccord", $p)->assertRedirect()->assertSessionHas('status', 'Cette action avait déjà été enregistrée.');
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/desaccord", $payload('Un second signalement identique.'))->assertRedirect()->assertSessionHas('error');
+
+        $order->refresh();
+        $this->assertSame(OrderState::Delivered, $order->state, 'rien n’est validé, clôturé ni forcé');
+        $this->assertNull($order->validated_delivery_id);
+        $this->assertSame(1, DB::table('order_follow_ups')->where('delivery_id', $v2->id)->where('kind', 'client_disagreement')->count());
+        $this->assertSame(1, DB::table('order_events')->where('order_id', $order->id)->where('type', 'disagreement_reported')->count());
+        $this->assertSame(0, DB::table('ledger_batches')->where('kind', '!=', 'payment_confirmed')->count());
+        $this->actingAs($this->freelancer)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Le client a signalé un désaccord')->assertSee('aucun support n’a été contacté automatiquement');
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Désaccord signalé le')->assertDontSee('Signaler un désaccord</a>', false);
+        // il peut toujours valider plus tard : aucun automatisme ne tranche à sa place
+        $this->validateIt($order, $v2)->assertRedirect()->assertSessionHas('status');
+    }
+
+    public function test_disagreement_is_refused_while_included_corrections_remain(): void
+    {
+        $order = $this->inProgress();
+        $v1 = $this->deliver($order);
+        $this->actingAs($this->client)->post("/commandes/{$order->reference}/desaccord", ['delivery_id' => $v1->id, 'note' => str_repeat('b', 30), 'expected_version' => $order->fresh()->row_version, 'operation_key' => (string) Str::uuid()])->assertRedirect()->assertSessionHas('error');
+        $this->assertSame(0, DB::table('order_follow_ups')->where('kind', 'client_disagreement')->count());
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}/desaccord")->assertRedirect();
     }
 
     // ---------- corrections ----------

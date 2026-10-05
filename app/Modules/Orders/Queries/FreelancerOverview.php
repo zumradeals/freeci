@@ -2,7 +2,9 @@
 
 namespace App\Modules\Orders\Queries;
 
+use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Catalog\Models\ServiceVersion;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Actions\RecordReviewFollowUps;
 use App\Modules\Orders\Data\OrderCard;
@@ -10,6 +12,7 @@ use App\Modules\Orders\Data\TaskItem;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Models\Order;
 use App\Shared\Dates;
+use Illuminate\Support\Str;
 
 /** Tableau de bord freelance : demandes à traiter (échéance la plus proche d'abord), commandes en attente du client. */
 final class FreelancerOverview
@@ -43,7 +46,15 @@ final class FreelancerOverview
                 $revision ? 'Déposez une nouvelle version : la précédente reste conservée.' : 'Le client ne voit rien avant que vous ne soumettiez la livraison.',
                 $revision ? 'Préparer la nouvelle version' : 'Préparer la livraison', route('orders.show', $o->reference), 'inbox');
         })->values()->all();
-        $tasks = collect(array_merge($work, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
+        // Catalogue : service à corriger (motif de la modération) et profil à terminer.
+        $fixes = ServiceVersion::query()->where('state', 'changes_requested')
+            ->whereHas('service.freelanceProfile', fn ($q) => $q->where('user_id', $freelancer->getKey()))->with('service')->get()->map(fn ($v) => new TaskItem(
+                'Corriger votre service', $v->title.' · version '.$v->number, null, 'Motif de la modération : « '.Str::limit((string) $v->decision_note, 120).' »',
+                'Corrigez puis soumettez de nouveau : rien n’est publié tant que la version n’est pas approuvée.', 'Corriger le service', route('freelance.services.edit', $v->service_id), 'pencil'))->values()->all();
+        $profile = $freelancer->freelanceProfile;
+        $profileTask = $profile !== null && $profile->published_at === null ? [new TaskItem('Terminer et publier votre profil', 'Manque : '.(implode(', ', array_map('mb_strtolower', PublishFreelanceProfile::missing($profile))) ?: 'rien, il ne reste qu’à le publier'), null,
+            'Sans profil publié, vos services ne peuvent pas être soumis.', 'Votre profil public affiche vos informations publiques et vos services publiés.', 'Compléter mon profil', route('freelance.profile'), 'user')] : [];
+        $tasks = collect(array_merge($work, $fixes, $profileTask, $tasks))->sortBy(fn (TaskItem $t) => $t->due?->getTimestamp() ?? PHP_INT_MAX)->values()->all();
 
         $waitingStates = [OrderState::AwaitingPayment, OrderState::AwaitingBrief, OrderState::Delivered];
 

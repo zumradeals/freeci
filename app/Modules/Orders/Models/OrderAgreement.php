@@ -17,6 +17,19 @@ class OrderAgreement extends Model
 
     protected $guarded = [];
 
+    /**
+     * Mode de livraison figé : « files » (≥ 1 fichier contrôlé exigé), « message » (aucun fichier exigé, précisé dans l'accord) ou
+     * « unspecified » (accord antérieur à la règle : l'ancien indicateur n'était pas un choix de l'auteur ; il n'est ni réécrit ni appliqué
+     * comme une renonciation aux fichiers, mais l'obligation n'est pas contrôlée automatiquement).
+     */
+    public function deliveryMode(): string
+    {
+        return match ($this->delivery_mode) {
+            'files', 'message' => $this->delivery_mode,
+            default => $this->delivery_requires_files ? 'files' : 'unspecified',
+        };
+    }
+
     protected function casts(): array
     {
         return [

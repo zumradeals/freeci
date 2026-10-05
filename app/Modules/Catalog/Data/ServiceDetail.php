@@ -35,5 +35,6 @@ final readonly class ServiceDetail
         public int $version = 1,
         public bool $acceptsRequests = true,
         public string $sellerUserId = '',
+        public ?string $sellerSlug = null,         // adresse du profil public, seulement si le profil est publié
     ) {}
 }

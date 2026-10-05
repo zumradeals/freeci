@@ -6,6 +6,7 @@ use App\Modules\Catalog\Data\ServiceDetail;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Catalog\Support\ImageUrls;
 use App\Shared\Money;
 
 /** Fiche publique d'un service (projection à liste de champs explicite). */
@@ -48,11 +49,12 @@ final class GetPublishedService
             deliverables: $service->deliverables,
             exclusions: $service->exclusions,
             clientInputs: $service->client_inputs,
-            images: $service->images,
+            images: ImageUrls::present($service->images),
             isDemo: $service->is_demo,
             version: $service->row_version,
             acceptsRequests: $service->accepts_requests,
             sellerUserId: $p->user_id,
+            sellerSlug: $p->published_at !== null ? $p->slug : null,
         );
     }
 }

@@ -143,6 +143,7 @@ final class RequestService
             'exclusions' => $locked->exclusions,
             'client_inputs' => $locked->client_inputs,
             'delivery_requires_files' => $locked->delivery_requires_files,
+            'delivery_mode' => $locked->delivery_requires_files ? 'files' : 'message',      // choix explicite de l'auteur du service, figé dans l'accord
             'brief_requires_files' => $locked->brief_requires_files,   // exigence figée : le service pourra changer, pas l'accord
             'response_hours' => $responseHours,
             'payment_hours' => $paymentHours,

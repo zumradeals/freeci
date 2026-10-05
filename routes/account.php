@@ -4,6 +4,7 @@ use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Freelance\FreelanceController;
+use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
@@ -43,6 +44,8 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/commandes/{reference}/livraison/soumettre', [DeliveryController::class, 'submit'])->middleware('throttle:10,1')->name('orders.delivery.submit');
     Route::get('/commandes/{reference}/correction', [DeliveryController::class, 'correctionForm'])->name('orders.correction');
     Route::post('/commandes/{reference}/correction', [DeliveryController::class, 'correction'])->middleware('throttle:10,1')->name('orders.correction.store');
+    Route::get('/commandes/{reference}/desaccord', [DeliveryController::class, 'disagreementForm'])->name('orders.disagreement');
+    Route::post('/commandes/{reference}/desaccord', [DeliveryController::class, 'disagreement'])->middleware('throttle:10,1')->name('orders.disagreement.store');
     Route::get('/commandes/{reference}/validation', [DeliveryController::class, 'validateForm'])->name('orders.validation');
     Route::post('/commandes/{reference}/validation', [DeliveryController::class, 'validateDelivery'])->middleware('throttle:10,1')->name('orders.validation.store');
     Route::get('/commandes/{reference}/report', [DeliveryController::class, 'extensionForm'])->name('orders.extension');
@@ -57,7 +60,17 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::middleware('freelance')->prefix('freelance')->group(function () {
         Route::get('/', [FreelanceController::class, 'dashboard'])->name('freelance.dashboard');
         Route::get('/commandes', [FreelanceController::class, 'orders'])->name('freelance.orders');
-        Route::get('/services', [FreelanceController::class, 'services'])->name('freelance.services');
+        Route::get('/services', [ServiceManagementController::class, 'index'])->name('freelance.services');
+        Route::get('/services/nouveau', [ServiceManagementController::class, 'create'])->name('freelance.services.new');
+        Route::post('/services', [ServiceManagementController::class, 'store'])->middleware('throttle:20,1')->name('freelance.services.store');
+        Route::get('/services/{service}/modifier', [ServiceManagementController::class, 'edit'])->name('freelance.services.edit');
+        Route::post('/services/{service}/modifier', [ServiceManagementController::class, 'update'])->middleware('throttle:60,1')->name('freelance.services.update');
+        Route::get('/services/{service}/apercu', [ServiceManagementController::class, 'preview'])->name('freelance.services.preview');
+        Route::post('/services/{service}/images', [ServiceManagementController::class, 'imageStore'])->middleware('throttle:30,1')->name('freelance.services.images.store');
+        Route::post('/services/{service}/images/{media}/retirer', [ServiceManagementController::class, 'imageDestroy'])->name('freelance.services.images.destroy');
+        Route::get('/services/{service}/{kind}', [ServiceManagementController::class, 'confirm'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'retirer-du-catalogue', 'remettre-en-ligne'])->name('freelance.services.confirm');
+        Route::post('/services/{service}/{kind}', [ServiceManagementController::class, 'act'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'retirer-du-catalogue', 'remettre-en-ligne'])->middleware('throttle:20,1')->name('freelance.services.act');
+        Route::post('/profil/publier', [FreelanceController::class, 'publish'])->middleware('throttle:10,1')->name('freelance.profile.publish');
         Route::get('/profil', [FreelanceController::class, 'profile'])->name('freelance.profile');
     });
 });

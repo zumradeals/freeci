@@ -23,7 +23,7 @@ class FreelanceProfile extends Model
 
     protected function casts(): array
     {
-        return ['is_demo' => 'boolean'];
+        return ['is_demo' => 'boolean', 'skills' => 'array', 'published_at' => 'datetime'];
     }
 
     public function services(): HasMany

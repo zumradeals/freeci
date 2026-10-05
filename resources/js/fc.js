@@ -127,11 +127,15 @@
     if (!f) return;
     if (f.dataset.sent === "1") { e.preventDefault(); return; }
     f.dataset.sent = "1";
-    f.querySelectorAll("button[type=submit]").forEach(function (b) {
-      b.setAttribute("aria-busy", "true");
-      b.disabled = true;
-      if (b.dataset.onceLabel) b.textContent = b.dataset.onceLabel;
-    });
+    // Désactivation APRÈS la construction des données du formulaire : un bouton désactivé n'enverrait pas son name/value
+    // (ex. intent=submit) et le formulaire se comporterait comme le bouton « enregistrer ».
+    setTimeout(function () {
+      f.querySelectorAll("button[type=submit]").forEach(function (b) {
+        b.setAttribute("aria-busy", "true");
+        b.disabled = true;
+        if (b.dataset.onceLabel) b.textContent = b.dataset.onceLabel;
+      });
+    }, 0);
   });
   window.addEventListener("pageshow", function (e) {
     if (!e.persisted) return;

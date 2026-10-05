@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Actions;
 
 use App\Modules\Catalog\Data\ServiceCard;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Catalog\Support\ImageUrls;
 use App\Shared\Money;
 use Illuminate\Support\Str;
 
@@ -13,7 +14,7 @@ final class ServiceProjection
     public static function card(Service $s): ServiceCard
     {
         $profile = $s->freelanceProfile;
-        $image = $s->images[0] ?? null;
+        $image = ImageUrls::present($s->images)[0] ?? null;
 
         return new ServiceCard(
             slug: $s->slug,

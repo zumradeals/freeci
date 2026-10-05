@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Freelance;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Accounts\Actions\GetFreelanceProfile;
+use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Actions\SaveFreelanceProfile;
 use App\Modules\Catalog\Actions\ListFreelancerServices;
 use App\Modules\Orders\Queries\FreelancerOverview;
@@ -28,11 +29,6 @@ class FreelanceController extends Controller
         return view('orders.index', ['orders' => $list($request->user(), 'freelancer'), 'space' => 'freelancer']);
     }
 
-    public function services(Request $request, ListFreelancerServices $services): View
-    {
-        return view('freelance.services', ['services' => $services($request->user()), 'space' => 'freelancer']);
-    }
-
     public function profile(Request $request, GetFreelanceProfile $profile): View
     {
         return view('freelance.profile', ['profile' => $profile($request->user()), 'user' => $request->user(), 'activation' => false, 'space' => 'freelancer']);
@@ -51,10 +47,19 @@ class FreelanceController extends Controller
     {
         $data = $request->validate([
             'display_name' => ['required', 'string', 'max:120'], 'headline' => ['required', 'string', 'max:160'], 'city' => ['nullable', 'string', 'max:80'],
-        ]);
+            'bio' => ['nullable', 'string', 'max:3000'], 'skills' => ['nullable', 'string', 'max:600'],
+        ]);      // liste blanche : tout autre champ envoyé (badge, vérification, rôle, publication…) est ignoré
         $first = ! $request->user()->hasRole('freelance');
-        $save($request->user(), $data['display_name'], $data['headline'], $data['city'] ?? null);
+        $save($request->user(), $data['display_name'], $data['headline'], $data['city'] ?? null, $request->has('bio') ? (string) ($data['bio'] ?? '') : null, $request->has('skills') ? (string) ($data['skills'] ?? '') : null);
 
-        return redirect()->route('freelance.dashboard')->with('status', $first ? 'Espace freelance activé. Votre profil est enregistré.' : 'Profil enregistré.');
+        return $first ? redirect()->route('freelance.dashboard')->with('status', 'Espace freelance activé. Votre profil est enregistré.')
+            : redirect()->route('freelance.profile')->with('status', 'Profil enregistré.');
+    }
+
+    public function publish(Request $request, PublishFreelanceProfile $publish): RedirectResponse
+    {
+        $publish($request->user());
+
+        return redirect()->route('freelance.profile')->with('status', 'Profil publié : il est visible sur votre page publique.');
     }
 }

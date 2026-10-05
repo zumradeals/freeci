@@ -9,6 +9,7 @@ use App\Modules\Files\Exceptions\FilesDisabled;
 use App\Modules\Orders\Actions\DeliveryDraft;
 use App\Modules\Orders\Actions\ExtensionRequests;
 use App\Modules\Orders\Actions\RequestCorrection;
+use App\Modules\Orders\Actions\SignalDisagreement;
 use App\Modules\Orders\Actions\SubmitDelivery;
 use App\Modules\Orders\Actions\ValidateDelivery;
 use App\Modules\Orders\Data\OrderDossier;
@@ -139,6 +140,24 @@ class DeliveryController extends Controller
 
         return $this->run($reference, fn () => $correct($request->user(), $reference, $data['delivery_id'], $data['reason'], (int) $data['expected_version'], $data['operation_key']),
             'Demande de correction envoyée. Le freelance peut y répondre par une nouvelle version.');
+    }
+
+    public function disagreementForm(Request $request, string $reference, GetOrderDossier $dossier): View|RedirectResponse
+    {
+        $d = $this->dossier($request, $reference, $dossier);
+        if (! ($d->delivery['canSignalDisagreement'] ?? false)) {
+            return $this->gone($reference);
+        }
+
+        return view('orders.step', ['d' => $d, 'kind' => 'disagreement', 'operationKey' => (string) Str::uuid(), 'space' => 'client']);
+    }
+
+    public function disagreement(Request $request, string $reference, SignalDisagreement $signal): RedirectResponse|Response
+    {
+        $data = $request->validate(['delivery_id' => ['required', 'uuid'], 'note' => ['required', 'string', 'max:'.SignalDisagreement::NOTE_MAX], 'expected_version' => ['required', 'integer', 'min:1'], 'operation_key' => ['required', 'string', 'max:80']]);
+
+        return $this->run($reference, fn () => $signal($request->user(), $reference, $data['delivery_id'], $data['note'], (int) $data['expected_version'], $data['operation_key']),
+            'Désaccord enregistré : un besoin de suivi est noté. La commande reste ouverte et rien n’est validé à votre place. Aucun support n’a été contacté automatiquement.');
     }
 
     public function validateForm(Request $request, string $reference, GetOrderDossier $dossier): View|RedirectResponse

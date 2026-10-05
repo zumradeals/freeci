@@ -38,6 +38,15 @@ return [
         'sandbox_webhook_secret' => env('FREECI_SANDBOX_WEBHOOK_SECRET'),
     ],
 
+    // Gabarits et bornes de la création de services et de profils : PARAMÈTRES PROVISOIRES (docs/04 §4.2 ; à valider), non des règles commerciales définitives.
+    'catalog' => [
+        'title' => [15, 100], 'summary' => [30, 300], 'scope' => [150, 5000],
+        'price_xof' => [5000, 500000], 'delivery_days' => [1, 60], 'revisions' => [0, 10],
+        'deliverables_max' => 10, 'exclusions_max' => 10, 'client_inputs_max' => 8, 'line_max' => 200,
+        'images_max' => 6, 'image_max_mb' => 5, 'image_max_pixels' => 16000000, 'image_min_width' => 400,
+        'bio' => [50, 1500], 'skills_max' => 10, 'skill' => [2, 40],
+    ],
+
     'files' => [
         // « clamav » = contrôle antivirus ; « none » (défaut) = aucun contrôle disponible : le dépôt de fichiers est désactivé.
         'scanner' => env('FREECI_FILE_SCANNER', 'none'),

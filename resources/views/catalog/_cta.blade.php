@@ -1,6 +1,8 @@
 @props(['service', 'id' => null])
 @php($own = auth()->check() && auth()->id() === $service->sellerUserId)
-@if($own)
+@if(isset($preview))
+  <p class="effect"><strong>Aperçu.</strong> Le bouton de demande apparaîtra ici une fois le service publié.</p>
+@elseif($own)
   <p class="effect"><strong>C’est votre service.</strong> Vous ne pouvez pas le commander. Les demandes reçues apparaissent dans votre <a href="{{ route('freelance.dashboard') }}">espace freelance</a>.</p>
 @elseif(! $service->acceptsRequests)
   <p class="effect"><strong>Service d’exemple.</strong> Les demandes ne sont pas ouvertes sur ce service fictif : il illustre le catalogue.</p>

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Integrations\FileScan\FileScanner;
+use App\Modules\Catalog\Support\ImageProcessor;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -52,6 +53,7 @@ class Preflight extends Command
         $this->check('Courrier réel (pas de pilote log/array)', ! in_array($mailer, ['log', 'array'], true), "MAIL_MAILER={$mailer} : le lien « mot de passe oublié » ne sera pas envoyé", false);
 
         $sandbox = (bool) config('freeci.payments.sandbox_enabled');
+        $this->check('Extension GD avec WebP (images de service)', ImageProcessor::available(), 'php8.3-gd absent : le dépôt d\'images de service est désactivé (les services restent publiables sans image)', false);
         $this->check('Simulateur de paiement désactivé', ! $sandbox, 'FREECI_PAYMENT_SANDBOX=true : réservé aux comptes et commandes de démonstration autorisés (comptes de recette) ; à remettre à false après la recette', false);
         $this->check('Simulateur : secret de notification défini', ! $sandbox || filled(config('freeci.payments.sandbox_webhook_secret')), 'FREECI_SANDBOX_WEBHOOK_SECRET vide alors que le simulateur est activé : les notifications seront refusées');
         $this->check('Service de contrôle des fichiers', config('freeci.files.scanner') === 'clamav' && app(FileScanner::class)->isOperational(), 'aucun service d\'analyse opérationnel : le dépôt de fichiers du brief est désactivé (voir docs/10)', false);

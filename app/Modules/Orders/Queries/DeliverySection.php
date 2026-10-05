@@ -13,6 +13,7 @@ use App\Modules\Orders\Models\CorrectionRequest;
 use App\Modules\Orders\Models\Delivery;
 use App\Modules\Orders\Models\Order;
 use App\Shared\Dates;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -63,7 +64,7 @@ final class DeliverySection
             $blockers = DeliveryDraft::blockers($order, $d);
             $draft = [
                 'id' => $d?->getKey(), 'message' => $d?->message ?? '', 'files' => $d ? $this->files($d, $viewer, $order, true) : [], 'blockers' => $blockers, 'canSubmit' => $blockers === [],
-                'scannerOperational' => $this->scanner->isOperational(), 'requiresFiles' => (bool) $order->agreement->delivery_requires_files,
+                'scannerOperational' => $this->scanner->isOperational(), 'requiresFiles' => $order->agreement->deliveryMode() === 'files', 'deliveryMode' => $order->agreement->deliveryMode(),
             ];
         }
 
@@ -84,6 +85,8 @@ final class DeliverySection
             ];
         }
 
+        $disagreement = $latest ? DB::table('order_follow_ups')->where('delivery_id', $latest->getKey())->where('kind', 'client_disagreement')->first(['note', 'recorded_at']) : null;
+
         return [
             'deliveries' => $list, 'latestId' => $latest?->getKey(), 'latestVersion' => $latest?->version,
             'corrections' => ['included' => $included, 'used' => $used, 'remaining' => max(0, $included - $used)],
@@ -97,7 +100,11 @@ final class DeliverySection
             'late' => $order->due_at !== null && $isWork && $order->due_at->lte(now()),
             'canDecide' => ! $isFreelancer && $order->state === OrderState::Delivered && $latest !== null,
             'review' => $review,
-            'requiresFiles' => (bool) $order->agreement->delivery_requires_files,
+            'exhausted' => $latest !== null && $used >= $included,
+            'disagreement' => $disagreement ? ['note' => $disagreement->note, 'when' => Dates::format(Carbon::parse($disagreement->recorded_at))] : null,
+            'canSignalDisagreement' => ! $isFreelancer && $order->state === OrderState::Delivered && $latest !== null && $used >= $included
+                && ! DB::table('order_follow_ups')->where('delivery_id', $latest->getKey())->where('kind', 'client_disagreement')->exists(),
+            'requiresFiles' => $order->agreement->deliveryMode() === 'files', 'deliveryMode' => $order->agreement->deliveryMode(),
             'validatedAt' => $order->validated_at ? Dates::format($order->validated_at) : null,
         ];
     }

@@ -69,6 +69,7 @@ final class GetOrderDossier
                 'extension_withdrawn' => 'Proposition de report retirée',
                 'validated' => 'Livraison v'.($e->meta['delivery_version'] ?? '?')." validée par {$who}",
                 'closed' => 'Commande clôturée (clôture commerciale)',
+                'disagreement_reported' => "Désaccord signalé par {$who} (livraison v".($e->meta['delivery_version'] ?? '?').') : besoin de suivi enregistré',
                 'review_overdue' => 'Délai d’examen dépassé : besoin de suivi enregistré',
                 'declined' => "Demande refusée par {$who}",
                 'withdrawn' => "Demande retirée par {$who}",

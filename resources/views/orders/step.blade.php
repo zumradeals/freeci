@@ -1,7 +1,7 @@
 @php
   $dl = $d->delivery;
   $titles = ['submit' => 'Soumettre la livraison v'.(($dl['latestVersion'] ?? 0) + 1), 'correction' => 'Demander une correction', 'validate' => 'Valider la livraison v'.($dl['latestVersion'] ?? ''),
-    'extension' => 'Proposer un report d’échéance', 'extension-accept' => 'Accepter le report d’échéance', 'extension-decline' => 'Refuser le report d’échéance'];
+    'disagreement' => 'Signaler un désaccord', 'extension' => 'Proposer un report d’échéance', 'extension-accept' => 'Accepter le report d’échéance', 'extension-decline' => 'Refuser le report d’échéance'];
   $title = $titles[$kind];
   $c = $dl['corrections'];
   $ext = $dl['extension'] ?? null;
@@ -29,7 +29,7 @@
     @elseif($kind === 'correction')
       <p class="muted" style="margin-top:8px">Correction n° {{ $c['used'] + 1 }} sur {{ $c['included'] }} · liée à la livraison v{{ $dl['latestVersion'] }}</p>
       @if($c['remaining'] === 0)
-        <div class="notice tone-warning" style="margin-top:16px"><x-fc.icon name="warn" /><p>Les corrections incluses dans l’accord sont toutes utilisées ({{ $c['used'] }} sur {{ $c['included'] }}). Vous pouvez valider la livraison ; tout changement de périmètre passe par une nouvelle commande.</p></div>
+        <div class="notice tone-warning" style="margin-top:16px"><x-fc.icon name="warn" /><p>Les corrections incluses dans l’accord sont toutes utilisées ({{ $c['used'] }} sur {{ $c['included'] }}). Vous pouvez valider la livraison, ou la laisser non validée : rien ne vous y oblige. Tout changement de périmètre passe par une nouvelle commande.</p></div>
         <div style="margin-top:16px"><a class="btn btn-secondary" href="{{ route('orders.show', $d->reference) }}">Revenir à la commande</a></div>
       @else
       <form method="post" action="{{ route('orders.correction.store', $d->reference) }}" data-once style="display:grid;gap:16px;margin-top:16px" novalidate>@csrf
@@ -42,6 +42,19 @@
         <div class="row"><button class="btn btn-primary btn-lg" type="submit" data-once-label="Envoi…">Envoyer la demande de correction</button><a class="btn btn-link" href="{{ route('orders.show', $d->reference) }}">Revenir à la commande</a></div>
       </form>
       @endif
+
+    @elseif($kind === 'disagreement')
+      <div class="notice tone-info" style="margin-top:16px"><x-fc.icon name="info" /><div><p><strong>Vous n’êtes pas obligé de valider.</strong></p><ul class="stack-sm" style="padding-left:18px;list-style:disc;margin-top:6px">
+        <li>Vos corrections incluses sont utilisées ({{ $c['used'] }} sur {{ $c['included'] }}). Vous pouvez laisser la livraison <strong>non validée</strong> : la commande reste ouverte, rien n’est validé ni clôturé à votre place.</li>
+        <li>Signaler un désaccord <strong>enregistre un besoin de suivi</strong> avec votre message, visible des deux parties dans l’historique.</li>
+        <li><strong>Aucun support n’est contacté automatiquement</strong> et ce n’est pas un litige : ce dispositif n’existe pas encore dans cette version.</li></ul></div></div>
+      <form method="post" action="{{ route('orders.disagreement.store', $d->reference) }}" data-once style="display:grid;gap:16px;margin-top:16px" novalidate>@csrf
+        <input type="hidden" name="delivery_id" value="{{ $dl['latestId'] }}"><input type="hidden" name="expected_version" value="{{ $d->version }}"><input type="hidden" name="operation_key" value="{{ $operationKey }}">
+        <div class="field"><label for="note">Votre désaccord <span class="req">(obligatoire, 15 caractères minimum)</span></label>
+          <textarea class="textarea" id="note" name="note" rows="5" maxlength="2000" required @error('note') aria-invalid="true" @enderror>{{ old('note') }}</textarea>
+          @error('note')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
+        <div class="row"><button class="btn btn-primary btn-lg" type="submit" data-once-label="Envoi…">Enregistrer mon désaccord</button><a class="btn btn-link" href="{{ route('orders.show', $d->reference) }}">Revenir à la commande</a></div>
+      </form>
 
     @elseif($kind === 'validate')
       @php($latest = collect($dl['deliveries'])->firstWhere('isLatest', true))

@@ -23,11 +23,11 @@
       </section>
     </div>
     <div class="stack-lg">
-      <section aria-labelledby="h-svc"><div class="sect-head"><h2 class="t-h2" id="h-svc">Vos services</h2></div>
+      <section aria-labelledby="h-svc"><div class="sect-head"><h2 class="t-h2" id="h-svc">Vos services</h2><a class="small" href="{{ route('freelance.services') }}">Gérer</a></div>
         @if(count($services))
-          <div class="card"><ul class="stack-sm">@foreach($services as $s)<li class="row" style="justify-content:space-between;gap:8px 16px"><span style="min-width:0">@if($s['published'])<a href="{{ route('services.show', $s['slug']) }}">{{ $s['title'] }}</a>@else{{ $s['title'] }}@endif<br><small class="muted">{{ $s['status'] }}</small></span><x-fc.money :amount="$s['price']" /></li>@endforeach</ul></div>
+          <div class="card"><ul class="stack-sm">@foreach($services as $s)<li class="row" style="justify-content:space-between;gap:8px 16px"><span style="min-width:0">@if($s['published'])<a href="{{ route('services.show', $s['slug']) }}">{{ $s['title'] }}</a>@else{{ $s['title'] ?: 'Sans titre' }}@endif<br><small class="muted">{{ $s['status'] }}</small></span>@if($s['price'])<x-fc.money :amount="$s['price']" />@endif</li>@endforeach</ul></div>
         @else
-          <div class="card empty"><span class="ico-lg"><x-fc.icon name="briefcase" :size="26" /></span><p style="font-weight:600">Aucun service à votre nom.</p><p class="muted">La création et la publication de services arrivent dans un prochain lot.</p></div>
+          <div class="card empty"><span class="ico-lg"><x-fc.icon name="briefcase" :size="26" /></span><p style="font-weight:600">Aucun service à votre nom.</p><p class="muted">Créez un brouillon : il reste invisible jusqu’à son approbation.</p><a class="btn btn-primary" href="{{ route('freelance.services.new') }}">Créer un service</a></div>
         @endif
       </section>
       <section aria-labelledby="h-stats"><h2 class="sr-only" id="h-stats">Chiffres de synthèse</h2>

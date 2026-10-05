@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 
@@ -75,6 +76,11 @@ class Service extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ServiceVersion::class)->orderBy('number');
     }
 
     public function freelanceProfile(): BelongsTo

@@ -64,7 +64,7 @@ class DemoRecette extends Command
                 'deliverables' => ['Un plan 2D coté au format PDF.'], 'exclusions' => ['Tout travail réel : ceci est une démonstration.'],
                 'client_inputs' => ['Surface approximative du logement', 'Nombre de pièces', 'Votre besoin en une phrase'],
                 'images' => [['src' => '/img/demo/plan-dwg-wide.svg', 'card' => '/img/demo/plan-dwg.svg', 'alt' => 'Exemple : plan d’étage', 'caption' => 'Exemple : plan d’étage']],
-                'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true,
+                'status' => ServiceStatus::Published->value, 'published_at' => now()->subDay(), 'is_demo' => true, 'accepts_requests' => true, 'delivery_requires_files' => false,
             ]);
 
             // Second service : le brief exige au moins un fichier contrôlé (nécessite le service de contrôle de sécurité).

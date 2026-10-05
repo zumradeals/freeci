@@ -19,6 +19,11 @@
               <ul><li>La commande est <strong>clôturée</strong>.</li><li>Plus de correction possible.</li><li>Aucun reversement n’est confirmé ni déclenché par cette étape.</li></ul>
               <a class="btn btn-secondary btn-block" href="{{ route('orders.validation', $d->reference) }}">Valider la livraison</a></div>
           </div>
+          @if($c['remaining'] === 0)
+            <div class="notice tone-info"><x-fc.icon name="info" /><div><p><strong>Vous n’êtes pas obligé de valider.</strong> Vos corrections incluses sont épuisées : vous pouvez laisser cette livraison <strong>non validée</strong>. La commande reste ouverte et rien ne vous force à accepter.</p>
+              @if($dl['disagreement'])<p style="margin-top:6px">Désaccord signalé le {{ $dl['disagreement']['when'] }} : besoin de suivi enregistré. <strong>Aucun support n’a été contacté automatiquement.</strong></p>
+              @elseif($dl['canSignalDisagreement'])<p style="margin-top:6px"><a href="{{ route('orders.disagreement', $d->reference) }}">Signaler un désaccord</a> : un besoin de suivi est enregistré (ce n’est pas un litige et aucun support n’est contacté automatiquement).</p>@endif</div></div>
+          @endif
           @if($dl['review'])<p class="note-line"><x-fc.icon name="shield" :size="16" /><span>Vous décidez à votre rythme (délai d’examen indicatif : {{ \App\Shared\Dates::format($dl['review']['deadline']) }}). <strong>Sans réponse, rien n’est validé ni clôturé à votre place</strong> : la commande reste ouverte.</span></p>@endif</div>
       @endif
     </section>

@@ -116,7 +116,7 @@ final class DeliveryDraft
         if ($pending > 0) {
             $reasons[] = $pending.' fichier'.($pending > 1 ? 's' : '').' en cours de contrôle de sécurité : la livraison ne peut pas être soumise tant que le contrôle n’est pas terminé.';
         }
-        if ($order->agreement->delivery_requires_files && $clean === 0) {
+        if ($order->agreement->deliveryMode() === 'files' && $clean === 0) {
             $reasons[] = 'L’accord prévoit des fichiers livrables : ajoutez au moins un fichier ayant passé le contrôle de sécurité.';
         }
         if ($files->where('state', FileState::Rejected)->count() > 0) {

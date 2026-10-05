@@ -5,6 +5,7 @@
   $revLabel = $service->revisionsIncluded > 1 ? 'Corrections incluses' : 'Correction incluse';
 @endphp
 <div class="container">
+  @isset($preview)<div class="notice tone-warning" role="note" style="margin-top:16px"><x-fc.icon name="flag" /><p><strong>Aperçu — non publié.</strong> Voici le rendu public de votre version de travail ; personne d’autre ne le voit. <a href="{{ $preview }}">Revenir à l’édition</a></p></div>@endisset
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('services.index') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour aux services</a><a class="hide-m" href="{{ route('services.index') }}">Services</a><span class="sep hide-m" aria-hidden="true">›</span><a class="hide-m" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">{{ $service->categoryName }}</a></nav>
   <div class="svc-layout">
     <div>
@@ -48,6 +49,7 @@
         <section aria-labelledby="s5"><h2 class="t-h2" id="s5">Le vendeur</h2>
           <div class="card vendor"><div class="top"><span class="avatar avatar-lg" aria-hidden="true">{{ $service->sellerInitials }}</span>
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
+            @if($service->sellerSlug)<p style="margin-top:8px"><a href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
             @if($service->isDemo)<p class="muted small">Profil fictif de démonstration.</p>@endif</div></section>
         <section aria-labelledby="s6"><h2 class="t-h2" id="s6">Avis</h2>
           <p class="muted">Aucun avis pour l’instant. Les avis ne sont publiés qu’après une commande validée.</p></section>

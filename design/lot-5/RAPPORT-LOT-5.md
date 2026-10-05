@@ -1,0 +1,8 @@
+# Vérification — lot 5 (profil et services)
+
+Date : 2026-10-05. PHP 8.3, PostgreSQL 16, GD/WebP, Chromium (Playwright), axe-core 4.13.
+
+- **153 tests réussis** (17 nouveaux : `ServiceManagementTest` ; 5 nouveaux dans `DeliveryCycleTest` pour les correctifs du lot 4) : droits (propriétaire, autre freelance, client, administrateur, visiteur), auto-attribution de badge/rôle/habilitation impossible, champs falsifiés ignorés, cycle brouillon → soumission → refus motivé → approbation, modération réservée aux administrateurs et jamais sur son propre service, version publiée intacte pendant une modification, immutabilité en base, commandes en cours inchangées après changement de prix / retrait / suspension, médias (réencodage, stockage privé, accès contrôlé, fichiers hostiles refusés, nettoyage), commandes console, écrans périmés, services existants.
+- **Navigateur** (compte freelance, 360 et 1440 px) : profil (erreur de saisie conservée, publication), création, brouillon, erreurs de formulaire, image téléversée, aperçu, soumission, refus puis approbation en console, « Mes services » à chaque état, profil public, page publique du service. Aucun défilement horizontal, aucune erreur console, **0 violation axe-core**.
+- **Défaut trouvé et corrigé** : le script `data-once` désactivait le bouton de soumission avant l'envoi, qui perdait son `name/value` (`intent=submit` devenait « enregistrer »). Désactivation différée après la construction des données.
+- Non réalisé : appareils réels, lecteurs d'écran, autres navigateurs, charge, test de concurrence multi-processus. Les captures 1440 px sont limitées aux écrans principaux.
