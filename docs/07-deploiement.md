@@ -37,7 +37,7 @@ Seuls ces éléments conditionnent les instructions : voir la liste courte en §
 
 | Élément | Exigence | Si absent ou plus ancien |
 |---|---|---|
-| PHP | **8.3 à 8.5** + extensions `pdo_pgsql`, `pgsql`, `mbstring`, `intl`, `xml`, `curl`, `zip`, `bcmath`, `fileinfo`, `opcache` | Installer `php8.3-fpm` **à côté** de l'existant (paquets Ondřej Surý sur Debian/Ubuntu, Remi sur RHEL) ; ne pas changer `update-alternatives` pour `php`. Appeler explicitement `php8.3` (variable `PHP_BIN=php8.3`) |
+| PHP | **8.3 à 8.5** (`composer.lock` : plateforme `php ^8.3` ; Laravel 13.34 exige 8.3 ; Livewire 4.4.7 ≥ 8.1). Extensions **exigées par le `composer.lock` publié** : `ctype`, `dom`, `fileinfo`, `filter`, `hash`, `iconv`, `json`, `libxml`, `mbstring`, `openssl`, `pcre`, `session`, `tokenizer` ; **exigée par l'application** : `pdo_pgsql` ; recommandées : `opcache`, `intl`, `curl`, `zip` | Installer `php8.3-fpm` **à côté** de l'existant (paquets Ondřej Surý sur Debian/Ubuntu, Remi sur RHEL) ; ne pas changer `update-alternatives` pour `php`. Appeler explicitement `php8.3` (variable `PHP_BIN=php8.3`). Contrôle : `php8.3 -m` puis `composer check-platform-reqs --no-dev` |
 | PostgreSQL | ≥ 13 (testé 16) ; extension `unaccent` (contrib) | Installer `postgresql` + `postgresql-contrib` ; ne pas migrer ni arrêter un autre cluster |
 | Serveur web | nginx ou Apache, avec TLS | Voir `deploy/nginx-freeci.conf.example`, `deploy/apache-freeci.conf.example` |
 | Composer | 2.x | `composer --version` |
