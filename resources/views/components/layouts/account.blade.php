@@ -24,6 +24,9 @@
     <a href="{{ route('coming-soon', 'missions') }}"><x-fc.icon name="briefcase" />Missions <x-fc.soon /></a>
     <a href="{{ route('coming-soon', 'messages') }}"><x-fc.icon name="message" />Messages <x-fc.soon /></a>
   </nav>
+  @if(auth()->user()->isAdministrator())
+  <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration <x-fc.soon /></a></nav>
+  @endif
   <nav class="side-nav side-bottom" aria-label="Compte et aide">
     <a href="{{ route('coming-soon', 'compte') }}"><x-fc.icon name="user" />Compte <x-fc.soon /></a>
     <a href="{{ route('coming-soon', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>

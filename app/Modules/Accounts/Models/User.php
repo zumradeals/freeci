@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -33,6 +34,27 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_demo' => 'boolean',
         ];
+    }
+
+    public function roles(): HasMany
+    {
+        return $this->hasMany(AccountRole::class);
+    }
+
+    public function staffGrants(): HasMany
+    {
+        return $this->hasMany(StaffGrant::class);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('role', $role)->exists();
+    }
+
+    /** Administrateur = habilitation datée en vigueur (jamais un simple indicateur sur le compte). */
+    public function isAdministrator(): bool
+    {
+        return $this->staffGrants()->active()->where('capability', StaffGrant::ADMINISTRATOR)->exists();
     }
 
     public function freelanceProfile(): HasOne

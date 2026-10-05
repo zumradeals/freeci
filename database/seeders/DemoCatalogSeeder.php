@@ -102,6 +102,7 @@ class DemoCatalogSeeder extends Seeder
                 // Mot de passe aléatoire jeté : ce compte vendeur n'est pas utilisable pour se connecter.
                 $user->forceFill(['name' => $name, 'password' => Hash::make(Str::random(64)), 'is_demo' => true])->save();
             }
+            $user->roles()->firstOrCreate(['role' => 'freelance']);
             $out[$key] = FreelanceProfile::updateOrCreate(['user_id' => $user->id], [
                 'display_name' => $name, 'headline' => $headline, 'city' => $city, 'is_demo' => true,
             ]);
@@ -119,10 +120,11 @@ class DemoCatalogSeeder extends Seeder
             return;
         }
         $password = config('freeci.demo_client_password') ?: Str::password(16, symbols: false);
-        User::forceCreate([
+        $client = User::forceCreate([
             'name' => 'Fanta Bamba (démo)', 'email' => $email, 'password' => Hash::make($password),
             'email_verified_at' => now(), 'is_demo' => true,
         ]);
+        $client->roles()->firstOrCreate(['role' => 'client']);
         $this->command?->warn("Compte client de DÉMONSTRATION créé : {$email}");
         if (! config('freeci.demo_client_password')) {
             $this->command?->warn("Mot de passe généré (affiché une seule fois) : {$password}");
