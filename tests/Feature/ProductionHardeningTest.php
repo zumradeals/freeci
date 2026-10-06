@@ -55,16 +55,12 @@ class ProductionHardeningTest extends TestCase
         $this->get('/connexion')->assertSee('noindex', false);
     }
 
-    public function test_the_test_mode_banner_follows_the_payment_mode(): void
+    public function test_no_global_test_banner_whatever_the_payment_mode(): void
     {
-        config(['freeci.payments.mode' => 'sandbox']);
-        $this->get('/')->assertSee('Mode test — aucun argent réel');
-
-        config(['freeci.payments.mode' => 'live']);
-        $this->get('/')->assertDontSee('Mode test — aucun argent réel');
-
-        config(['freeci.payments.mode' => 'nimportequoi']);              // valeur inconnue : jamais interprétée comme live
-        $this->get('/')->assertSee('Mode test — aucun argent réel');
+        foreach (['sandbox', 'live', 'nimportequoi'] as $mode) {
+            config(['freeci.payments.mode' => $mode]);
+            $this->get('/')->assertDontSee('Mode test — aucun argent réel')->assertDontSee('mode-bar', false)->assertDontSee('démonstration');
+        }
     }
 
     public function test_public_catalog_has_no_global_restriction(): void

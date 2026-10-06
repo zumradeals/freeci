@@ -1,7 +1,7 @@
 @php($v = $working ?? $live)
 <x-layouts.account :title="$v?->title ?: 'Mission'" space="client">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('client.missions') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Mes missions</a><a class="hide-m" href="{{ route('client.missions') }}">Mes missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $v?->title }}</span></nav>
-  <section class="card order-head" aria-labelledby="h-title"><div class="top"><span class="badge tone-{{ $tone }}"><x-fc.icon :name="$icon" :size="16" />{{ $status }}</span>@if($mission->is_demo)<span class="tag-demo">Démonstration</span>@endif</div>
+  <section class="card order-head" aria-labelledby="h-title"><div class="top"><span class="badge tone-{{ $tone }}"><x-fc.icon :name="$icon" :size="16" />{{ $status }}</span></div>
     <h1 class="t-h1" id="h-title">{{ $v?->title ?: 'Sans titre' }}</h1>
     <dl class="meta"><div><dt>Budget</dt><dd>@if($v?->budget_xof)<x-fc.money :amount="\App\Shared\Money::xof($v->budget_xof)" />@else —@endif</dd></div>
       @if($live)<div><dt>Date limite de candidature</dt><dd>{{ \App\Shared\Dates::format($live->application_deadline) }}<small>Sélection possible jusqu’au {{ $selectionEnd }}</small></dd></div>@endif

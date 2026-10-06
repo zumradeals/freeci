@@ -5,7 +5,7 @@
 @elseif($own)
   <p class="effect"><strong>C’est votre service.</strong> Vous ne pouvez pas le commander. Les demandes reçues apparaissent dans votre <a href="{{ route('freelance.dashboard') }}">espace freelance</a>.</p>
 @elseif(! $service->acceptsRequests)
-  <p class="effect"><strong>Service d’exemple.</strong> Les demandes ne sont pas ouvertes sur ce service fictif : il illustre le catalogue.</p>
+  <p class="effect"><strong>Demandes fermées.</strong> Ce service n’accepte pas de demandes pour le moment.</p>
 @else
   <a class="btn btn-primary btn-lg btn-block" @if($id) id="{{ $id }}" @endif href="{{ route('services.request', $service->slug) }}">Demander cette prestation</a>
   <p class="effect"><strong>Vous décrivez votre besoin.</strong> {{ explode(' ', $service->sellerName)[0] }} a {{ config('freeci.orders.response_hours') }} h pour accepter ou refuser. <strong>Vous ne payez rien à cette étape</strong> : le paiement n’est pas encore ouvert dans cette version.</p>

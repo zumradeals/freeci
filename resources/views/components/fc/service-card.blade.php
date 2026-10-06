@@ -7,7 +7,7 @@
     @endif
   </div>
   <div class="body">
-    <p class="cat-l">{{ $service->categoryName }}@if($service->isDemo) · <span class="tag-demo">Exemple fictif</span>@endif</p>
+    <p class="cat-l">{{ $service->categoryName }}</p>
     <h{{ $level }} class="ttl"><a class="stretch" href="{{ route('services.show', $service->slug) }}">{{ $service->title }}</a></h{{ $level }}>
     <p class="seller"><span class="avatar" aria-hidden="true">{{ $service->sellerInitials }}</span>{{ $service->sellerName }} · {{ $service->sellerHeadline }}</p>
     @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /></p>@endif

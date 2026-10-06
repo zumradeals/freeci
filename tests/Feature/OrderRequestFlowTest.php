@@ -31,7 +31,7 @@ class OrderRequestFlowTest extends TestCase
 
         // Client : formulaire, envoi, consultation de sa demande.
         $this->actingAs($this->client)->get('/services/'.$this->service->slug.'/demande')
-            ->assertOk()->assertSee('Nombre de plans')->assertSee('Version AutoCAD')->assertSee('aucun paiement n’est demandé ni possible');
+            ->assertOk()->assertSee('Nombre de plans')->assertSee('Version AutoCAD')->assertSee('indiqué sur l’écran de paiement');
         $order = $this->placeOrder();
         $this->assertSame(OrderState::AwaitingAcceptance, $order->state);
         $this->assertSame($this->client->id, $order->client_id);
@@ -110,7 +110,7 @@ class OrderRequestFlowTest extends TestCase
         $this->service->update(['accepts_requests' => false]);
         $this->actingAs($this->client)->post('/services/'.$this->service->slug.'/demande', $this->requestPayload())->assertStatus(409);
         $this->assertSame(0, Order::count());
-        $this->actingAs($this->client)->get('/services/'.$this->service->slug)->assertSee('Service d’exemple')->assertDontSee('/demande"', false);
+        $this->actingAs($this->client)->get('/services/'.$this->service->slug)->assertSee('Demandes fermées')->assertDontSee('/demande"', false);
 
         $this->service->update(['accepts_requests' => true, 'status' => 'suspended']);
         $this->actingAs($this->client)->post('/services/'.$this->service->slug.'/demande', $this->requestPayload(null, ['service_version' => $this->service->fresh()->row_version]))->assertStatus(410);
@@ -298,6 +298,6 @@ class OrderRequestFlowTest extends TestCase
         $demoClient = User::factory()->create(['is_demo' => true]);
         $order = $this->placeOrder($demoClient);
         $this->assertTrue($order->is_demo);
-        $this->actingAs($demoClient)->get("/commandes/{$order->reference}")->assertSee('Démonstration');
+        $this->actingAs($demoClient)->get("/commandes/{$order->reference}")->assertDontSee('Démonstration');
     }
 }

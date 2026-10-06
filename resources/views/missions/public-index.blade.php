@@ -16,7 +16,7 @@
   <p class="muted small" style="margin-top:12px" aria-live="polite">{{ $results->total() }} mission{{ $results->total() > 1 ? 's' : '' }} ouverte{{ $results->total() > 1 ? 's' : '' }}</p>
   @if($results->count())
     <div class="stack-lg" style="margin-top:8px">@foreach($results as $m)
-      <article class="card"><p class="muted small">{{ $m['category'] }}@if($m['isDemo']) · <span class="tag-demo">Exemple fictif</span>@endif</p><h2 class="t-h3"><a href="{{ route('missions.show', $m['slug']) }}">{{ $m['title'] }}</a></h2>
+      <article class="card"><p class="muted small">{{ $m['category'] }}</p><h2 class="t-h3"><a href="{{ route('missions.show', $m['slug']) }}">{{ $m['title'] }}</a></h2>
         <p style="margin-top:6px">{{ $m['excerpt'] }}</p><p class="muted small" style="margin-top:8px">Budget : <x-fc.money :amount="$m['budget']" /> · Candidatures jusqu’au {{ $m['deadline'] }}</p></article>
     @endforeach</div>
     <nav class="row" style="margin-top:16px;justify-content:space-between" aria-label="Pagination">@if($results->previousPageUrl())<a class="btn btn-secondary" href="{{ $results->previousPageUrl() }}">Page précédente</a>@else<span></span>@endif @if($results->nextPageUrl())<a class="btn btn-secondary" href="{{ $results->nextPageUrl() }}">Page suivante</a>@endif</nav>

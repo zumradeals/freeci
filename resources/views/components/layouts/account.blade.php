@@ -7,7 +7,6 @@
 <body class="">
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 @include('partials.sprite')
-@include('partials.mode-bar', ['wide' => true])
 <header class="site-header header-app">
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
@@ -26,7 +25,7 @@
 </div></main>
 </div>
 <footer class="site-footer slim"><div class="container">
-  <p>FreeCI @unless(\App\Integrations\Payments\PaymentMode::isLive())· mode test : aucun argent réel @endunless</p>
+  <p>FreeCI</p>
   <ul><li><a href="{{ route('info', 'aide') }}">Aide</a></li><li><a href="{{ route('info', 'contact') }}">Contact</a></li><li><a href="{{ route('info', 'conditions') }}">Conditions</a></li><li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li><li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul>
 </div></footer>
 @include('partials.drawer', ['space' => $space])

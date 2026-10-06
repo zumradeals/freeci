@@ -20,26 +20,20 @@
       <a class="hero-link" href="{{ route('client.missions.new') }}">Un besoin précis ? Publier une mission <x-fc.icon name="arrow-right" :size="18" /></a>
     </div>
     <aside class="hero-card" aria-labelledby="h-card">
-      <p class="eyebrow muted">Suivi d’une commande · exemple</p>
+      <p class="eyebrow muted">Le suivi d’une commande</p>
       <h2 class="t-h3" id="h-card" style="margin-top:8px">Chaque étape, au même endroit</h2>
-      <p class="muted small" style="margin-top:6px">Accord, paiement, brief, livraison, corrections, validation : vous savez où en est votre commande et ce qui est attendu de vous.</p>
-      <div class="mini-order">
-  <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px 12px">
-    <div style="min-width:0"><p style="font-weight:650;line-height:1.35">Convertir vos plans PDF en fichiers AutoCAD (DWG)</p><p class="muted small">DEMO-26018 · Kader Soro</p></div>
-    <span class="badge tone-info"><x-fc.icon name="info" :size="16" />Livrée</span>
-  </div>
-  <div class="mini-steps" aria-hidden="true"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i></div>
-  <p class="small muted">Étape 5 sur 7 · Livraison</p>
-  <div class="row" style="justify-content:space-between"><span class="action-tag"><x-fc.icon name="arrow-right" :size="16" />Examiner la livraison</span><span class="price price-md">35 000<small> FCFA</small></span></div>
-  <p class="small muted">À décider avant le <strong style="color:var(--ink-900)">15 oct. 2026, 11:15</strong></p>
-</div>
+      <ol class="empty-steps" style="margin-top:12px">
+        <li><div><b>Accord</b><span>Le freelance accepte : prix, délai et corrections sont figés.</span></div></li>
+        <li><div><b>Paiement et brief</b><span>Le travail démarre une fois le paiement confirmé et le brief complet.</span></div></li>
+        <li><div><b>Livraison</b><span>Vous examinez, puis demandez une correction ou validez.</span></div></li>
+        <li><div><b>Validation et avis</b><span>Rien n’est validé à votre place.</span></div></li>
+      </ol>
     </aside>
   </div>
 </section>
 
 <section class="section" id="prestations" aria-labelledby="h-svc"><div class="container">
-  <div class="section-head"><div><h2 class="t-h2" id="h-svc">Services publiés récemment</h2>
-    @if(collect($services)->contains(fn ($s) => $s->isDemo))<p style="margin-top:6px"><span class="tag-demo">Exemples de démonstration</span> <span class="muted">Certains services de cette liste sont des données d’exemple.</span></p>@endif</div>
+  <div class="section-head"><div><h2 class="t-h2" id="h-svc">Services publiés récemment</h2></div>
     <a class="btn btn-link" href="{{ route('services.index') }}">Voir tout le catalogue <x-fc.icon name="arrow-right" :size="18" /></a></div>
   @if(count($services))
   <div class="svc-grid">

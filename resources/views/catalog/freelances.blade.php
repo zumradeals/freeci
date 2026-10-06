@@ -24,7 +24,7 @@
         <article class="svc vendor-card"><div class="body" style="position:relative">
           <x-fc.fav-button kind="freelance" :slug="$r['slug']" :on="$r['favorited']" />
           <p class="seller" style="margin:0;padding-right:52px"><span class="avatar" aria-hidden="true">{{ $r['initials'] }}</span><a class="stretch" href="{{ route('freelances.show', $r['slug']) }}"><strong>{{ $r['name'] }}</strong></a></p>
-          <p class="muted">{{ $r['headline'] }}@if($r['city']) · {{ $r['city'] }}@endif @if($r['isDemo'])<span class="tag-demo">Fictif</span>@endif</p>
+          <p class="muted">{{ $r['headline'] }}@if($r['city']) · {{ $r['city'] }}@endif</p>
           @if(count($r['skills']))<ul style="display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0">@foreach($r['skills'] as $sk)<li><span class="badge tone-neutral">{{ $sk }}</span></li>@endforeach</ul>@endif
           <p class="small muted" style="margin:0">{{ $r['servicesCount'] }} service{{ $r['servicesCount'] > 1 ? 's' : '' }} publié{{ $r['servicesCount'] > 1 ? 's' : '' }}@if($r['ratingCount'] > 0) · <x-fc.rating :avg="$r['ratingAvg']" :count="$r['ratingCount']" />@endif</p>
         </div></article>

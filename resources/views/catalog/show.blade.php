@@ -52,7 +52,7 @@
           <div class="card vendor"><div class="top"><span class="avatar avatar-lg" aria-hidden="true">{{ $service->sellerInitials }}</span>
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
             @if($service->sellerSlug)<p style="margin-top:8px"><a href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
-            @if($service->isDemo)<p class="muted small">Profil fictif de démonstration.</p>@endif</div></section>
+            </div></section>
         <section aria-labelledby="s6" id="avis"><h2 class="t-h2" id="s6">Avis</h2>
           @if(isset($reviews) && $reviews->total() > 0)
             <p class="muted"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> — avis de clients ayant validé une commande de CE service (les avis issus d’une mission ne sont pas comptés ici).</p>

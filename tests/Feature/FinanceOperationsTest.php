@@ -610,13 +610,13 @@ class FinanceOperationsTest extends TestCase
     public function test_the_freelancer_sees_available_blocked_and_paid_amounts_with_test_separated_and_the_missing_api_stated(): void
     {
         $o = $this->paid();
-        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertOk()->assertSee('À venir (prestation non validée)')->assertSee('pas disponible');
+        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertOk()->assertSee('À venir')->assertSee('Disponible ne signifie pas versé');
         $page = $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Montants de test')->assertSee('aucun argent réel');
         $this->validated($o);
-        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Disponible')->assertSee('31')->assertSee('Aucun bénéficiaire vérifié');
+        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Disponible')->assertSee('31')->assertSee('Coordonnées à compléter');
         $this->actingAs($this->freelancer)->post('/freelance/revenus/destination', ['method' => 'mobile_money', 'holder' => 'Kader Freelance', 'destination' => '+2250700000000'])->assertRedirect()->assertSessionHas('status');
         $this->assertNotSame('+2250700000000', DB::table('payout_beneficiaries')->value('destination'), 'destination chiffrée');
-        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('En attente de vérification')->assertDontSee('+2250700000000');
+        $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Coordonnées en attente de vérification')->assertDontSee('+2250700000000');
         $this->assertTrue($page->isOk());
     }
 

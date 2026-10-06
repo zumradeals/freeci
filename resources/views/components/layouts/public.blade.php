@@ -7,7 +7,6 @@
 <body class="">
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 @include('partials.sprite')
-@include('partials.mode-bar')
 <header class="site-header">
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
@@ -44,7 +43,7 @@
         <li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li>
         <li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
     </div>
-    <p class="legal">@unless(\App\Integrations\Payments\PaymentMode::isLive())Mode test : aucun argent réel. @endunless Pages d’information : brouillons tant qu’elles ne sont pas adoptées.</p>
+    <p class="legal">Pages d’information : brouillons tant qu’elles ne sont pas adoptées.</p>
   </div>
 </footer>
 @include('partials.drawer')

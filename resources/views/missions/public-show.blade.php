@@ -2,7 +2,7 @@
 <div class="container" style="padding-block:24px;max-width:860px">
   @isset($preview)<div class="notice tone-warning" role="note"><x-fc.icon name="flag" /><p><strong>Aperçu — non publié.</strong> Rendu public de votre version de travail ; personne d’autre ne le voit. <a href="{{ $preview }}">Revenir à l’édition</a></p></div>@endisset
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('missions.index') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Missions</a><a class="hide-m" href="{{ route('missions.index') }}">Missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $m['category'] }}</span></nav>
-  <p class="eyebrow">{{ $m['category'] }}@if($m['isDemo']) · <span class="tag-demo">Exemple fictif</span>@endif</p>
+  <p class="eyebrow">{{ $m['category'] }}</p>
   <h1 class="t-h1">{{ $m['title'] }}</h1>
   <section class="card" style="margin-top:12px"><dl class="meta"><div><dt>Budget du client</dt><dd><x-fc.money :amount="$m['budget']" /></dd></div><div><dt>Candidatures jusqu’au</dt><dd>{{ $m['deadline'] }}</dd></div></dl>
     @if($m['status'] !== 'preview' && ! $m['accepting'])<p class="note-line" style="margin-top:8px"><x-fc.icon name="lock" :size="16" /><span><strong>Cette mission n’accepte plus de propositions.</strong></span></p>@endif</section>

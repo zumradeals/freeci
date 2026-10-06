@@ -121,11 +121,6 @@ button { cursor: pointer; }
 .rel { color: var(--ink-600); }
 
 /* ---------- Barre de démonstration ---------- */
-.mode-bar { background: var(--surface-2); border-bottom: 1px solid var(--line); font-size: .875rem; line-height: 1.4; position: relative; z-index: 30; }
-.mode-bar .container { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 4px 16px; min-height: 32px; padding-block: 2px; }
-.mode-bar strong { font-weight: 650; letter-spacing: .02em; }
-.mode-bar .txt { flex: 1 1 auto; min-width: 0; color: var(--ink-900); margin: 0; }
-.mode-bar .long { display: none; }
 @media (min-width: 768px) { .mode-bar .long { display: inline; } .mode-bar .short { display: none; } }
 .demo-pages { position: relative; }
 .demo-pages summary { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: var(--marine-700); list-style: none; padding-inline: 4px; }
@@ -948,8 +943,6 @@ a.kpi:hover { border-color: var(--marine-800); }
 .header-app .menu-btn { margin-left: 8px; }
 .site-footer.slim .container { padding-inline: var(--gutter); }
 @media (min-width: 1024px) { .site-footer.slim .container { padding-left: calc(var(--sidebar-w) + var(--gutter)); } }   /* pied de page aligné sur le contenu */
-.mode-bar { font-size: .8125rem; }
-.mode-bar .container { justify-content: flex-start; }
 
 /* Barre latérale : groupes d'usage (activité, échanges, finances, compte et aide) */
 .side-group { margin-top: 14px; }
@@ -1021,7 +1014,6 @@ a.kpi:hover { border-color: var(--marine-800); }
 .form-card { max-width: 56rem; }
 .grid-2 > .form-card { max-width: none; }
 
-.mode-bar.wide .container { max-width: none; }
 @media (min-width: 1024px) { .mode-bar.wide .container { padding-left: 28px; } }
 @media (min-width: 1024px) { .side-sticky { max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; } }
 @media (min-width: 1024px) { .info-nav { margin-left: -12px; } }

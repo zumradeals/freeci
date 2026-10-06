@@ -25,7 +25,7 @@
   @endif
 
   <section class="card order-head" aria-labelledby="h-title">
-    <div class="top"><span class="badge tone-{{ $d->tone }}"><x-fc.icon :name="$d->icon" :size="16" />{{ $d->stateLabel }}</span><span class="muted">Réf. <span class="num">{{ $d->reference }}</span></span><a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Messages @if($d->messageUnread > 0)<span class="count-badge" aria-label="{{ $d->messageUnread }} non lu{{ $d->messageUnread > 1 ? 's' : '' }}">{{ $d->messageUnread }}</span>@endif</a>@if($d->environment === 'test')<span class="tag-demo">Commande de test — aucun argent réel</span>@elseif($d->environment === 'legacy')<span class="tag-demo">Ancienne commande</span>@endif@if($d->isDemo)<span class="tag-demo">Démonstration</span>@endif</div>
+    <div class="top"><span class="badge tone-{{ $d->tone }}"><x-fc.icon :name="$d->icon" :size="16" />{{ $d->stateLabel }}</span><span class="muted">Réf. <span class="num">{{ $d->reference }}</span></span><a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Messages @if($d->messageUnread > 0)<span class="count-badge" aria-label="{{ $d->messageUnread }} non lu{{ $d->messageUnread > 1 ? 's' : '' }}">{{ $d->messageUnread }}</span>@endif</a>@if($d->environment === 'test')<span class="tag-demo">Commande de test — aucun argent réel</span>@elseif($d->environment === 'legacy')<span class="tag-demo">Ancienne commande</span>@endif</div>
     <h1 class="t-h1" id="h-title">{{ $d->title }}</h1>
     <dl class="meta">
       <div><dt>{{ $d->otherPartyLabel }}</dt><dd>{{ $d->otherPartyName }}</dd></div>

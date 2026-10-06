@@ -117,7 +117,6 @@ class PaymentModesTest extends TestCase
         $o = $this->placeOrder($other);
         $this->assertSame('test', $o->environment, 'service : marquée « test » dès la demande');
         $this->actingAs($other)->get("/commandes/{$o->reference}")->assertOk()->assertSee('Commande de test');
-        $this->actingAs($other)->get('/')->assertSee('Mode test — aucun argent réel');
         $this->accept($o)->assertRedirect();
         $this->assertNotNull($o->fresh()->payment_deadline_at);
         $this->actingAs($other)->post("/commandes/{$o->reference}/paiement", ['operation_key' => (string) Str::uuid(), 'conditions' => '1'])->assertRedirect('https://geniuspay.ci/checkout/'.DB::table('payments')->value('provider_transaction_reference'));
@@ -166,7 +165,6 @@ class PaymentModesTest extends TestCase
         $this->actingAs($this->client)->post("/commandes/{$test->reference}/paiement", ['operation_key' => (string) Str::uuid(), 'conditions' => '1'])->assertStatus(409);
         $this->assertSame('test', $test->fresh()->environment);
 
-        $this->actingAs($this->client)->get('/')->assertDontSee('Mode test — aucun argent réel');
         $live = $this->newOrderFor($this->client);
         $this->assertSame('live', $live->environment);
         $this->assertNull(app(PaymentGate::class)->denial($live));

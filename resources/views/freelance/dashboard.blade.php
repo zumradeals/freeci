@@ -1,8 +1,7 @@
 <x-layouts.account title="Espace freelance" space="freelancer">
   @php($isNew = ($o['counts']['Commandes au total'] ?? 0) === 0 && count($o['tasks']) === 0 && count($services) === 0)
   <header class="page-head">
-    <div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">{{ $profile['display_name'] ?? $user->name }}</h1>
-      @if($user->is_demo)<p class="demo-time"><x-fc.icon name="flag" :size="18" />Compte de démonstration</p>@endif</div>
+    <div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">{{ $profile['display_name'] ?? $user->name }}</h1></div>
       @unless($isNew)<a class="btn btn-primary btn-lg" href="{{ route('freelance.services.new') }}">Créer un service</a>@endunless</div>
   </header>
   @if($isNew)
