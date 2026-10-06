@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Support\AdminFixtures;
@@ -281,5 +282,21 @@ class PaymentModesTest extends TestCase
         $this->assertArrayNotHasKey('freeci:sandbox:resolve', Artisan::all());
         $this->assertArrayNotHasKey('freeci:sandbox:authorize', Artisan::all());
         $this->assertNull(config('freeci.payments.sandbox_enabled'));
+    }
+
+    public function test_a_rejected_webhook_leaves_a_diagnostic_without_any_secret(): void
+    {
+        Log::spy();
+        $body = '{"event":"payment.success"}';
+        $ts = (string) time();
+        $sig = hash_hmac('sha256', $body, self::SB_HOOK);                       // variante « corps seul » : doit être signalée, mais refusée
+        $this->call('POST', '/webhooks/geniuspay', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_WEBHOOK_SIGNATURE' => $sig, 'HTTP_X_WEBHOOK_TIMESTAMP' => $ts], $body)->assertStatus(401);
+        Log::shouldHaveReceived('warning')->withArgs(function ($m, $ctx) use ($sig) {
+            $dump = json_encode($ctx);
+
+            return $m === 'geniuspay.webhook_rejected' && $ctx['match_documented'] === false && $ctx['match_body_only'] === true
+                && ! str_contains($dump, self::SB_HOOK) && ! str_contains($dump, $sig) && ! str_contains($dump, 'payment.success');
+        })->atLeast()->once();
+        $this->assertSame(0, DB::table('payment_events')->count());
     }
 }

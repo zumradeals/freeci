@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\InvalidProviderEvent;
 use App\Integrations\Payments\PaymentGateways;
 use App\Modules\Finance\Actions\ProcessProviderEvent;
 use App\Modules\Finance\Jobs\ProcessPaymentEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Notifications Genius Pay (sandbox ET live, une seule adresse). Sans session ni CSRF : authentifiées par la signature HMAC du CORPS BRUT. Une notification signée
@@ -31,6 +33,13 @@ class GeniusPayWebhookController extends Controller
         try {
             $event = $gateways->parseWebhook($raw, $request->headers->all());
         } catch (InvalidProviderEvent) {
+            // Trace de diagnostic SANS donnée sensible (booléens et longueurs seulement) ; aucun enregistrement durable en base.
+            foreach (GeniusPayConfig::ENVIRONMENTS as $env) {
+                if (GeniusPayConfig::keys($env)['webhook_secret'] !== '') {
+                    Log::warning('geniuspay.webhook_rejected', $gateways->forEnvironment($env)->diagnose($raw, $request->headers->all()));
+                }
+            }
+
             return response()->json(['error' => 'invalid_signature'], 401);
         }
 

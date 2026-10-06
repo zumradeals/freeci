@@ -5,7 +5,7 @@ namespace App\Integrations\Payments;
 /** Accès à la passerelle : celle des NOUVEAUX paiements (mode configuré) ou celle d'une tentative existante (son environnement enregistré, jamais le mode courant). */
 class PaymentGateways
 {
-    public function forEnvironment(string $environment): PaymentProvider
+    public function forEnvironment(string $environment): GeniusPayProvider
     {
         return app(GeniusPayProvider::class, ['environment' => $environment === 'live' ? 'live' : 'sandbox']);
     }

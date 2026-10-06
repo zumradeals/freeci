@@ -180,6 +180,32 @@ class GeniusPayProvider implements PaymentProvider
         ]);
     }
 
+    /**
+     * Diagnostic d'une notification REFUSÉE : uniquement des booléens et des longueurs, jamais un secret, une signature ni un corps.
+     * Les variantes testées (corps seul, préfixe « sha256= », secret sans « whsec_ ») ne servent qu'à dire si la documentation est suivie.
+     *
+     * @return array<string, scalar|null>
+     */
+    public function diagnose(string $rawBody, array $headers): array
+    {
+        $secret = GeniusPayConfig::keys($this->environment())['webhook_secret'];
+        $h = fn (string $n) => (string) (is_array($headers[$n] ?? null) ? ($headers[$n][0] ?? '') : ($headers[$n] ?? ''));
+        $sig = trim($h('x-webhook-signature'));
+        $ts = trim($h('x-webhook-timestamp'));
+        $bare = strtolower(preg_replace('/^sha256=/i', '', $sig));
+        $eq = fn (string $expected) => $secret !== '' && hash_equals($expected, $bare);
+
+        return [
+            'env' => $this->environment(), 'secret_configured' => $secret !== '', 'secret_len' => strlen($secret), 'secret_has_edge_space' => $secret !== trim($secret),
+            'sig_present' => $sig !== '', 'sig_len' => strlen($sig), 'sig_has_sha256_prefix' => (bool) preg_match('/^sha256=/i', $sig), 'sig_is_hex64' => (bool) preg_match('/^[0-9a-f]{64}$/i', $bare),
+            'ts_present' => $ts !== '', 'ts_is_digits' => $ts !== '' && ctype_digit($ts), 'ts_age_s' => ctype_digit($ts) && $ts !== '' ? time() - (int) $ts : null,
+            'body_len' => strlen($rawBody), 'env_header' => strtolower($h('x-webhook-environment')),
+            'match_documented' => $eq(hash_hmac('sha256', $ts.'.'.$rawBody, $secret)),
+            'match_body_only' => $eq(hash_hmac('sha256', $rawBody, $secret)),
+            'match_secret_without_prefix' => $eq(hash_hmac('sha256', $ts.'.'.$rawBody, preg_replace('/^whsec_/', '', $secret))),
+        ];
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     /** @param callable(PendingRequest): Response $do */
