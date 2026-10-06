@@ -295,7 +295,7 @@ class PaymentModesTest extends TestCase
             $dump = json_encode($ctx);
 
             return $m === 'geniuspay.webhook_rejected' && $ctx['match_documented'] === false && $ctx['match_body_only'] === true
-                && ! str_contains($dump, self::SB_HOOK) && ! str_contains($dump, $sig) && ! str_contains($dump, 'payment.success');
+                && ! str_contains($dump, self::SB_HOOK) && ! str_contains($dump, $sig);
         })->atLeast()->once();
         $this->assertSame(0, DB::table('payment_events')->count());
     }

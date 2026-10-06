@@ -195,7 +195,17 @@ class GeniusPayProvider implements PaymentProvider
         $bare = strtolower(preg_replace('/^sha256=/i', '', $sig));
         $eq = fn (string $expected) => $secret !== '' && hash_equals($expected, $bare);
 
-        return [
+        $d = json_decode($rawBody, true);
+        $tx = is_array($d) ? ($d['data']['transaction'] ?? null) : null;
+        $shape = [
+            'json_valid' => is_array($d), 'top_keys' => is_array($d) ? implode(',', array_map(fn ($k) => mb_substr((string) $k, 0, 20), array_slice(array_keys($d), 0, 10))) : null,
+            'event_name' => is_array($d) && is_string($d['event'] ?? null) ? mb_substr($d['event'], 0, 40) : null,
+            'data_keys' => is_array($d['data'] ?? null) ? implode(',', array_map(fn ($k) => mb_substr((string) $k, 0, 20), array_slice(array_keys($d['data']), 0, 10))) : null,
+            'has_transaction' => is_array($tx), 'tx_reference_ok' => is_array($tx) && is_string($tx['reference'] ?? null) && $tx['reference'] !== '',
+            'body_environment' => is_array($d) && is_string($d['data']['environment'] ?? null) ? mb_substr($d['data']['environment'], 0, 12) : null,
+        ];
+
+        return $shape + [
             'env' => $this->environment(), 'secret_configured' => $secret !== '', 'secret_len' => strlen($secret), 'secret_has_edge_space' => $secret !== trim($secret),
             'sig_present' => $sig !== '', 'sig_len' => strlen($sig), 'sig_has_sha256_prefix' => (bool) preg_match('/^sha256=/i', $sig), 'sig_is_hex64' => (bool) preg_match('/^[0-9a-f]{64}$/i', $bare),
             'ts_present' => $ts !== '', 'ts_is_digits' => $ts !== '' && ctype_digit($ts), 'ts_age_s' => ctype_digit($ts) && $ts !== '' ? time() - (int) $ts : null,
