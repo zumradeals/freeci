@@ -8,7 +8,7 @@ use App\Modules\Files\Actions\DownloadBriefFile;
 use App\Modules\Files\Enums\FileState;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\LedgerBatch;
-use App\Modules\Finance\SandboxGate;
+use App\Modules\Finance\PaymentGate;
 use App\Modules\Messaging\Queries\Inbox;
 use App\Modules\Orders\Actions\BriefStatus;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 /** `Orders\GetOrderDossier` : lecture BORNÉE AUX PARTIES. Inexistant et interdit répondent pareil (docs/04 §8.5). */
 final class GetOrderDossier
 {
-    public function __construct(private ExpireOverdueOrders $expire, private SandboxGate $gate, private FileScanner $scanner, private DownloadBriefFile $downloads, private DeliverySection $deliverySection, private RecordReviewFollowUps $followUps) {}
+    public function __construct(private ExpireOverdueOrders $expire, private PaymentGate $gate, private FileScanner $scanner, private DownloadBriefFile $downloads, private DeliverySection $deliverySection, private RecordReviewFollowUps $followUps) {}
 
     public function __invoke(User $viewer, string $reference): OrderDossier
     {
@@ -100,7 +100,7 @@ final class GetOrderDossier
         $paymentOpen = $payment?->state->isOpen() ?? false;
         $paymentConfirmed = $payment?->state === PaymentState::Confirmed;
         $canPay = ! $isFreelancer && $order->state === OrderState::AwaitingPayment && $this->gate->allows($order) && ! $paymentOpen && ! $paymentConfirmed;
-        $confirmedXof = (int) LedgerBatch::query()->where('order_id', $order->getKey())->where('kind', 'payment_confirmed')->join('ledger_lines', 'ledger_lines.batch_id', '=', 'ledger_batches.id')->where('ledger_lines.account', 'escrow_simulated')->sum('ledger_lines.amount_xof');
+        $confirmedXof = (int) LedgerBatch::query()->where('order_id', $order->getKey())->where('kind', 'payment_confirmed')->join('ledger_lines', 'ledger_lines.batch_id', '=', 'ledger_batches.id')->whereIn('ledger_lines.account', ['escrow', 'escrow_simulated'])->sum('ledger_lines.amount_xof');
 
         $uploadsEnabled = $this->scanner->isOperational();
         $canUpload = ! $isFreelancer && $uploadsEnabled && in_array($order->state, [OrderState::AwaitingAcceptance, OrderState::AwaitingPayment, OrderState::AwaitingBrief], true) && $order->started_at === null;
@@ -131,7 +131,7 @@ final class GetOrderDossier
         return new OrderDossier(
             reference: $order->reference, version: $order->row_version, perspective: $perspective,
             stateValue: $order->state->value, stateLabel: $order->state->label($isFreelancer), tone: $tone, icon: $icon,
-            isDemo: $order->is_demo, title: $a->service_title, categoryName: $a->category_name,
+            isDemo: $order->is_demo, environment: $order->environment, title: $a->service_title, categoryName: $a->category_name,
             otherPartyLabel: $isFreelancer ? 'Client' : 'Freelance', otherPartyName: $isFreelancer ? $order->client->name : $order->freelancer->name,
             clientName: $order->client->name, freelancerName: $order->freelancer->name,
             price: Money::xof($a->price_xof), deliveryDays: $a->delivery_days, revisionsIncluded: $a->revisions_included,

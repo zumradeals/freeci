@@ -7,7 +7,7 @@
 <body class="">
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 @include('partials.sprite')
-@include('partials.demo-bar')
+@include('partials.mode-bar')
 <header class="site-header">
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
@@ -41,7 +41,7 @@
         <li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li>
         <li><a href="{{ route('coming-soon', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
     </div>
-    <p class="legal">@if(config('freeci.demo_banner'))Version de démonstration. Noms, prix et services fictifs ; @endif textes juridiques et mentions de l’opérateur à rédiger.</p>
+    <p class="legal">@unless(\App\Integrations\Payments\PaymentMode::isLive())Mode test : aucun argent réel. @endunless Textes juridiques et mentions de l’opérateur à rédiger.</p>
   </div>
 </footer>
 @include('partials.drawer')

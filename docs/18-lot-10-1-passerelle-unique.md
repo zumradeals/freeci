@@ -1,0 +1,71 @@
+# Lot 10.1 — Genius Pay, passerelle unique, deux modes (sandbox | live)
+
+Statut : livré, à recetter. Décision de fond : **D38** (`docs/01`). Ce lot **remplace** le dispositif du lot 10 (simulateur interne coexistant, porte « démonstration »). Le mode **live est développé mais n'est pas activé** sur votre serveur et aucune transaction réelle n'a été effectuée.
+
+## 1. Trois notions séparées
+| Notion | Réglage | Rôle |
+|---|---|---|
+| Prestataire | — | **Genius Pay**, unique. Plus de simulateur dans le code, les écrans, les commandes ni la configuration. |
+| Environnement | `FREECI_PAYMENT_MODE` = `sandbox` (défaut) ou `live` | Environnement des **nouvelles commandes** et des **nouveaux paiements**. Une valeur inconnue n'est **jamais** lue comme `live` : les nouvelles commandes restent de test et aucun paiement n'est ouvert. |
+| Autorisation | `FREECI_PAYMENTS_ENABLED` (défaut `false`), `FREECI_LIVE_PAYMENTS_AUTHORIZED` (défaut `false`) | Ouvre la **création** de nouveaux paiements ; le live exige en plus l'autorisation explicite. Aucune bascule automatique. |
+
+Création de paiement possible ⇔ mode valide ∧ paiements ouverts ∧ configuration de l'environnement conforme ∧ (live ⇒ autorisation ∧ compte marchand de l'API = compte déclaré) ∧ **environnement de la commande = mode actif**. Sinon : paiements « non ouverts » avec un message compréhensible (« Votre commande est conservée, rien n'a été débité »), détail technique réservé à `freeci:genius:status`, au tableau de bord administrateur et à `freeci:preflight`.
+
+## 2. Configuration par environnement
+Deux jeux **indépendants** : `GENIUSPAY_SANDBOX_{API_KEY,API_SECRET,WEBHOOK_SECRET,MERCHANT_ID}` et `GENIUSPAY_LIVE_{…}` ; `GENIUSPAY_BASE_URL` commun. Contrôles de cohérence par environnement (aucune valeur secrète affichée) : URL HTTPS, clés présentes, préfixes `pk_sandbox_/sk_sandbox_` (resp. `pk_live_/sk_live_`) — une clé d'un environnement dans l'autre est refusée —, secret de webhook présent au format `whsec_…`, compte marchand déclaré **obligatoire en live**. Une configuration invalide **désactive les nouveaux paiements** ; elle n'interrompt pas le suivi des tentatives existantes.
+
+## 3. Sandbox ouvert à tout compte inscrit
+Suppression de la porte « démonstration » (compte, freelance, service, mission), de la liste d'autorisation (`users.sandbox_payments` conservée en base, **inutilisée**), des commandes `freeci:sandbox:authorize` et `freeci:sandbox:resolve` et de la route `/webhooks/sandbox-payments`. Les règles **métier** restent : propriété du service, modération, impossibilité de commander son propre service, accès réservé aux parties. La séparation test / réel porte sur les **commandes et transactions**, pas sur les personnes. `freeci:demo:recette` (jeu de comptes fictifs) subsiste comme aide facultative, sans effet sur les paiements.
+
+## 4. Commandes : environnement fixé à la création
+`orders.environment` ∈ `test` | `live` | `legacy`, **immuable** (déclencheur PostgreSQL).
+- Nouvelle commande (service **ou** mission) : `test` si le mode est `sandbox` (ou invalide), `live` si `live` — dès la demande / la sélection de proposition.
+- Affichage : bandeau **« Mode test — aucun argent réel »** sur tout le site tant que le mode n'est pas `live` ; pastille « Commande de test » sur cartes et dossiers ; page de paiement et historique libellés « mode test ».
+- Aucun revenu, reversement ni avis compté à partir d'une commande de test : le registre des paiements de test utilise les comptes `*_simulated` (`is_simulated = true`) et les totaux **réels** du tableau de bord ne comptent que les paiements `live` confirmés (le test est affiché à part, « exclu des totaux »). Aucun reversement n'existe dans cette version.
+- **Bascule vers le live** : comptes, profils, services, missions conservés ; les commandes `test` restent `test` et **ne deviennent jamais payables en argent réel** ; les nouvelles commandes sont `live`. **Retour au sandbox** : les commandes `live` sont conservées et ne sont jamais soldées par le sandbox. Aucun changement de configuration ne convertit une commande engagée.
+- **Anciennes commandes** (`legacy`, valeur par défaut de la colonne pour les lignes existantes) : conservées **telles quelles** ; **jamais payables**, quel que soit le mode ; leurs accords ne sont pas réécrits ; affichées « Ancienne commande ». Aucun outil ne les reclasse en silence ; un reclassement éventuel serait une décision distincte, tracée (non implémenté).
+- Un déclencheur refuse tout **nouveau paiement** incohérent avec sa commande (`sandbox` ↔ `test`, `live` ↔ `live`) et tout paiement d'un autre prestataire que `genius_pay`.
+
+## 5. Tentatives : provider, environnement, références
+Chaque tentative conserve `provider` (`genius_pay`), `environment` (`sandbox` | `live`), notre référence (aussi clé d'idempotence), la référence du prestataire et `is_simulated` (⇔ non live, contrainte existante).
+- **Suivi indépendant du mode courant** : vérification, rapprochement et traitement des notifications d'une tentative utilisent **la configuration de SON environnement** (clés, compte marchand), jamais celle du mode actif. Fermer les nouveaux paiements ou changer de mode n'interrompt donc ni le rapprochement ni la lecture des notifications.
+- **Webhooks** : une seule URL `/webhooks/geniuspay`. L'en-tête d'environnement (non authentifié) sert **uniquement** à choisir le secret à essayer ; la signature doit correspondre au secret **de cet environnement** et le corps doit annoncer le même environnement. Un secret ne valide jamais une notification d'un autre environnement (401 sans trace).
+- Garanties conservées : montant lu dans l'accord figé (XOF) ; création et vérification côté serveur ; idempotence et aucun double effet ; aucune nouvelle tentative tant que la précédente est ouverte/incertaine ; aucune confirmation par le retour navigateur ; démarrage unique après paiement confirmé **et** brief complet ; succès tardif sur commande annulée/expirée : enregistré, dossier « à traiter », rien relancé.
+- Live, en plus : compte marchand de l'API comparé au compte déclaré **avant** toute création, puis à chaque notification.
+
+## 6. Anciennes tentatives du simulateur
+La migration `2026_10_17_000100_add_order_environment` **ferme** les tentatives **ouvertes** du simulateur retiré (`expired`, code `legacy_simulator_retired`) avec une ligne d'historique de commande ; elle **ne fabrique aucune confirmation**. Les tentatives déjà confirmées/échouées, leur provenance (`provider = 'sandbox'`, `environment = 'simulator'`), le registre et la table `sandbox_transactions` sont **conservés** en lecture seule et ne sont jamais envoyés à Genius Pay. Leurs commandes restent `legacy` : une commande en attente de paiement suit ses échéances habituelles (expiration, annulation) et n'est pas payable.
+
+## 7. Contrat Genius Pay — points confirmés, incertains, à confirmer avant le live
+Relecture de `API_Documentation.md` (le fichier n'est plus présent dans l'environnement de développement : les points ci-dessous reprennent la lecture effectuée à sa réception). **Correction** : la documentation **décrit bien** un point de remboursement, `POST /payments/{reference}/refund` (paramètres facultatifs `amount` — partiel, en XOF — et `reason` ; remboursement d'un paiement **complété** ; en sandbox, la transaction passe à `refunded` et `payment.refunded` est émis). Mon rapport et mes documents du lot 10 l'indiquaient à tort comme absent. **Il n'est ni appelé ni implémenté** : il relève du lot financier (réservation d'une opération `refund` avec clé d'idempotence, état distinct, décision préalable de remboursement). Séquestre et reversements : **rien n'est documenté**, rien n'est supposé.
+
+| Point | État |
+|---|---|
+| URL HTTPS de l'API | **Incertain** : `http://` dans le corps du document, `https://` dans l'exemple d'idempotence. HTTPS exigé ; non vérifié depuis l'environnement de développement (sortie réseau bloquée). **À vérifier sur le VPS avant toute clé** (§9). |
+| Devise | **Non fournie** par `GET /payments/{ref}` : la devise **envoyée** (XOF) n'est **pas une preuve indépendante** de la devise encaissée. Vérifiée si le prestataire en renvoie une ; sinon repose sur le montant en XOF. **À confirmer en recette** (réponse réelle) **avant le live**. |
+| Compte marchand | `GET /account` renvoie un identifiant ; comparé au compte déclaré (obligatoire en live) et à `data.merchant.id` des notifications. Comportement avec plusieurs comptes ou clés restreintes : **non documenté**. |
+| Signature des reprises | **Non précisé** (re-signature, horodatage). Fenêtre de fraîcheur de **25 h** (`GENIUSPAY_WEBHOOK_TOLERANCE_SECONDS`) = **hypothèse** : les reprises documentées vont jusqu'à 24 h ; justifiée par l'absence d'effet d'un rejeu (événement dédoublonné, effet idempotent, succès toujours revérifié par l'API). À confirmer auprès de Genius Pay ; à réduire si les reprises sont re-signées. |
+| Identifiant d'événement | Aucun : clé dérivée (événement + transaction + horodatage). |
+| Simulation sandbox (succès / échec / attente) | **Aucune procédure documentée** (numéros de test, page, endpoint). Non inventée : à observer sur le checkout sandbox lors de la première recette. |
+| Création de webhook par API | Champs non documentés : configuration depuis le tableau de bord. |
+| Expiration d'un lien (24 h) | Pas de statut documenté : tentative signalée, jamais déclarée expirée automatiquement. |
+
+**À confirmer avant d'activer le live** (aucun n'a bloqué le développement) : URL HTTPS ; devise renvoyée ; identifiant de compte marchand ; re-signature des reprises ; comportement réel du checkout (statuts, délais) ; exécution d'un parcours complet en sandbox à deux comptes ordinaires ; décision écrite du porteur d'activer le live.
+
+## 8. Ce qui a été vérifié, et ce qui ne l'a pas été
+- **Tests locaux** (225 tests, réponses `Http::fake`) : sandbox ouvert à des comptes ordinaires ; marquage « test » dès la création (service) et à la sélection (mission) ; immutabilité de l'environnement ; refus d'un paiement incohérent avec la commande ; bascule sandbox → live → sandbox (commandes test/live/legacy) ; live refusé sans autorisation, sans configuration, avec compte marchand différent ; clés live **seules** utilisées pour une tentative live, clés sandbox **seules** pour une tentative sandbox après changement de mode ; secrets de webhook par environnement ; réception et rapprochement maintenus quand les nouveaux paiements sont fermés ; comptes du registre non simulés pour le live ; totaux réels séparés des totaux de test ; double paiement, rejeu, succès tardif, signatures (existants du lot 10) ; absence de simulateur (classe, route, commandes).
+- **Aucun échange réel avec Genius Pay** n'a eu lieu depuis l'environnement de développement (hôte non autorisé). Rien n'a été exécuté sur votre serveur ; le live n'a jamais été exercé, même avec des réponses simulées pour une transaction réelle.
+
+## 9. Procédure sur le VPS (vous saisissez les clés ; jamais dans une conversation)
+1. Mise à jour (commande du message de livraison). La migration ferme les éventuelles tentatives ouvertes du simulateur et marque les commandes existantes `legacy`.
+2. **Migrer le `.env`** (supprimer les anciennes lignes : `FREECI_PAYMENT_SANDBOX`, `FREECI_SANDBOX_WEBHOOK_SECRET`, `FREECI_PAYMENT_PROVIDER`, `FREECI_DEMO_BANNER`) et **renommer** vos trois variables sandbox existantes : `GENIUSPAY_API_KEY` → `GENIUSPAY_SANDBOX_API_KEY`, `GENIUSPAY_API_SECRET` → `GENIUSPAY_SANDBOX_API_SECRET`, `GENIUSPAY_WEBHOOK_SECRET` → `GENIUSPAY_SANDBOX_WEBHOOK_SECRET` (les valeurs ne bougent pas). Ajouter `FREECI_PAYMENT_MODE=sandbox` et `FREECI_PAYMENTS_ENABLED=true`. Laisser `FREECI_LIVE_PAYMENTS_AUTHORIZED=false` et tous les `GENIUSPAY_LIVE_*` **vides**. Aucun doublon de clé.
+3. Vérifier HTTPS sans clé : `curl -sS -i https://geniuspay.ci/api/v1/merchant/account | head -n 15` (attendu : `401 MISSING_API_KEY`).
+4. `php artisan config:cache` ; `php artisan queue:restart`.
+5. `php artisan freeci:genius:status` (sandbox « conforme : OUI », création possible « OUI », nouvelles commandes « TEST ») puis `--ping` (**premier échange réel** : `GET /account`, aucun paiement créé) ; relever l'identifiant (masqué) et, si souhaité, le déclarer dans `GENIUSPAY_SANDBOX_MERCHANT_ID`.
+6. Webhook (tableau de bord Genius Pay, **sandbox**) : `https://freeci.dgafrique.com/webhooks/geniuspay`, événements `payment.success`, `payment.failed`, `payment.cancelled` (+ `payment.initiated`, `payment.refunded`) ; secret `whsec_…` dans `GENIUSPAY_SANDBOX_WEBHOOK_SECRET`.
+7. **Premier paiement sandbox avec deux comptes ordinaires** (aucun compte de démonstration requis) : client → demande d'un service publié (commande « de test », bandeau visible) → freelance accepte → page de paiement → « Continuer vers Genius Pay (test) » → **noter ce que le checkout propose pour simuler succès / échec / attente** → retour sur FreeCI : « vérification en cours » puis « confirmé » (jamais par le seul retour navigateur). Contrôler `freeci:genius:status`, `/admin/paiements`, le tableau de bord (encaissé de test ≠ encaissé réel).
+8. **Plus tard, passage au live (jamais automatique)** : renseigner `GENIUSPAY_LIVE_*` (dont l'identifiant du compte marchand), déclarer un webhook **live**, vérifier `freeci:genius:status --env=live --ping`, puis `FREECI_PAYMENT_MODE=live` et `FREECI_LIVE_PAYMENTS_AUTHORIZED=true`. Les commandes de test existantes restent de test.
+9. **Fermer les nouveaux paiements** à tout moment : `FREECI_PAYMENTS_ENABLED=false` (+ `config:cache`). Les tentatives existantes restent suivies (webhooks, rapprochement `freeci:payments:reconcile`).
+
+## 10. Limites
+Aucun remboursement exécuté (endpoint documenté, réservé au lot financier), aucun reversement, aucun séquestre supposé, aucun avis issu d'une commande de test, pas de reclassement des commandes `legacy`, live non exercé.

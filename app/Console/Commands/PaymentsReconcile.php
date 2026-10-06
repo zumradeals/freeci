@@ -6,12 +6,11 @@ use App\Modules\Finance\Actions\ProcessProviderEvent;
 use App\Modules\Finance\Actions\RefreshPaymentStatus;
 use App\Modules\Finance\Models\Payment;
 use App\Modules\Finance\Models\ReconciliationCase;
-use App\Modules\Finance\SandboxGate;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Rapprochement des paiements Genius Pay (bac à sable) : (1) reprend les événements enregistrés mais non traités ou à revérifier, (2) interroge le
+ * Rapprochement des paiements Genius Pay (sandbox et live) : (1) reprend les événements enregistrés mais non traités ou à revérifier, (2) interroge le
  * prestataire pour les tentatives OUVERTES (notification manquante, création interrompue : même demande rejouée, jamais une nouvelle tentative),
  * (3) signale les tentatives restées ouvertes au-delà de l'expiration du lien. Aucune confirmation sans revérification ; aucun démarrage automatique de travail.
  */
@@ -19,15 +18,12 @@ class PaymentsReconcile extends Command
 {
     protected $signature = 'freeci:payments:reconcile {--limit=50 : nombre maximal de lignes par passe}';
 
-    protected $description = 'Rapproche les paiements Genius Pay (bac à sable) : événements à reprendre, tentatives ouvertes à vérifier, tentatives expirées à signaler.';
+    protected $description = 'Rapproche les paiements Genius Pay (sandbox et live) : événements à reprendre, tentatives ouvertes à vérifier, tentatives expirées à signaler.';
 
     public function handle(ProcessProviderEvent $process, RefreshPaymentStatus $refresh): int
     {
-        if (! SandboxGate::enabled()) {
-            $this->line('Paiements sandbox désactivés : rien à faire.');
-
-            return self::SUCCESS;
-        }
+        // Le rapprochement des tentatives EXISTANTES ne dépend pas de l'ouverture des nouveaux paiements ni du mode courant :
+        // chaque tentative est traitée avec la configuration de SON environnement enregistré.
         $limit = max(1, (int) $this->option('limit'));
         $events = 0;
         DB::table('payment_events')->where('provider', 'genius_pay')->where(function ($q) {

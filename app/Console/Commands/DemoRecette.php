@@ -45,10 +45,6 @@ class DemoRecette extends Command
             $client = $this->account('recette.client@'.self::DOMAIN, 'Koffi Recette (démo client)', $created);
             $freelance->roles()->firstOrCreate(['role' => AccountRole::FREELANCE]);
             $client->roles()->firstOrCreate(['role' => AccountRole::CLIENT]);
-            // Compte de recette autorisé à utiliser le paiement simulé (si le simulateur est activé : FREECI_PAYMENT_SANDBOX).
-            if (! $client->sandbox_payments) {
-                $client->forceFill(['sandbox_payments' => true])->save();
-            }
 
             $profile = FreelanceProfile::firstOrCreate(['user_id' => $freelance->getKey()], [
                 'display_name' => 'Awa Recette', 'headline' => 'Dessinatrice DAO (démonstration)', 'city' => 'Abidjan', 'is_demo' => true,

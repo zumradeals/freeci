@@ -2,6 +2,7 @@
 
 namespace App\Modules\Orders\Actions;
 
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\AccountRole;
 use App\Modules\Accounts\Models\User;
@@ -127,6 +128,7 @@ final class RequestService
                 'requested_at' => $now,
                 'response_deadline_at' => $now->copy()->addHours($responseHours),
                 'is_demo' => $client->is_demo || $locked->is_demo || $locked->freelanceProfile->is_demo,
+                'environment' => PaymentMode::orderEnvironment(),          // fixé À LA CRÉATION, immuable : « test » (sandbox) ou « live »
             ]);
         } catch (UniqueConstraintViolationException) {
             throw new PendingRequestExists;

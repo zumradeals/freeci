@@ -7,10 +7,6 @@ return [
     // Mot de passe du compte client de démonstration. Vide = généré au hasard à chaque amorçage et affiché une fois.
     'demo_client_password' => env('FREECI_DEMO_CLIENT_PASSWORD'),
 
-    // Bandeau « Démonstration » (données fictives, fonctions inachevées). À désactiver seulement quand
-    // le contenu est réel ET que toutes les fonctions affichées sont opérationnelles.
-    'demo_banner' => (bool) env('FREECI_DEMO_BANNER', true),
-
     // Demande aux moteurs de recherche de ne pas indexer (en-tête X-Robots-Tag + balise meta).
     'noindex' => (bool) env('FREECI_NOINDEX', true),
 
@@ -30,25 +26,31 @@ return [
         'extension_max_days' => (int) env('FREECI_EXTENSION_MAX_DAYS', 30),
     ],
 
+    // Passerelle de paiement : Genius Pay, UNIQUE. Trois réglages distincts, tous explicites côté serveur (aucun basculement automatique) :
+    //  - le PRESTATAIRE : Genius Pay (aucun autre) ;
+    //  - l'ENVIRONNEMENT des NOUVELLES commandes et des NOUVEAUX paiements : « sandbox » (défaut, commandes de TEST) ou « live » (argent réel) ;
+    //  - l'AUTORISATION de créer de nouveaux paiements (faux par défaut). La désactiver n'interrompt jamais le suivi des tentatives existantes.
+    // Chaque commande et chaque tentative conservent leur environnement : changer ces réglages ne convertit rien d'engagé.
     'payments' => [
-        // Simulateur de paiement : DÉSACTIVÉ par défaut. Même activé, il n'est utilisable que pour des commandes de
-        // démonstration et des comptes de recette autorisés (App\Modules\Finance\SandboxGate). Aucun prestataire réel.
-        'sandbox_enabled' => (bool) env('FREECI_PAYMENT_SANDBOX', false),
-        // Secret HMAC des notifications simulées (vide = notifications refusées). Jamais dans le dépôt.
-        'sandbox_webhook_secret' => env('FREECI_SANDBOX_WEBHOOK_SECRET'),
-        // Prestataire des NOUVELLES tentatives : « simulator » (défaut) ou « geniuspay_sandbox » (bac à sable Genius Pay). Le mode réel n'existe pas
-        // dans cette version : il exigera une autorisation explicite du porteur. Les tentatives existantes gardent leur prestataire et leur environnement.
-        'provider' => env('FREECI_PAYMENT_PROVIDER', 'simulator'),
-        // Genius Pay : clés et secret UNIQUEMENT côté serveur (.env, hors Git). URL HTTPS obligatoire.
+        'mode' => env('FREECI_PAYMENT_MODE', 'sandbox'),
+        'enabled' => (bool) env('FREECI_PAYMENTS_ENABLED', false),
+        // Le mode LIVE exige en plus cette autorisation explicite du porteur, des clés live, le compte marchand live attendu et leur secret de webhook.
+        'live_authorized' => (bool) env('FREECI_LIVE_PAYMENTS_AUTHORIZED', false),
         'genius' => [
             'base_url' => env('GENIUSPAY_BASE_URL', 'https://geniuspay.ci/api/v1/merchant'),
-            'api_key' => env('GENIUSPAY_API_KEY'),
-            'api_secret' => env('GENIUSPAY_API_SECRET'),
-            'webhook_secret' => env('GENIUSPAY_WEBHOOK_SECRET'),
-            // Les reprises documentées vont jusqu'à 24 h : fenêtre de fraîcheur de la signature = 25 h par défaut.
+            // Les reprises documentées vont jusqu'à 24 h : fenêtre de fraîcheur de la signature = 25 h par défaut (hypothèse à confirmer, docs/18).
             'webhook_tolerance' => (int) env('GENIUSPAY_WEBHOOK_TOLERANCE_SECONDS', 90000),
             'checkout_hosts' => env('GENIUSPAY_CHECKOUT_HOSTS', 'geniuspay.ci'),
             'timeout' => 15,
+            // Jeux de clés DISTINCTS par environnement : uniquement côté serveur (.env, hors Git).
+            'sandbox' => [
+                'api_key' => env('GENIUSPAY_SANDBOX_API_KEY'), 'api_secret' => env('GENIUSPAY_SANDBOX_API_SECRET'),
+                'webhook_secret' => env('GENIUSPAY_SANDBOX_WEBHOOK_SECRET'), 'merchant_id' => env('GENIUSPAY_SANDBOX_MERCHANT_ID'),
+            ],
+            'live' => [
+                'api_key' => env('GENIUSPAY_LIVE_API_KEY'), 'api_secret' => env('GENIUSPAY_LIVE_API_SECRET'),
+                'webhook_secret' => env('GENIUSPAY_LIVE_WEBHOOK_SECRET'), 'merchant_id' => env('GENIUSPAY_LIVE_MERCHANT_ID'),
+            ],
         ],
     ],
 

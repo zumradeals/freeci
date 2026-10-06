@@ -17,5 +17,6 @@ final readonly class OrderCard
         public string $icon,
         public string $info,
         public bool $isDemo,
+        public string $environment = 'legacy',      // test | live | legacy
     ) {}
 }

@@ -158,9 +158,7 @@ class OrderFilesTest extends TestCase
 
     private function payableOrderStarted(): void
     {
-        $this->startPayment($this->order)->assertRedirect();
-        $ref = $this->currentPayment($this->order)->provider_reference;
-        $this->resolve($ref, 'succeeded', ['--notify' => true]);
+        $this->settle($this->order);
         $this->assertSame(OrderState::InProgress, $this->order->fresh()->state);
 
         $this->upload($this->pdf('apres.pdf'))->assertRedirect()->assertSessionHas('error');

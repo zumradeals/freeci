@@ -35,7 +35,7 @@ final class ReconciliationList
 
             return [
                 'id' => $r->id, 'reason' => $label, 'order' => $r->order_ref, 'orderState' => $r->order_state, 'provider' => $r->provider === 'genius_pay' ? 'Genius Pay' : 'Simulateur interne',
-                'environment' => ['simulator' => 'Simulateur', 'sandbox' => 'Bac à sable', 'live' => 'Réel'][$r->environment] ?? $r->environment, 'paymentState' => $r->payment_state,
+                'environment' => ['simulator' => 'Ancien simulateur', 'sandbox' => 'Test (sandbox)', 'live' => 'Réel'][$r->environment] ?? $r->environment, 'paymentState' => $r->payment_state,
                 'amount' => $r->amount_xof === null ? null : Money::xof((int) $r->amount_xof)->formatted().' FCFA', 'reference' => $r->provider_reference, 'when' => Dates::format(Carbon::parse($r->created_at)),
                 'resolved' => $r->resolved_at !== null, 'note' => $r->resolution_note,
             ];

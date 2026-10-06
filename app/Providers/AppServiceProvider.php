@@ -5,8 +5,8 @@ namespace App\Providers;
 use App\Integrations\FileScan\ClamAvScanner;
 use App\Integrations\FileScan\FileScanner;
 use App\Integrations\FileScan\UnavailableScanner;
+use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\PaymentProvider;
-use App\Integrations\Payments\PaymentProviders;
 use App\Modules\Catalog\Models\ServiceEvent;
 use App\Modules\Missions\Models\MissionEvent;
 use App\Modules\Notifications\Actions\NotificationRouter;
@@ -23,8 +23,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Un seul adaptateur de paiement : le simulateur. Aucun prestataire réel n'est choisi ni intégré.
-        $this->app->bind(PaymentProvider::class, fn () => app(PaymentProviders::class)->active());
+        // Une seule passerelle : Genius Pay, dans l'environnement du mode configuré (sandbox | live).
+        $this->app->bind(PaymentProvider::class, fn () => app(PaymentGateways::class)->active());
         // Aucun module de reversement n'existe : aucun reversement n'est exécuté. Le futur module financier remplace cette liaison.
         $this->app->bind(PayoutExecution::class, NoPayoutExecution::class);
         $this->app->bind(FileScanner::class, fn () => config('freeci.files.scanner') === 'clamav'

@@ -1,5 +1,7 @@
 # Lot 10 — Genius Pay (bac à sable uniquement)
 
+> **Partiellement remplacé par le lot 10.1 (`docs/18`)** : le simulateur interne, la porte « démonstration », la liste d'autorisation et les variables `FREECI_PAYMENT_SANDBOX`, `FREECI_PAYMENT_PROVIDER`, `GENIUSPAY_API_*`/`GENIUSPAY_WEBHOOK_SECRET` décrits ci-dessous n'existent plus. Ce document est conservé comme historique et pour l'analyse de la documentation Genius Pay.
+
 Statut : livré, à recetter. Décision de fond : **D37** (`docs/01`) — Genius Pay est le prestataire retenu ; **aucune qualification pour la production** n'est prononcée ici. Le **mode réel n'est ni intégré ni activable** : son activation exigera votre autorisation explicite.
 
 ## 1. Ce que dit — et ne dit pas — la documentation fournie (`API_Documentation.md`)
@@ -13,8 +15,9 @@ Statut : livré, à recetter. Décision de fond : **D37** (`docs/01`) — Genius
 | Reprises | Backoff 1 min → 5 min → 15 min → 1 h → 4 h → 24 h ; **non précisé** : le corps/l'horodatage sont-ils re-signés ? | Fenêtre de fraîcheur **25 h** (`GENIUSPAY_WEBHOOK_TOLERANCE_SECONDS`) ; horodatage futur refusé. Les rejeux dans la fenêtre sont **sans effet** (événement dédoublonné, effet idempotent, succès toujours revérifié par l'API). |
 | Identifiant d'événement | **Aucun** dans le payload | Clé dérivée : événement + référence de transaction + horodatage du corps ; empreinte du corps conservée. |
 | Création d'un webhook | Routes `/webhooks` (CRUD, `test`, `regenerate-secret`) listées ; **champs de la requête non documentés** ; `retry_count` (3 par défaut) mentionné | Configuration **depuis le tableau de bord** (rien n'est inventé). |
-| Simulation de succès / échec / attente en sandbox | « Les transactions sont simulées » ; **aucune procédure** (numéros de test, endpoint, page) n'est décrite ; seul le remboursement sandbox est mentionné | **Non inventée.** Procédure d'observation au §6 : ouvrir le checkout sandbox et noter ce qu'il propose. |
-| Séquestre, reversement | **Rien** (seulement paiement, remboursement, solde) | **Non supposés.** Aucun reversement ; aucun remboursement exécuté (l'endpoint n'est jamais appelé). |
+| Simulation de succès / échec / attente en sandbox | « Les transactions sont simulées » ; **aucune procédure** (numéros de test, endpoint, page) n'est décrite ; le remboursement sandbox est mentionné (`POST /payments/{reference}/refund`, voir ci-dessous) | **Non inventée.** Procédure d'observation au §6 : ouvrir le checkout sandbox et noter ce qu'il propose. |
+| Remboursement | **Documenté** : `POST /payments/{reference}/refund` (`amount` partiel facultatif en XOF, `reason` ; paiement complété ; en sandbox → `refunded` + `payment.refunded`). *Correction : une version antérieure de ce document et du rapport du lot 10 le présentait à tort comme absent.* | **Non implémenté**, volontairement : réservé au lot financier (opération `refund` idempotente, décision préalable). L'endpoint n'est jamais appelé. |
+| Séquestre, reversement | **Rien** (paiement, remboursement, solde seulement) | **Non supposés.** Aucun reversement. |
 
 ## 2. Architecture
 - **Trois environnements distincts**, conservés pour chaque tentative (`payments.provider` + `payments.environment`) : `simulator` (simulateur interne), `sandbox` (Genius Pay), `live` (non activable). Les tentatives existantes restent `simulator` (valeur par défaut de la colonne) : **aucune réinterprétation**. Le simulateur interne continue de fonctionner pour ses tentatives même si Genius Pay est actif (chaque tentative est vérifiée par SON prestataire).

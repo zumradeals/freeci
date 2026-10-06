@@ -1,4 +1,5 @@
 # Lot 3 — paiement simulé et pièces jointes privées du brief
+> **Obsolète pour le paiement (lots 10 puis 10.1, `docs/18`)** : le simulateur décrit ici a été **retiré** ; Genius Pay est l'unique passerelle. Les parties « fichiers du brief » restent valables.
 
 Statut : **projet de travail** livré pour recette ; rien ici n'est une décision adoptée tant que le dirigeant ne l'a pas validé.
 Hors périmètre (volontairement) : remboursement, reversement, missions, litiges, prestataire de paiement réel.

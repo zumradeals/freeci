@@ -3,7 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
-use App\Modules\Finance\SandboxGate;
+use App\Modules\Finance\PaymentGate;
 use App\Modules\Missions\Actions\MissionLifecycle;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
@@ -63,9 +63,9 @@ abstract class ChangesOrder
                 }
                 if ($startsPaymentWindow) {
                     $updates['accepted_at'] = $now;
-                    // L'échéance de paiement ne court QUE si le paiement est ouvert pour CETTE commande (simulateur autorisé).
+                    // L'échéance de paiement ne court QUE si le paiement est ouvert pour CETTE commande (paiements ouverts et environnement concordant).
                     // Sinon (commande réelle, paiement jamais ouvert) : aucune échéance, donc aucune expiration pour non-paiement.
-                    $paymentOpen = app(SandboxGate::class)->allows($locked);
+                    $paymentOpen = app(PaymentGate::class)->allows($locked);
                     $updates['payment_deadline_at'] = $paymentOpen ? $now->copy()->addHours($locked->agreement->payment_hours) : null;
                 }
                 $locked->forceFill($updates)->save();

@@ -6,9 +6,13 @@ use App\Integrations\FileScan\FileScanner;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Models\FreelanceProfile;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Finance\Actions\RefreshPaymentStatus;
 use App\Modules\Finance\Models\Payment;
 use App\Modules\Orders\Models\Order;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 /** Deux comptes distincts et un service appartenant au freelance : le scénario de recette, en test. */
@@ -32,13 +36,45 @@ trait OrderFixtures
         ]);
     }
 
-    /** Rend la commande éligible au paiement simulé : simulateur activé + comptes et service de démonstration + compte de recette autorisé. */
+    /** Mode sandbox complet (configuration conforme, nouveaux paiements ouverts) et Genius Pay SIMULÉ localement : aucun échange réel. Aucun compte spécial requis. */
     protected function enableSandbox(): void
     {
-        config(['freeci.payments.sandbox_enabled' => true, 'freeci.payments.sandbox_webhook_secret' => 'secret-de-test-0123456789abcdef']);
-        $this->client->forceFill(['is_demo' => true, 'sandbox_payments' => true])->save();
-        $this->freelancer->forceFill(['is_demo' => true])->save();
-        $this->service->update(['is_demo' => true]);
+        config([
+            'freeci.payments.mode' => 'sandbox', 'freeci.payments.enabled' => true, 'freeci.payments.live_authorized' => false,
+            'freeci.payments.genius.base_url' => 'https://geniuspay.ci/api/v1/merchant',
+            'freeci.payments.genius.sandbox.api_key' => 'pk_sandbox_testkey', 'freeci.payments.genius.sandbox.api_secret' => 'sk_sandbox_testsecret',
+            'freeci.payments.genius.sandbox.webhook_secret' => 'whsec_test_sandbox_0123456789', 'freeci.payments.genius.sandbox.merchant_id' => null,
+        ]);
+        Cache::flush();
+        $this->fakeGenius();
+    }
+
+    /** Prestataire simulé localement. `$this->geniusStatus` pilote l'état distant des paiements (« completed » par défaut). */
+    protected string $geniusStatus = 'completed';
+
+    protected function fakeGenius(): void
+    {
+        Http::fake(function (HttpRequest $r) {
+            $path = (string) parse_url($r->url(), PHP_URL_PATH);
+            if ($path === '/api/v1/merchant/payments' && $r->method() === 'POST') {
+                $b = $r->data();
+                $ref = 'SANDBOX-'.strtoupper(substr(sha1((string) $b['external_reference']), 0, 10));
+
+                return Http::response(['success' => true, 'data' => ['id' => 1, 'reference' => $ref, 'external_reference' => $b['external_reference'], 'amount' => $b['amount'], 'status' => 'pending',
+                    'checkout_url' => 'https://geniuspay.ci/checkout/'.$ref, 'environment' => 'sandbox', 'expires_at' => now()->addDay()->toIso8601String()]], 201);
+            }
+            if (str_starts_with($path, '/api/v1/merchant/payments/')) {
+                $ref = basename($path);
+                $amount = (int) DB::table('payments')->where('provider_transaction_reference', $ref)->value('amount_xof');
+
+                return Http::response(['success' => true, 'data' => ['id' => 1, 'reference' => $ref, 'amount' => $amount, 'status' => $this->geniusStatus, 'environment' => 'sandbox']], 200);
+            }
+            if ($path === '/api/v1/merchant/account') {
+                return Http::response(['success' => true, 'data' => ['id' => 'merchant-uuid-1234']], 200);
+            }
+
+            return Http::response(['success' => false], 404);
+        });
     }
 
     /** @return array<string, mixed> */
@@ -67,7 +103,7 @@ trait OrderFixtures
         ]);
     }
 
-    /** Commande acceptée, éligible au paiement simulé, en attente de paiement. */
+    /** Commande créée en mode sandbox (marquée « test » dès sa création), acceptée, en attente de paiement. */
     protected function payableOrder(array $service = []): Order
     {
         $this->enableSandbox();
@@ -80,16 +116,28 @@ trait OrderFixtures
         return $order->fresh();
     }
 
-    /** Commande démarrée (paiement simulé confirmé côté serveur, brief complet) : prête pour la livraison. */
+    /** Commande démarrée (paiement confirmé côté serveur, brief complet) : prête pour la livraison. */
     protected function inProgress(array $service = []): Order
     {
         $order = $this->payableOrder($service);
-        $this->startPayment($order)->assertRedirect();
-        $this->resolve($this->currentPayment($order)->provider_reference, 'succeeded', ['--notify' => true]);
+        $this->settle($order);
         $order->refresh();
         $this->assertSame('in_progress', $order->state->value);
 
         return $order;
+    }
+
+    /** Démarre le paiement puis le fait confirmer par le SERVEUR (revérification auprès du prestataire simulé). */
+    protected function settle(Order $order, string $remote = 'completed'): ?Payment
+    {
+        if ($this->currentPayment($order) === null) {
+            $this->startPayment($order)->assertRedirect();
+        }
+        $this->geniusStatus = $remote;
+        $payment = $this->currentPayment($order);
+        app(RefreshPaymentStatus::class)->forPayment($payment);
+
+        return $this->currentPayment($order);
     }
 
     protected function startPayment(Order $order, ?string $key = null)
@@ -100,14 +148,6 @@ trait OrderFixtures
     protected function currentPayment(Order $order): ?Payment
     {
         return Payment::query()->where('order_id', $order->id)->orderByDesc('id')->first();
-    }
-
-    /** Opérateur du simulateur : fixe l'issue et notifie par la route signée. */
-    protected function resolve(string $reference, string $outcome, array $options = []): string
-    {
-        Artisan::call('freeci:sandbox:resolve', array_merge(['reference' => $reference, 'outcome' => $outcome], $options));
-
-        return Artisan::output();
     }
 
     protected function useFakeScanner(): void

@@ -1,6 +1,9 @@
 <x-layouts.admin title="Administration">
   <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Tableau de bord</h1></div></div></header>
   <div class="stack-lg">
+    <section aria-labelledby="h-pay"><h2 class="t-h2" id="h-pay">Paiements Genius Pay</h2>
+      <div class="notice {{ $d['paymentMode']['live'] ? 'tone-warning' : 'tone-info' }}" style="margin-top:12px"><x-fc.icon name="{{ $d['paymentMode']['live'] ? 'warn' : 'info' }}" /><p><strong>Mode {{ $d['paymentMode']['live'] ? 'LIVE (argent réel)' : 'TEST (sandbox, aucun argent réel)' }}.</strong> {{ $d['paymentMode']['message'] }}
+        Commandes : {{ $d['ordersByEnv']['live'] ?? 0 }} réelle(s) · {{ $d['ordersByEnv']['test'] ?? 0 }} de test · {{ $d['ordersByEnv']['legacy'] ?? 0 }} ancienne(s). Encaissé réel : {{ \App\Shared\Money::xof($d['confirmedLiveXof'])->formatted() }} FCFA · encaissé de test (non réel, exclu des totaux) : {{ \App\Shared\Money::xof($d['confirmedTestXof'])->formatted() }} FCFA.</p></div></section>
     <section aria-labelledby="h-kpi"><h2 class="t-h2" id="h-kpi">À traiter</h2>
       <div class="kpis" style="margin-top:12px">
         <a class="kpi" href="{{ route('admin.moderation') }}"><span class="n">{{ $d['servicesInReview'] }}</span><span class="l">service{{ $d['servicesInReview'] > 1 ? 's' : '' }} à modérer</span></a>

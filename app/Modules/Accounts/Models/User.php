@@ -35,7 +35,6 @@ class User extends Authenticatable
             'suspended_at' => 'datetime',
             'password' => 'hashed',
             'is_demo' => 'boolean',
-            'sandbox_payments' => 'boolean',
         ];
     }
 

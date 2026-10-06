@@ -3,28 +3,27 @@
 namespace App\Modules\Finance\Actions;
 
 use App\Integrations\Payments\GeniusPayProvider;
-use App\Integrations\Payments\PaymentProviders;
+use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\ProviderEvent;
 use App\Integrations\Payments\ProviderStatus;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\Payment;
 use App\Modules\Finance\Models\ReconciliationCase;
-use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Traite une notification déjà AUTHENTIFIÉE (signature vérifiée par l'adaptateur). Deux temps :
  *  1. `record` : l'événement est ENREGISTRÉ durablement (dédoublonné par identifiant) — rien d'autre ;
- *  2. `process` : traitement (synchrone pour le simulateur, asynchrone pour Genius Pay) — non régressif, et la confirmation n'est JAMAIS crue sur parole :
+ *  2. `process` : traitement (asynchrone) — non régressif, et la confirmation n'est JAMAIS crue sur parole :
  *     elle est revérifiée auprès du prestataire (statut, montant, devise, référence, environnement) avant tout effet.
  * Résultats : applied | duplicate | ignored | rejected | reconciliation | review (information manquante ou incertaine : à revérifier, aucun démarrage).
  */
 final class ProcessProviderEvent
 {
-    public function __construct(private PaymentProviders $providers, private ConfirmPayment $confirm, private SandboxGate $gate, private PaymentVerifier $verifier, private CheckoutRecorder $recorder) {}
+    public function __construct(private PaymentGateways $gateways, private ConfirmPayment $confirm, private PaymentVerifier $verifier, private CheckoutRecorder $recorder) {}
 
-    /** Enregistrement + traitement immédiat (simulateur). */
+    /** Enregistrement + traitement immédiat. */
     public function __invoke(ProviderEvent $event): string
     {
         [$id, $duplicate] = $this->record($event, 'processed');
@@ -84,18 +83,14 @@ final class ProcessProviderEvent
 
     private function find(ProviderEvent $event): ?Payment
     {
-        if ($event->provider === GeniusPayProvider::NAME) {
-            $p = Payment::query()->where('provider', $event->provider)->where('provider_transaction_reference', $event->reference)->first();
-            if ($p !== null) {
-                return $p;
-            }
-            // Notification reçue avant que la réponse de création ait été enregistrée : retrouvée par NOTRE référence de tentative (métadonnée envoyée).
-            $attempt = $event->payload['transaction']['attempt'] ?? null;
-
-            return is_string($attempt) ? Payment::query()->where('provider', $event->provider)->where('provider_reference', $attempt)->first() : null;
+        $p = Payment::query()->where('provider', $event->provider)->where('provider_transaction_reference', $event->reference)->first();
+        if ($p !== null) {
+            return $p;
         }
+        // Notification reçue avant que la réponse de création ait été enregistrée : retrouvée par NOTRE référence de tentative (métadonnée envoyée).
+        $attempt = $event->payload['transaction']['attempt'] ?? null;
 
-        return Payment::query()->where('provider', $event->provider)->where('provider_reference', $event->reference)->first();
+        return is_string($attempt) ? Payment::query()->where('provider', $event->provider)->where('provider_reference', $attempt)->first() : null;
     }
 
     private function apply(ProviderEvent $event, ?Payment $payment): string
@@ -104,16 +99,13 @@ final class ProcessProviderEvent
             return 'ignored';                              // référence inconnue
         }
         $order = Order::query()->whereKey($payment->order_id)->firstOrFail();
-        if (! $this->gate->allows($order)) {
-            $this->flag($order, $payment, 'gate_denied');
-
-            return 'rejected';                             // simulateur désactivé ou commande non autorisée : signalé, rien ne démarre
+        // Le suivi d'une tentative EXISTANTE ne dépend ni du mode courant ni de l'ouverture des nouveaux paiements : seul compte l'environnement ENREGISTRÉ.
+        if (! $payment->isGenius()) {
+            return 'ignored';                              // ancienne tentative du simulateur retiré
         }
-        if ($payment->isSandboxProvider()) {
-            $early = $this->checkGenius($event, $payment, $order);
-            if ($early !== null) {
-                return $early;
-            }
+        $early = $this->checkGenius($event, $payment, $order);
+        if ($early !== null) {
+            return $early;
         }
 
         return match ($event->status) {
@@ -126,7 +118,7 @@ final class ProcessProviderEvent
         };
     }
 
-    /** Contrôles propres à Genius Pay : environnement, compte marchand, rattachement de la référence. @return string|null issue finale si un contrôle échoue */
+    /** Contrôles : environnement, compte marchand, rattachement de la référence. @return string|null issue finale si un contrôle échoue */
     private function checkGenius(ProviderEvent $event, Payment $payment, Order $order): ?string
     {
         if (($event->payload['environment'] ?? null) !== $payment->environment) {
@@ -134,7 +126,12 @@ final class ProcessProviderEvent
 
             return 'rejected';
         }
-        $provider = $this->providers->named($payment->provider);
+        $provider = $this->gateways->forEnvironment($payment->environment);
+        if ($provider instanceof GeniusPayProvider && $provider->merchantStatus() === 'mismatch') {
+            $this->flag($order, $payment, 'merchant_mismatch');          // le compte de l'API n'est pas celui déclaré pour cet environnement
+
+            return 'rejected';
+        }
         $merchant = $provider instanceof GeniusPayProvider ? $provider->merchantId() : null;
         $eventMerchant = $event->payload['merchant_id'] ?? null;
         if ($merchant === null || $eventMerchant === null) {
@@ -191,8 +188,8 @@ final class ProcessProviderEvent
     private function succeed(Payment $payment, Order $order): string
     {
         // La notification n'est jamais crue sur parole : statut, montant, devise, référence et environnement sont revérifiés auprès du prestataire.
-        $v = $this->providers->named($payment->provider)->verify($payment->verificationReference());
-        if ($v->status === ProviderStatus::Indeterminate || ($v->status === ProviderStatus::Pending && $payment->isSandboxProvider())) {
+        $v = $this->gateways->forEnvironment($payment->environment)->verify($payment->verificationReference());
+        if ($v->status === ProviderStatus::Indeterminate || $v->status === ProviderStatus::Pending) {
             $this->reviewReason = $v->status === ProviderStatus::Pending ? 'success_not_yet_visible' : 'verification_unavailable';
 
             return 'review';                               // incertain : on revérifiera, rien ne démarre

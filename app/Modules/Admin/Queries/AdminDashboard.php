@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Queries;
 
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Support\Queries\StaffQueue;
 use App\Shared\Dates;
 use Illuminate\Support\Carbon;
@@ -26,6 +27,11 @@ final class AdminDashboard
             'followUpList' => $followUps->map(fn ($r) => ['reference' => $r->reference, 'kind' => $kinds[$r->kind] ?? $r->kind, 'when' => Dates::format(Carbon::parse($r->recorded_at))])->all(),
             'securityAlerts' => DB::table('security_events')->whereIn('type', ['mfa_failed', 'mfa_locked', 'login_failed', 'login_locked', 'admin_denied', 'reauth_failed'])->where('created_at', '>=', now()->subDay())->count(),
             'paymentsToReview' => (new ReconciliationList)->counts(),
+            // Séparation test / réel : les totaux réels ne comptent QUE des paiements live confirmés ; le test est présenté à part.
+            'paymentMode' => ['live' => PaymentMode::isLive(), 'open' => PaymentMode::creationOpen(), 'message' => PaymentMode::adminMessage(PaymentMode::blocker())],
+            'ordersByEnv' => DB::table('orders')->selectRaw('environment, count(*) c')->groupBy('environment')->pluck('c', 'environment')->all(),
+            'confirmedLiveXof' => (int) DB::table('payments')->where('state', 'confirmed')->where('environment', 'live')->sum('amount_xof'),
+            'confirmedTestXof' => (int) DB::table('payments')->where('state', 'confirmed')->where('environment', '<>', 'live')->sum('amount_xof'),
             'cases' => app(StaffQueue::class)->counts(auth()->user()),
             'recent' => (new AuditLog)->recent(6),
         ];

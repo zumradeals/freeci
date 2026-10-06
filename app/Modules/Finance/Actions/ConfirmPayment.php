@@ -52,9 +52,11 @@ final class ConfirmPayment
                 ['order_id' => $order->getKey(), 'payment_id' => $payment->getKey(), 'kind' => 'payment_confirmed', 'is_simulated' => $payment->is_simulated, 'occurred_at' => now()],
             );
             if ($batch->wasRecentlyCreated) {
+                // Comptes distincts : un paiement de test (sandbox) n'alimente jamais les comptes réels.
+                $suffix = $payment->is_simulated ? '_simulated' : '';
                 $batch->lines()->createMany([
-                    ['account' => 'external_payer_simulated', 'amount_xof' => -$payment->amount_xof],
-                    ['account' => 'escrow_simulated', 'amount_xof' => $payment->amount_xof],
+                    ['account' => 'external_payer'.$suffix, 'amount_xof' => -$payment->amount_xof],
+                    ['account' => 'escrow'.$suffix, 'amount_xof' => $payment->amount_xof],
                 ]);
             }
 
@@ -65,7 +67,7 @@ final class ConfirmPayment
                 return 'reconciliation';
             }
 
-            $order->events()->create(['type' => 'payment_confirmed', 'actor_id' => null, 'note' => ($payment->environment === 'sandbox' ? 'Paiement Genius Pay (bac à sable, aucun argent réel) confirmé, vérifié côté serveur (' : 'Paiement simulé confirmé (').$payment->provider_reference.').']);
+            $order->events()->create(['type' => 'payment_confirmed', 'actor_id' => null, 'note' => ($payment->environment === 'sandbox' ? 'Paiement Genius Pay (mode test, aucun argent réel) confirmé, vérifié côté serveur (' : 'Paiement Genius Pay confirmé, vérifié côté serveur (').$payment->provider_reference.').']);
             if ($order->mission_id !== null) {
                 app(MissionLifecycle::class)->onPaymentConfirmed($order);        // la mission n'est attribuée QU'ICI, paiement vérifié côté serveur
             }

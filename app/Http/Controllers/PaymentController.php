@@ -36,14 +36,14 @@ class PaymentController extends Controller
 
     public function pay(Request $request, string $reference, InitiatePayment $initiate, GetPaymentPage $page): RedirectResponse|Response
     {
-        $data = $request->validate(['operation_key' => ['required', 'string', 'max:80'], 'conditions' => ['accepted']], ['conditions.accepted' => 'Confirmez que vous avez compris qu’il s’agit d’un paiement de démonstration, sans argent réel.']);
+        $data = $request->validate(['operation_key' => ['required', 'string', 'max:80'], 'conditions' => ['accepted']], ['conditions.accepted' => 'Confirmez que vous avez lu les informations de paiement.']);
 
         try {
             [, $replayed] = $initiate($request->user(), $reference, $data['operation_key']);
         } catch (OrderForbidden) {
             abort(404);
         } catch (PaymentNotAvailable) {
-            return $this->problem('Paiement non disponible', 'Le paiement simulé n’est pas disponible pour cette commande. Aucun paiement n’est possible ici.', $reference);
+            return $this->problem('Paiement non disponible', 'Les nouveaux paiements ne sont pas ouverts pour cette commande pour le moment. Rien n’a été débité ; votre commande est conservée.', $reference);
         } catch (PaymentInProgress) {
             return $this->problem('Paiement déjà en cours', 'Une tentative de paiement est déjà en cours ou en vérification : ne payez pas une seconde fois. Consultez son état.', $reference);
         } catch (PaymentAlreadyConfirmed) {
@@ -55,12 +55,12 @@ class PaymentController extends Controller
         }
 
         $payment = $page($request->user(), $reference);
-        // Genius Pay (bac à sable) : redirection vers le checkout hébergé. Cette redirection ne confirme RIEN : seul le serveur confirme.
+        // Genius Pay : redirection vers le checkout hébergé. Cette redirection ne confirme RIEN : seul le serveur confirme.
         if (! $replayed && $payment->checkoutUrl !== null && $payment->paymentState === 'pending') {
             return redirect()->away($payment->checkoutUrl);
         }
 
-        return redirect()->route('orders.payment', $reference)->with('status', $replayed ? 'Cette tentative était déjà enregistrée.' : ($payment->environment === 'sandbox' ? 'Paiement Genius Pay (bac à sable) enregistré. Le résultat est vérifié côté serveur.' : 'Paiement simulé démarré. Le résultat est vérifié côté serveur.'));
+        return redirect()->route('orders.payment', $reference)->with('status', $replayed ? 'Cette tentative était déjà enregistrée.' : 'Paiement enregistré'.($payment->environment === 'sandbox' ? ' (mode test, aucun argent réel)' : '').'. Le résultat est vérifié côté serveur.');
     }
 
     /** Retour du navigateur depuis le checkout : informatif. Le serveur interroge le prestataire ; rien n'est confirmé par ce retour ni par ses paramètres. */

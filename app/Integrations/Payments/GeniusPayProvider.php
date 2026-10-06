@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\Http;
 use Throwable;
 
 /**
- * Adaptateur Genius Pay — BAC À SABLE UNIQUEMENT (clés `pk_sandbox_` / `sk_sandbox_`). Checkout hébergé : on crée le paiement côté serveur,
+ * Adaptateur Genius Pay, lié à UN environnement (sandbox | live) : clés, secret de webhook et compte marchand de cet environnement uniquement.
+ * Le mode live est développé mais n'est utilisable que si le porteur l'a autorisé explicitement dans la configuration serveur. Checkout hébergé : on crée le paiement côté serveur,
  * le navigateur est redirigé vers le checkout, et SEUL le serveur confirme (webhook signé + revérification par l'API).
  * Ne journalise jamais de clé, de secret, ni de corps de réponse. Aucune redirection HTTP suivie (les clés ne partent jamais ailleurs).
  */
 class GeniusPayProvider implements PaymentProvider
 {
     public const NAME = 'genius_pay';
+
+    public function __construct(private readonly string $environment = 'sandbox') {}
 
     public function name(): string
     {
@@ -26,7 +29,7 @@ class GeniusPayProvider implements PaymentProvider
 
     public function environment(): string
     {
-        return 'sandbox';
+        return $this->environment === 'live' ? 'live' : 'sandbox';
     }
 
     public function createCheckout(CheckoutRequest $request): CheckoutResult
@@ -38,17 +41,17 @@ class GeniusPayProvider implements PaymentProvider
             'external_reference' => $request->providerReference,    // stable par tentative ; sert aussi de clé d'idempotence (doc)
             'success_url' => $request->successUrl,
             'error_url' => $request->errorUrl,
-            'metadata' => ['attempt' => $request->providerReference, 'order_reference' => $request->orderReference, 'environment' => 'sandbox'],
+            'metadata' => ['attempt' => $request->providerReference, 'order_reference' => $request->orderReference, 'environment' => $this->environment()],
         ], fn ($v) => $v !== null);
 
-        $r = $this->send(fn (PendingRequest $h) => $h->withHeaders(['Idempotency-Key' => $request->providerReference])->post('/payments', $body));
+        $r = $this->send(fn (PendingRequest $h) => $h->withHeaders(['Idempotency-Key' => $request->providerReference])->post('/payments', $body), creating: true);
         $this->assertDefinite($r);
         $d = $r->json('data');
         if (! in_array($r->status(), [200, 201], true) || $r->json('success') !== true || ! is_array($d)) {
             throw new \RuntimeException('Réponse de création non exploitable.');                     // incertain : on ne conclut pas
         }
         $env = $d['environment'] ?? null;
-        if ($env !== null && $env !== 'sandbox') {
+        if ($env !== null && $env !== $this->environment()) {
             throw new ProviderRejected('environment_mismatch');
         }
         if (! isset($d['amount']) || $this->xof($d['amount']) !== $request->amountXof) {
@@ -63,7 +66,7 @@ class GeniusPayProvider implements PaymentProvider
         return new CheckoutResult(
             $request->providerReference, is_string($url) && $this->allowedCheckout($url) ? $url : null, $ref, isset($d['id']) ? (string) $d['id'] : null,
             isset($d['expires_at']) && is_string($d['expires_at']) ? Carbon::parse($d['expires_at'])->toIso8601String() : null,
-            ($d['external_reference'] ?? null) === $request->providerReference, $env ?? 'sandbox',
+            ($d['external_reference'] ?? null) === $request->providerReference, $env ?? $this->environment(),
         );
     }
 
@@ -92,14 +95,14 @@ class GeniusPayProvider implements PaymentProvider
 
         return new Verification(
             $status, isset($d['amount']) ? $this->xof($d['amount']) : null, isset($d['currency']) && is_string($d['currency']) ? strtoupper($d['currency']) : null,
-            null, $d['reference'], is_string($d['environment'] ?? null) ? $d['environment'] : 'sandbox',   // à défaut : l'environnement de la clé utilisée (sandbox)
+            null, $d['reference'], is_string($d['environment'] ?? null) ? $d['environment'] : $this->environment(),   // à défaut : l'environnement de la clé utilisée
         );
     }
 
-    /** Identifiant du compte marchand lié aux clés configurées (source fiable côté serveur), mis en cache une heure. */
+    /** Identifiant du compte marchand lié aux clés de cet environnement (source fiable côté serveur), mis en cache une heure. */
     public function merchantId(): ?string
     {
-        return Cache::remember('geniuspay:merchant', 3600, function () {
+        return Cache::remember('geniuspay:merchant:'.$this->environment(), 3600, function () {
             try {
                 $r = $this->send(fn (PendingRequest $h) => $h->get('/account'));
             } catch (Throwable) {
@@ -111,10 +114,25 @@ class GeniusPayProvider implements PaymentProvider
         });
     }
 
+    /**
+     * ok = compte de l'API identique au compte déclaré (obligatoire en live) ; mismatch = identifiants différents ; unavailable = non vérifiable.
+     * En sandbox, un compte non déclaré n'est pas bloquant (ok si l'API répond) ; en live, l'absence de déclaration est un problème de configuration.
+     */
+    public function merchantStatus(): string
+    {
+        $api = $this->merchantId();
+        if ($api === null) {
+            return 'unavailable';
+        }
+        $expected = GeniusPayConfig::keys($this->environment())['merchant_id'];
+
+        return $expected === null || hash_equals($expected, $api) ? 'ok' : 'mismatch';
+    }
+
     /** @throws InvalidProviderEvent */
     public function parseEvent(string $rawBody, array $headers): ProviderEvent
     {
-        $secret = (string) config('freeci.payments.genius.webhook_secret');
+        $secret = GeniusPayConfig::keys($this->environment())['webhook_secret'];
         if ($secret === '') {
             throw new InvalidProviderEvent('Secret de notification non configuré.');
         }
@@ -141,8 +159,8 @@ class GeniusPayProvider implements PaymentProvider
             throw new InvalidProviderEvent('Corps de notification invalide.');
         }
         $env = strtolower((string) ($data['data']['environment'] ?? ''));
-        if ($env === '' || ($envHeader !== '' && $envHeader !== $env)) {
-            throw new InvalidProviderEvent('Environnement absent ou incohérent.');
+        if ($env === '' || ($envHeader !== '' && $envHeader !== $env) || $env !== $this->environment()) {
+            throw new InvalidProviderEvent('Environnement absent ou incohérent.');   // un secret ne valide que les notifications de SON environnement
         }
         $status = match ($data['event']) {
             'payment.success' => ProviderStatus::Succeeded,
@@ -165,13 +183,17 @@ class GeniusPayProvider implements PaymentProvider
     // ---------------------------------------------------------------------------------------------
 
     /** @param callable(PendingRequest): Response $do */
-    private function send(callable $do): Response
+    private function send(callable $do, bool $creating = false): Response
     {
-        if (! GeniusPayConfig::sandboxSelected() || GeniusPayConfig::problems() !== []) {
+        if (GeniusPayConfig::problems($this->environment()) !== []) {
             throw new ProviderRejected('configuration_invalid');                    // aucun appel n'est émis, aucune clé ne circule
         }
+        if ($creating && $this->environment() === 'live' && ! GeniusPayConfig::liveAuthorized()) {
+            throw new ProviderRejected('live_not_authorized');                      // aucune CRÉATION live sans autorisation explicite ; la lecture des tentatives existantes reste possible
+        }
+        $k = GeniusPayConfig::keys($this->environment());
         $h = Http::baseUrl(GeniusPayConfig::baseUrl())->acceptJson()->asJson()
-            ->withHeaders(['X-API-Key' => (string) config('freeci.payments.genius.api_key'), 'X-API-Secret' => (string) config('freeci.payments.genius.api_secret')])
+            ->withHeaders(['X-API-Key' => $k['api_key'], 'X-API-Secret' => $k['api_secret']])
             ->connectTimeout(5)->timeout((int) config('freeci.payments.genius.timeout'))->withOptions(['allow_redirects' => false]);
         try {
             return $do($h);

@@ -22,6 +22,7 @@ final readonly class OrderDossier
         public string $tone,
         public string $icon,
         public bool $isDemo,
+        public string $environment,            // test | live | legacy : fixé à la création de la commande
         public string $title,
         public string $categoryName,
         public string $otherPartyLabel,        // « Freelance » ou « Client »

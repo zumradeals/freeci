@@ -2,14 +2,13 @@
 
 namespace App\Modules\Finance\Actions;
 
-use App\Integrations\Payments\PaymentProviders;
+use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\ProviderStatus;
 use App\Integrations\Payments\Verification;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\Payment;
 use App\Modules\Finance\Models\ReconciliationCase;
-use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +22,7 @@ final class RefreshPaymentStatus
 {
     public const MIN_INTERVAL_SECONDS = 10;
 
-    public function __construct(private PaymentProviders $providers, private ConfirmPayment $confirm, private SandboxGate $gate, private CheckoutRecorder $recorder, private PaymentVerifier $verifier) {}
+    public function __construct(private PaymentGateways $gateways, private ConfirmPayment $confirm, private CheckoutRecorder $recorder, private PaymentVerifier $verifier) {}
 
     /** @return array{0: ?Payment, 1: bool} [tentative, vrai si la limite d'actualisation a été atteinte] */
     public function __invoke(User $client, string $reference): array
@@ -33,7 +32,7 @@ final class RefreshPaymentStatus
             throw new OrderForbidden;
         }
         $payment = Payment::query()->where('order_id', $order->getKey())->orderByDesc('id')->first();
-        if ($payment === null || ! $payment->state->isOpen() || ! $this->gate->allows($order)) {
+        if ($payment === null || ! $payment->state->isOpen() || ! $payment->isGenius()) {      // le suivi d'une tentative ne dépend pas de l'ouverture des nouveaux paiements
             return [$payment, false];
         }
         if ($payment->last_checked_at !== null && $payment->last_checked_at->gt(now()->subSeconds(self::MIN_INTERVAL_SECONDS))) {
@@ -47,11 +46,14 @@ final class RefreshPaymentStatus
     public function forPayment(Payment $payment, ?Order $order = null): Payment
     {
         $order ??= Order::query()->whereKey($payment->order_id)->firstOrFail();
+        if (! $payment->isGenius()) {
+            return $payment;                         // ancienne tentative du simulateur : jamais interrogée ni confirmée
+        }
         DB::table('payments')->where('id', $payment->getKey())->update(['last_checked_at' => now()]);
-        $provider = $this->providers->named($payment->provider);
+        $provider = $this->gateways->forEnvironment($payment->environment);   // environnement ENREGISTRÉ de la tentative
 
-        // Genius Pay : tentative créée mais référence du prestataire inconnue (délai dépassé à la création) → on REJOUE la même création (idempotente).
-        if ($payment->isSandboxProvider() && $payment->provider_transaction_reference === null) {
+        // Tentative créée mais référence du prestataire inconnue (délai dépassé à la création) → on REJOUE la même création (idempotente).
+        if ($payment->isGenius() && $payment->provider_transaction_reference === null) {
             $result = $this->recorder->run($payment);
             $payment = $payment->fresh();
             if ($result !== 'pending' || $payment->provider_transaction_reference === null) {

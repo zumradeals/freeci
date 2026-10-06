@@ -3,7 +3,7 @@
 namespace App\Modules\Orders\Queries;
 
 use App\Modules\Accounts\Models\User;
-use App\Modules\Finance\SandboxGate;
+use App\Modules\Finance\PaymentGate;
 use App\Modules\Missions\Queries\ClientMissions;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
 use App\Modules\Orders\Actions\RecordReviewFollowUps;
@@ -26,7 +26,7 @@ final class ClientOverview
         $this->followUps->__invoke($client->getKey());
         $orders = Order::query()->with(['agreement', 'client', 'freelancer', 'latestDelivery', 'pendingExtension'])->where('client_id', $client->getKey())->get();
 
-        $gate = app(SandboxGate::class);
+        $gate = app(PaymentGate::class);
         $tasks = $orders->whereIn('state', [OrderState::AwaitingPayment, OrderState::AwaitingBrief])->map(function (Order $o) use ($gate) {
             $due = $o->payment_deadline_at;
             if ($o->state === OrderState::AwaitingBrief) {
@@ -40,8 +40,8 @@ final class ClientOverview
                     'Le travail commence après paiement confirmé et brief complet.', 'Voir l’état du paiement', route('orders.payment', $o->reference), 'clock', false);
             }
             if (! $confirmed && $gate->allows($o)) {
-                return new TaskItem('Payer la commande (simulation)', $o->agreement->service_title.' · '.$o->reference, $due,
-                    $due ? 'À payer avant le '.Dates::format($due) : 'Paiement simulé : aucun argent n’est débité.', 'Le travail commence après paiement confirmé et brief complet.',
+                return new TaskItem('Payer la commande', $o->agreement->service_title.' · '.$o->reference, $due,
+                    $due ? 'À payer avant le '.Dates::format($due) : ($o->environment === 'test' ? 'Mode test : aucun argent réel n’est débité.' : 'Paiement sécurisé par Genius Pay.'), 'Le travail commence après paiement confirmé et brief complet.',
                     'Payer '.Money::xof($o->agreement->price_xof)->formatted().' FCFA', route('orders.payment', $o->reference), 'card');
             }
 

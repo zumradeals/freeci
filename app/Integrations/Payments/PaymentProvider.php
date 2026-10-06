@@ -3,14 +3,14 @@
 namespace App\Integrations\Payments;
 
 /**
- * Port `PaymentProvider` (docs/02 §7). Adaptateurs : simulateur interne et Genius Pay (bac à sable). Aucun mode réel n'est activé.
+ * Port `PaymentProvider` (docs/02 §7). Unique adaptateur : Genius Pay, lié à un environnement (sandbox | live).
  * Les adaptateurs n'appellent jamais d'Action ; les notifications entrent par un contrôleur dédié.
  */
 interface PaymentProvider
 {
     public function name(): string;
 
-    /** simulator | sandbox | live — conservé pour chaque tentative ; jamais déduit après coup. */
+    /** sandbox | live — conservé pour chaque tentative ; jamais déduit après coup. */
     public function environment(): string;
 
     public function createCheckout(CheckoutRequest $request): CheckoutResult;

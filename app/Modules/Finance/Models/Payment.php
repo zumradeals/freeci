@@ -22,13 +22,14 @@ class Payment extends Model
         ];
     }
 
-    /** Référence à interroger chez le prestataire : celle qu'il a attribuée (Genius Pay), sinon la nôtre (simulateur). */
+    /** Référence à interroger chez le prestataire : celle qu'il a attribuée, à défaut la nôtre (création non encore enregistrée). */
     public function verificationReference(): string
     {
         return $this->provider_transaction_reference ?? $this->provider_reference;
     }
 
-    public function isSandboxProvider(): bool
+    /** Tentative Genius Pay (sandbox ou live). Les anciennes tentatives du simulateur retiré (`provider = 'sandbox'`) sont conservées en lecture seule. */
+    public function isGenius(): bool
     {
         return $this->provider === 'genius_pay';
     }

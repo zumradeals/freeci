@@ -37,7 +37,7 @@ final class OrderCards
             title: $o->agreement->service_title,
             otherParty: $asFreelancer ? $o->client->name : $o->freelancer->name,
             amount: Money::xof($o->agreement->price_xof),
-            stateLabel: $o->state->label($asFreelancer), tone: $tone, icon: $icon, info: $info, isDemo: $o->is_demo,
+            stateLabel: $o->state->label($asFreelancer), tone: $tone, icon: $icon, info: $info, isDemo: $o->is_demo, environment: $o->environment,
         );
     }
 }

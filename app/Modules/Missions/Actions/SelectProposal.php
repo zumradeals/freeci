@@ -2,9 +2,10 @@
 
 namespace App\Modules\Missions\Actions;
 
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
-use App\Modules\Finance\SandboxGate;
+use App\Modules\Finance\PaymentGate;
 use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Missions\Exceptions\MissionConflict;
 use App\Modules\Missions\Exceptions\MissionForbidden;
@@ -117,6 +118,7 @@ final class SelectProposal
                 'mission_id' => $m->getKey(), 'proposal_version_id' => $pv->getKey(), 'state' => OrderState::AwaitingPayment,
                 'requested_at' => $now, 'response_deadline_at' => $now, 'accepted_at' => $now,            // la proposition vaut acceptation du freelance : pas de délai de réponse
                 'is_demo' => $client->is_demo || $m->is_demo || (bool) $freelancer->freelanceProfile?->is_demo,
+                'environment' => PaymentMode::orderEnvironment(),          // fixé À LA CRÉATION, immuable
             ]);
         } catch (UniqueConstraintViolationException) {
             throw new MissionConflict('Une commande existe déjà pour cette mission : un seul choix est possible.');
@@ -136,8 +138,8 @@ final class SelectProposal
         ]);
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);
 
-        // Le paiement n'est « ouvert » (échéance de 24 h) que si le simulateur est autorisé pour CETTE commande ; sinon aucune échéance de paiement.
-        $open = app(SandboxGate::class)->allows($order);
+        // Le paiement n'est « ouvert » (échéance de 24 h) que si les paiements sont ouverts pour CETTE commande ; sinon aucune échéance de paiement.
+        $open = app(PaymentGate::class)->allows($order);
         $order->forceFill(['payment_deadline_at' => $open ? $now->copy()->addHours($paymentHours) : null])->save();
         $order->events()->create(['type' => 'proposal_selected', 'actor_id' => $client->getKey(), 'to_state' => OrderState::AwaitingPayment->value,
             'meta' => ['mission' => $m->slug, 'proposal_version' => $pv->number, 'payment_open' => $open]]);

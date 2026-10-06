@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\GrantAdministrator;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Exceptions\ModerationDenied;
 use App\Modules\Catalog\Models\FreelanceProfile;
-use App\Modules\Finance\SandboxGate;
+use App\Modules\Finance\PaymentGate;
 use App\Modules\Missions\Actions\MissionModeration;
 use App\Modules\Missions\Models\Mission;
 use App\Modules\Missions\Models\MissionVersion;
@@ -353,19 +354,18 @@ class MissionFlowTest extends TestCase
     public function test_mission_orders_follow_the_same_payment_brief_start_delivery_and_validation_rules(): void
     {
         $this->enableSandbox();
-        $this->client->forceFill(['is_demo' => true])->save();
         $m = $this->openMission();
-        $this->assertTrue($m->is_demo);
         $this->propose($m)->assertRedirect();
         $pv = $this->latest($m, $this->freelancer);
         $this->select($m, $pv)->assertRedirect()->assertSessionHas('status');
         $order = Order::firstOrFail();
-        $this->assertNotNull($order->payment_deadline_at, 'paiement simulé ouvert pour cette commande de démonstration autorisée');
+        $this->assertNotNull($order->payment_deadline_at, 'paiement ouvert : commande de test créée en mode sandbox');
         $this->assertSame('reserved', $m->fresh()->status, 'attribuée seulement après paiement confirmé');
 
+        $this->assertSame('test', $order->environment, 'marquée « test » dès la création (origine mission)');
         $this->startPayment($order)->assertRedirect();
         $this->assertSame('reserved', $m->fresh()->status);
-        $this->resolve($this->currentPayment($order)->provider_reference, 'succeeded', ['--notify' => true]);
+        $this->settle($order);
         $order->refresh();
         $this->assertSame(OrderState::InProgress, $order->state, 'brief complet + paiement confirmé : une seule fois');
         $this->assertNotNull($order->started_at);
@@ -382,34 +382,31 @@ class MissionFlowTest extends TestCase
         $this->assertSame(1, DB::table('order_events')->where('order_id', $order->id)->where('type', 'work_started')->count());
     }
 
-    public function test_ordinary_real_mission_orders_can_never_be_paid_through_the_demo_simulator(): void
+    public function test_a_test_mission_order_never_becomes_payable_in_live_mode_and_an_unopened_payment_starts_no_deadline(): void
     {
-        config(['freeci.payments.sandbox_enabled' => true, 'freeci.payments.sandbox_webhook_secret' => 'secret-de-test-0123456789abcdef']);
-        $this->freelancer->forceFill(['is_demo' => true])->save();
-        $this->client->forceFill(['sandbox_payments' => true])->save();                       // même un drapeau posé à tort
-        $m = $this->openMission();                                                           // client réel : mission non démo
-        $this->assertFalse($m->is_demo);
+        $this->enableSandbox();
+        $m = $this->openMission();                                                           // comptes ordinaires : aucune restriction de personne
         $this->propose($m)->assertRedirect();
         $this->select($m, $this->latest($m, $this->freelancer))->assertRedirect()->assertSessionHas('status');
         $order = Order::firstOrFail();
-        $this->assertNull($order->payment_deadline_at);
+        $this->assertSame('test', $order->environment);
+        $this->assertNotNull($order->payment_deadline_at);
+
+        // bascule explicite vers le live (configuration complète et autorisée) : la commande de test reste de test et n'est jamais payable en argent réel
+        config(['freeci.payments.mode' => 'live', 'freeci.payments.live_authorized' => true,
+            'freeci.payments.genius.live.api_key' => 'pk_live_k', 'freeci.payments.genius.live.api_secret' => 'sk_live_s',
+            'freeci.payments.genius.live.webhook_secret' => 'whsec_live_0123456789', 'freeci.payments.genius.live.merchant_id' => 'merchant-uuid-1234']);
+        $this->assertTrue(app(PaymentMode::class)::creationOpen());
+        $this->assertSame('order_environment_mismatch', app(PaymentGate::class)->denial($order->fresh()));
         $this->startPayment($order)->assertStatus(409);
         $this->assertSame(0, DB::table('payments')->count());
-        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Le paiement n’est pas ouvert pour cette commande');
-        $this->assertSame('denied', app(SandboxGate::class)->allows($order->fresh()) ? 'allowed' : 'denied');
-        // même avec tous les autres éléments de démonstration, une mission réelle refuse le simulateur
-        $this->client->forceFill(['is_demo' => true])->save();
-        DB::table('orders')->where('id', $order->id)->update(['is_demo' => true]);
-        $this->assertSame('mission_not_demo', app(SandboxGate::class)->denial($order->fresh()));
-        $this->startPayment($order)->assertStatus(409);
-        $this->assertSame(OrderState::AwaitingPayment, $order->fresh()->state);
-        $this->assertNull($order->fresh()->started_at);
+        $this->assertSame('test', $order->fresh()->environment);
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Commande de test')->assertSee('ne peut jamais être payée en argent réel');
     }
 
     public function test_cancelling_or_expiring_before_payment_frees_the_proposal_and_never_reopens_the_mission_implicitly(): void
     {
         $this->enableSandbox();
-        $this->client->forceFill(['is_demo' => true])->save();
         $m = $this->openMission();
         $this->propose($m)->assertRedirect();
         $this->propose($m, $this->other, ['price_xof' => '80000'])->assertRedirect();

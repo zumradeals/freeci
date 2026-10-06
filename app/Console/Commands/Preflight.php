@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Integrations\FileScan\FileScanner;
 use App\Integrations\Payments\GeniusPayConfig;
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Catalog\Support\ImageProcessor;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -53,14 +54,12 @@ class Preflight extends Command
         $mailer = (string) config('mail.default');
         $this->check('Courrier réel (pas de pilote log/array)', ! in_array($mailer, ['log', 'array'], true), "MAIL_MAILER={$mailer} : le lien « mot de passe oublié » ne sera pas envoyé", false);
 
-        $sandbox = (bool) config('freeci.payments.sandbox_enabled');
         $this->check('File d\'attente asynchrone (courriels avec reprises)', config('queue.default') !== 'sync', 'QUEUE_CONNECTION=sync : aucun traitement différé ni reprise ; utilisez « database » avec un processus queue:work ou FREECI_QUEUE_VIA_SCHEDULER=true', false);
         $this->check('Extension GD avec WebP (images de service)', ImageProcessor::available(), 'php8.3-gd absent : le dépôt d\'images de service est désactivé (les services restent publiables sans image)', false);
-        $this->check('Simulateur de paiement désactivé', ! $sandbox, 'FREECI_PAYMENT_SANDBOX=true : réservé aux comptes et commandes de démonstration autorisés (comptes de recette) ; à remettre à false après la recette', false);
-        $this->check('Simulateur : secret de notification défini', ! $sandbox || filled(config('freeci.payments.sandbox_webhook_secret')), 'FREECI_SANDBOX_WEBHOOK_SECRET vide alors que le simulateur est activé : les notifications seront refusées');
-        $gp = GeniusPayConfig::sandboxSelected();
-        $this->check('Genius Pay (bac à sable) : configuration conforme', ! $gp || GeniusPayConfig::problems() === [], 'FREECI_PAYMENT_PROVIDER=geniuspay_sandbox mais : '.implode(', ', GeniusPayConfig::problems()).' (voir docs/17 ; php artisan freeci:genius:status)');
-        $this->check('Genius Pay : paiements sandbox autorisés si sélectionné', ! $gp || $sandbox, 'FREECI_PAYMENT_PROVIDER=geniuspay_sandbox exige FREECI_PAYMENT_SANDBOX=true (réservé aux comptes et commandes de démonstration)');
+        $this->check('Mode de paiement valide (sandbox | live)', PaymentMode::valid(), 'FREECI_PAYMENT_MODE doit valoir « sandbox » ou « live » : nouveaux paiements désactivés');
+        $this->check('Nouveaux paiements : configuration cohérente pour le mode actif', ! PaymentMode::enabled() || PaymentMode::creationOpen(), PaymentMode::adminMessage(PaymentMode::blocker()).' (php artisan freeci:genius:status)');
+        $this->check('Mode live non activé sans autorisation explicite', ! PaymentMode::isLive() || GeniusPayConfig::liveAuthorized(), 'FREECI_PAYMENT_MODE=live sans FREECI_LIVE_PAYMENTS_AUTHORIZED=true', false);
+        $this->check('Paiements en mode test : aucun argent réel', ! PaymentMode::isLive(), 'MODE LIVE actif : les nouvelles commandes sont réelles', false);
         $this->check('Service de contrôle des fichiers', config('freeci.files.scanner') === 'clamav' && app(FileScanner::class)->isOperational(), 'aucun service d\'analyse opérationnel : le dépôt de fichiers du brief est désactivé (voir docs/10)', false);
         $this->check('Disque privé des fichiers inscriptible', $this->privateDiskWritable(), storage_path('app/private/files'));
 

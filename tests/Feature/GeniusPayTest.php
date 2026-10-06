@@ -3,12 +3,15 @@
 namespace Tests\Feature;
 
 use App\Integrations\Payments\GeniusPayConfig;
+use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\GrantSupport;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Accounts\Security\Totp;
 use App\Modules\Accounts\Security\TwoFactor;
 use App\Modules\Finance\Actions\ProcessProviderEvent;
+use App\Modules\Finance\Actions\RefreshPaymentStatus;
 use App\Modules\Finance\Jobs\ProcessPaymentEvent;
+use App\Modules\Finance\Models\Payment;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Database\QueryException;
@@ -28,7 +31,7 @@ use Tests\Support\OrderFixtures;
 use Tests\TestCase;
 
 /**
- * Lot 10 — Genius Pay (bac à sable). TOUS ces tests sont des tests LOCAUX avec réponses simulées (Http::fake) : aucun échange réel avec Genius Pay n'a lieu.
+ * Lots 10 / 10.1 — Genius Pay (sandbox). TOUS ces tests sont des tests LOCAUX avec réponses simulées (Http::fake) : aucun échange réel avec Genius Pay n'a lieu.
  * Ils vérifient la logique de FreeCI (signatures, montants, environnements, doublons, incertitudes), pas le comportement réel du prestataire.
  */
 class GeniusPayTest extends TestCase
@@ -53,15 +56,15 @@ class GeniusPayTest extends TestCase
         $this->setUpParties();
         $this->service->update(['delivery_requires_files' => false]);
         $this->withoutMiddleware(ThrottleRequests::class);
-        config([
-            'freeci.payments.provider' => 'geniuspay_sandbox', 'freeci.payments.genius.base_url' => 'https://geniuspay.ci/api/v1/merchant',
-            'freeci.payments.genius.api_key' => 'pk_sandbox_testkey', 'freeci.payments.genius.api_secret' => 'sk_sandbox_testsecret', 'freeci.payments.genius.webhook_secret' => self::WHSEC,
-        ]);
-        $this->enableSandbox();
+        $this->enableSandbox();                                   // configuration sandbox conforme (le faux prestataire est celui de ce fichier)
+        config(['freeci.payments.genius.sandbox.webhook_secret' => self::WHSEC]);
         Cache::flush();
         $this->remote = ['status' => 'pending', 'amount' => null, 'environment' => 'sandbox', 'merchant' => self::MERCHANT, 'create' => 'ok', 'currency' => null];
         $this->fakeProvider();
     }
+
+    /** Neutralise le faux prestataire générique des fixtures : ce fichier a le sien. */
+    protected function fakeGenius(): void {}
 
     /** Prestataire simulé localement : état distant modifiable via $this->remote. */
     private function fakeProvider(): void
@@ -181,36 +184,43 @@ class GeniusPayTest extends TestCase
         $this->assertSame('awaiting_payment', $o->fresh()->state->value, 'la redirection ne démarre rien');
         // la clé et le secret ne sont jamais stockés ni affichés
         $this->assertStringNotContainsString('sk_sandbox_testsecret', json_encode([DB::table('payments')->get(), DB::table('payment_events')->get(), DB::table('order_events')->get()]));
-        $page = $this->actingAs($this->client)->get("/commandes/{$o->reference}/paiement")->assertOk()->assertSee('Bac à sable Genius Pay')->assertSee('aucun argent réel')->assertDontSee('sk_sandbox')->getContent();
+        $page = $this->actingAs($this->client)->get("/commandes/{$o->reference}/paiement")->assertOk()->assertSee('Mode test — aucun argent réel')->assertDontSee('sk_sandbox')->getContent();
         $this->assertStringContainsString('Reprendre le paiement sur le checkout Genius Pay', $page);
     }
 
-    public function test_sandbox_payment_is_reserved_to_authorized_demo_accounts_orders_and_a_conforming_configuration(): void
+    public function test_sandbox_payment_is_open_to_ordinary_accounts_but_only_with_a_conforming_configuration_and_a_payable_order(): void
     {
-        // commande réelle (non démo) : refusée, aucun appel au prestataire
-        $this->service->update(['is_demo' => false]);
-        $real = $this->order();
-        $this->pay($real)->assertStatus(409);
-        $this->assertSame(0, DB::table('payments')->count());
-        Http::assertNothingSent();
-        $this->service->update(['is_demo' => true]);
-        $real->forceFill(['is_demo' => true])->save();
-        $this->client->forceFill(['sandbox_payments' => false])->save();
-        $this->pay($real->fresh())->assertStatus(409);                                      // compte non autorisé
-        $this->client->forceFill(['sandbox_payments' => true])->save();
-        // clés « live » ou URL non HTTPS : aucun appel, rien d'ouvert
-        config(['freeci.payments.genius.api_key' => 'pk_live_xxx', 'freeci.payments.genius.api_secret' => 'sk_live_xxx']);
-        $this->assertContains('live_keys_refused', GeniusPayConfig::problems());
-        $this->pay($real->fresh())->assertStatus(409);
-        config(['freeci.payments.genius.api_key' => 'pk_sandbox_testkey', 'freeci.payments.genius.api_secret' => 'sk_sandbox_testsecret', 'freeci.payments.genius.base_url' => 'http://geniuspay.ci/api/v1/merchant']);
-        $this->assertContains('base_url_not_https', GeniusPayConfig::problems());
-        $this->pay($real->fresh())->assertStatus(409);
+        // comptes ordinaires (ni démo, ni liste d'autorisation) : la commande est marquée « test » et se paie en sandbox
+        $o = $this->order();
+        $this->assertSame('test', $o->environment);
+        // nouveaux paiements fermés (drapeau) : rien n'est envoyé, message compréhensible, commande conservée
+        config(['freeci.payments.enabled' => false]);
+        $this->pay($o)->assertStatus(409);
+        $this->actingAs($this->client)->get("/commandes/{$o->reference}/paiement")->assertOk()->assertSee('Les paiements ne sont pas ouverts pour le moment');
+        config(['freeci.payments.enabled' => true]);
+        // mode invalide : jamais interprété comme live
+        config(['freeci.payments.mode' => 'prod']);
+        $this->assertFalse(PaymentMode::isLive());
+        $this->assertSame('mode_invalid', PaymentMode::blocker());
+        $this->pay($o)->assertStatus(409);
+        config(['freeci.payments.mode' => 'sandbox']);
+        // clés « live » dans le jeu sandbox, URL non HTTPS : aucun appel, rien d'ouvert
+        config(['freeci.payments.genius.sandbox.api_key' => 'pk_live_xxx', 'freeci.payments.genius.sandbox.api_secret' => 'sk_live_xxx']);
+        $this->assertContains('keys_wrong_environment', GeniusPayConfig::problems('sandbox'));
+        $this->pay($o)->assertStatus(409);
+        config(['freeci.payments.genius.sandbox.api_key' => 'pk_sandbox_testkey', 'freeci.payments.genius.sandbox.api_secret' => 'sk_sandbox_testsecret', 'freeci.payments.genius.base_url' => 'http://geniuspay.ci/api/v1/merchant']);
+        $this->assertContains('base_url_not_https', GeniusPayConfig::problems('sandbox'));
+        $this->pay($o)->assertStatus(409);
         config(['freeci.payments.genius.base_url' => 'https://geniuspay.ci/api/v1/merchant']);
+        config(['freeci.payments.genius.sandbox.webhook_secret' => 'pas-un-secret']);
+        $this->assertContains('webhook_secret_format', GeniusPayConfig::problems('sandbox'));
+        $this->pay($o)->assertStatus(409);
+        config(['freeci.payments.genius.sandbox.webhook_secret' => self::WHSEC]);
         Http::assertNothingSent();
         $this->assertFalse(GeniusPayConfig::liveAuthorized(), 'le mode réel n’est pas autorisé');
         // une commande hors « en attente de paiement » (ex. annulée) ne se paie pas
-        $this->actingAs($this->client)->post("/commandes/{$real->reference}/cancel", ['expected_version' => $real->fresh()->row_version, 'operation_key' => (string) Str::uuid()])->assertRedirect();
-        $this->pay($real->fresh())->assertStatus(409);
+        $this->actingAs($this->client)->post("/commandes/{$o->reference}/cancel", ['expected_version' => $o->fresh()->row_version, 'operation_key' => (string) Str::uuid()])->assertRedirect();
+        $this->pay($o->fresh())->assertStatus(409);
         $this->assertSame(0, DB::table('payments')->count());
     }
 
@@ -375,10 +385,11 @@ class GeniusPayTest extends TestCase
         $this->hook($e, ['X-Webhook-Environment' => 'live'] + $he)->assertStatus(401);
         $this->assertSame(0, DB::table('payment_events')->count(), 'aucun rejet ne laisse de trace durable');
         // désactivé : sans prestataire sélectionné ou sans secret
-        config(['freeci.payments.provider' => 'simulator']);
-        $this->hook($b, $h)->assertNotFound();
-        config(['freeci.payments.provider' => 'geniuspay_sandbox', 'freeci.payments.genius.webhook_secret' => '']);
-        $this->hook($b, $h)->assertNotFound();
+        config(['freeci.payments.genius.sandbox.webhook_secret' => '']);
+        $this->hook($b, $h)->assertNotFound();                                              // aucun secret configuré : adresse fermée
+        // les nouveaux paiements fermés ne ferment PAS la réception : le suivi des tentatives existantes continue
+        config(['freeci.payments.genius.sandbox.webhook_secret' => self::WHSEC, 'freeci.payments.enabled' => false]);
+        $this->hook($b, $h)->assertOk();
     }
 
     public function test_amounts_environments_merchant_and_references_are_checked_and_nothing_starts_on_missing_or_inconsistent_data(): void
@@ -401,10 +412,11 @@ class GeniusPayTest extends TestCase
             $this->assertSame('pending', $this->payment()->state, $label);
         }
         $this->assertSame('awaiting_payment', $o->fresh()->state->value);
-        // environnement annoncé par le webhook ≠ celui de la tentative
+        // notification annonçant « live » : jamais vérifiée avec le secret du sandbox (aucun secret live configuré ici) → rejetée sans trace
+        $before = DB::table('payment_events')->count();
         [$b, $h] = $this->signed('payment.success', ['data' => ['environment' => 'live'], 'timestamp' => 'live1']);
-        $this->hook($b, $h)->assertOk();
-        $this->assertSame('rejected', DB::table('payment_events')->orderByDesc('id')->value('outcome'));
+        $this->hook($b, $h)->assertStatus(401);
+        $this->assertSame($before, DB::table('payment_events')->count());
         // compte marchand différent
         $this->remote['merchant'] = 'autre-marchand';
         Cache::flush();
@@ -479,7 +491,7 @@ class GeniusPayTest extends TestCase
         // signalé aux administrateurs, avec un examen tracé et sans aucune exécution
         $admin = $this->readyAdmin();
         $this->asAdmin($admin)->get('/admin')->assertOk()->assertSee('à vérifier');
-        $this->asAdmin($admin)->get('/admin/paiements')->assertOk()->assertSee('Succès tardif')->assertSee('Bac à sable')->assertSee('rien n’est remboursé');
+        $this->asAdmin($admin)->get('/admin/paiements')->assertOk()->assertSee('Succès tardif')->assertSee('Test (sandbox)')->assertSee('rien n’est remboursé');
         $id = $c->first()->id;
         $this->asAdmin($admin)->post("/admin/paiements/{$id}/examiner", ['note' => 'court'])->assertSessionHasErrors('note');
         $this->asAdmin($admin)->post("/admin/paiements/{$id}/examiner", ['note' => 'Examiné : commande annulée, remboursement hors périmètre du lot.'])->assertSessionHas('status');
@@ -536,18 +548,23 @@ class GeniusPayTest extends TestCase
         $this->assertSame('awaiting_payment', Order::query()->find($o2->id)->state->value, 'rien n’est annulé ni démarré automatiquement');
     }
 
-    public function test_previous_simulator_attempts_keep_their_provider_and_environment_when_genius_pay_is_active(): void
+    public function test_previous_simulator_attempts_are_kept_read_only_and_never_sent_to_genius_pay(): void
     {
-        config(['freeci.payments.provider' => 'simulator']);
         $o = $this->order();
-        $this->pay($o)->assertRedirect(route('orders.payment', $o->reference));
-        $p = $this->payment();
-        $this->assertSame(['sandbox', 'simulator', true], [$p->provider, $p->environment, (bool) $p->is_simulated]);
-        config(['freeci.payments.provider' => 'geniuspay_sandbox']);
-        $this->actingAs($this->client)->post("/commandes/{$o->reference}/paiement/actualiser")->assertRedirect();
+        // ligne héritée du simulateur retiré (la base n'accepte plus d'en créer : déclencheur désactivé le temps de l'insertion)
+        DB::statement('ALTER TABLE payments DISABLE TRIGGER payments_match_order');
+        $id = (string) Str::uuid();
+        DB::table('payments')->insert(['id' => $id, 'order_id' => $o->id, 'amount_xof' => 35000, 'currency' => 'XOF', 'provider' => 'sandbox', 'environment' => 'simulator', 'is_simulated' => true,
+            'provider_reference' => 'SBX-LEGACY0000001', 'state' => 'pending', 'created_at' => now(), 'updated_at' => now()]);
+        DB::statement('ALTER TABLE payments ENABLE TRIGGER payments_match_order');
+
+        app(RefreshPaymentStatus::class)->forPayment(Payment::findOrFail($id));
+        Artisan::call('freeci:payments:reconcile');
         Http::assertNothingSent();                                                           // l'ancienne tentative n'est jamais envoyée à Genius Pay
-        $this->assertSame('simulator', $this->payment()->environment);
-        $this->assertSame('pending', $this->payment()->state);
+        $p = DB::table('payments')->where('id', $id)->first();
+        $this->assertSame(['sandbox', 'simulator', 'pending'], [$p->provider, $p->environment, $p->state], 'provenance conservée, aucune confirmation fabriquée');
+        $this->assertSame(0, DB::table('ledger_batches')->count());
+        $this->assertSame('awaiting_payment', $o->fresh()->state->value);
     }
 
     public function test_the_status_command_shows_no_secret_and_explains_the_webhook_configuration(): void
@@ -560,7 +577,7 @@ class GeniusPayTest extends TestCase
             $this->assertStringNotContainsString($secret, $out);
         }
         $this->assertSame(0, Artisan::call('freeci:genius:status', ['--ping' => true]));
-        config(['freeci.payments.genius.api_secret' => 'sk_live_zzz']);
+        config(['freeci.payments.genius.sandbox.api_secret' => 'sk_live_zzz']);
         $this->assertSame(1, Artisan::call('freeci:genius:status', ['--ping' => true]));
         $this->assertStringContainsString('aucun appel émis', Artisan::output());
     }

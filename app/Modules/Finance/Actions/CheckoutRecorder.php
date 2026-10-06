@@ -3,7 +3,7 @@
 namespace App\Modules\Finance\Actions;
 
 use App\Integrations\Payments\CheckoutRequest;
-use App\Integrations\Payments\PaymentProviders;
+use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\ProviderRejected;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\Payment;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class CheckoutRecorder
 {
-    public function __construct(private PaymentProviders $providers) {}
+    public function __construct(private PaymentGateways $gateways) {}
 
     /** @return 'pending'|'failed'|'uncertain' */
     public function run(Payment $payment): string
@@ -28,8 +28,8 @@ final class CheckoutRecorder
         if ($order === null) {
             return 'uncertain';
         }
-        $provider = $this->providers->named($payment->provider);
-        $desc = 'Commande '.$order->reference.' (FreeCI'.($payment->environment === 'sandbox' ? ', bac à sable' : '').')';
+        $provider = $this->gateways->forEnvironment($payment->environment);   // l'environnement ENREGISTRÉ de la tentative, jamais le mode courant
+        $desc = 'Commande '.$order->reference.' (FreeCI'.($payment->environment === 'sandbox' ? ', mode test' : '').')';
         $request = new CheckoutRequest(
             $payment->getKey(), $payment->provider_reference, $order->reference, (int) $payment->amount_xof, $payment->currency, $desc,
             route('orders.payment.return', $order->reference), route('orders.payment.return', $order->reference),
@@ -37,6 +37,9 @@ final class CheckoutRecorder
         try {
             $r = $provider->createCheckout($request);
         } catch (ProviderRejected $e) {
+            if (in_array($e->getMessage(), ['configuration_invalid', 'live_not_authorized'], true)) {
+                return 'uncertain';      // aucun appel émis : on ne conclut rien (une création antérieure a pu aboutir) ; la tentative reste ouverte
+            }
             // Refus définitif : aucune transaction n'existe chez le prestataire. La tentative est close ; une nouvelle pourra être ouverte.
             $n = DB::table('payments')->where('id', $payment->getKey())->whereIn('state', ['created'])->update([
                 'state' => PaymentState::Failed->value, 'failed_at' => now(), 'failure_code' => mb_substr($e->getMessage(), 0, 40), 'row_version' => DB::raw('row_version + 1'), 'updated_at' => now(),
