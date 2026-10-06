@@ -71,4 +71,5 @@
 </div>
 <div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@endif</div>
 
+@auth<div class="container" style="margin:8px auto 96px"><p class="small muted"><a href="{{ route('support.report.form', ['service', $service->slug]) }}">Signaler ce service</a>@if($service->sellerSlug) · <a href="{{ route('support.report.form', ['profile', $service->sellerSlug]) }}">Signaler le profil du vendeur</a>@endif</p></div>@endauth
 </x-layouts.public>

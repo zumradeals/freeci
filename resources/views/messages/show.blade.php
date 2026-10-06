@@ -12,6 +12,7 @@
         @if($m['body'] !== '')<p>{!! nl2br(e($m['body'])) !!}</p>@endif
         @if($m['file'])<div class="file-line"><x-fc.icon name="file" :size="22" class="fi" /><span class="fn">{{ $m['file']['name'] }}<span class="meta-f">{{ $m['file']['size'] }}</span><span class="sec"><x-fc.icon :name="$m['file']['clean'] ? 'shield' : ($m['file']['rejected'] ? 'error' : 'clock')" :size="16" />{{ $m['file']['label'] }}</span>@if(! $m['file']['clean'] && ! $m['file']['rejected'])<small class="muted">Non téléchargeable avant la fin du contrôle de sécurité.</small>@endif</span>
           <span class="acts">@if($m['file']['url'])<a class="btn btn-secondary" href="{{ $m['file']['url'] }}"><x-fc.icon name="download" :size="18" />Télécharger<span class="sr-only"> {{ $m['file']['name'] }}</span></a>@endif</span></div>@endif
+        @unless($m['mine'])<p class="small" style="margin-top:6px"><a href="{{ route('support.report.form', ['message', $m['id']]) }}">Signaler ce message</a></p>@endunless
       </article>
     @empty<p class="muted">Aucun message.</p>@endforelse
   </div>

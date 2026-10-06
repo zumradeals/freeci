@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\SecurityController;
+use App\Http\Controllers\Admin\SupportCaseController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
@@ -21,6 +22,8 @@ use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\Support\AssistanceController;
+use App\Http\Controllers\Support\DisputeController;
 use Illuminate\Support\Facades\Route;
 
 // Espace privé : toute route ici exige une session authentifiée ; réponses jamais mises en cache partagé.
@@ -129,14 +132,28 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     });
 });
 
+// Assistance, signalements et litiges (espace connecté). Un compte suspendu garde l'accès à ses dossiers et peut contacter le support.
+Route::middleware(['auth', 'no-store'])->group(function () {
+    Route::get('/espace/assistance', [AssistanceController::class, 'index'])->name('support.index');
+    Route::get('/espace/assistance/nouvelle', [AssistanceController::class, 'create'])->name('support.new');
+    Route::post('/espace/assistance', [AssistanceController::class, 'store'])->middleware('throttle:10,10')->name('support.store');
+    Route::get('/espace/assistance/signaler/{type}/{id}', [AssistanceController::class, 'reportForm'])->name('support.report.form');
+    Route::post('/espace/assistance/signaler/{type}/{id}', [AssistanceController::class, 'report'])->middleware('throttle:10,10')->name('support.report');
+    Route::get('/espace/assistance/fichiers/{file}', [AssistanceController::class, 'download'])->middleware('signed')->name('support.files.download');
+    Route::get('/espace/assistance/{reference}', [AssistanceController::class, 'show'])->name('support.show');
+    Route::post('/espace/assistance/{reference}/reponse', [AssistanceController::class, 'reply'])->middleware('throttle:20,1')->name('support.reply');
+    Route::get('/commandes/{reference}/litige', [DisputeController::class, 'create'])->name('orders.dispute');
+    Route::post('/commandes/{reference}/litige', [DisputeController::class, 'store'])->middleware('throttle:6,10')->name('orders.dispute.store');
+});
+
 // Vérification de l'adresse par courriel (lien signé, valable pour l'utilisateur connecté qu'il désigne).
 Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/espace/verification-adresse/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 });
 
-// Administration, séparée des espaces client et freelance. « administrator » : habilitation en vigueur revérifiée à chaque requête (404 sinon).
+// Administration, séparée des espaces client et freelance. « staff » : habilitation (administrateur ou support) en vigueur revérifiée à chaque requête (404 sinon).
 // Activation (adresse vérifiée + double authentification) et défi de session accessibles avant « admin-ready » ; tout le reste l'exige.
-Route::middleware(['auth', 'no-store', 'administrator'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(function () {
     Route::get('/activation', [ActivationController::class, 'show'])->name('admin.activation');
     Route::post('/activation/courriel', [ActivationController::class, 'sendEmail'])->middleware('throttle:3,10')->name('admin.activation.email');
     Route::post('/activation/mfa', [ActivationController::class, 'begin'])->middleware('throttle:10,10')->name('admin.activation.begin');
@@ -148,23 +165,42 @@ Route::middleware(['auth', 'no-store', 'administrator'])->prefix('admin')->group
         Route::get('/', AdminHomeController::class)->name('admin.home');
         Route::get('/confirmation', [ReauthController::class, 'show'])->name('admin.reauth');
         Route::post('/confirmation', [ReauthController::class, 'confirm'])->middleware('throttle:15,5')->name('admin.reauth.confirm');
-
-        Route::get('/moderation', [ModerationController::class, 'index'])->name('admin.moderation');
-        Route::get('/moderation/services/{version}', [ModerationController::class, 'service'])->name('admin.moderation.service');
-        Route::get('/moderation/missions/{version}', [ModerationController::class, 'mission'])->name('admin.moderation.mission');
-        Route::get('/moderation/en-ligne/service/{id}', [ModerationController::class, 'liveService'])->name('admin.moderation.live.service');
-        Route::get('/moderation/en-ligne/mission/{id}', [ModerationController::class, 'liveMission'])->name('admin.moderation.live.mission');
-        Route::post('/moderation/{kind}/{version}/{decision}', [ModerationController::class, 'decide'])->whereIn('decision', ['approuver', 'refuser'])->middleware('throttle:30,1')->name('admin.moderation.decide');
-        Route::post('/moderation/en-ligne/{kind}/{id}/{action}', [ModerationController::class, 'toggle'])->whereIn('action', ['suspendre', 'remettre'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.moderation.toggle');
-
-        Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
-        Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
-        Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
-
-        Route::get('/journal', [AuditController::class, 'actions'])->name('admin.audit');
-        Route::get('/journal/securite', [AuditController::class, 'security'])->name('admin.audit.security');
-
         Route::get('/securite', [SecurityController::class, 'show'])->name('admin.security');
         Route::post('/securite/codes', [SecurityController::class, 'regenerate'])->middleware(['recent-auth', 'throttle:5,10'])->name('admin.security.codes');
+
+        // Assistance : administrateurs ET personnel « support ».
+        Route::get('/assistance', [SupportCaseController::class, 'index'])->name('admin.support');
+        Route::post('/assistance/suivis/{id}/dossier', [SupportCaseController::class, 'fromFollowUp'])->whereNumber('id')->middleware('throttle:30,1')->name('admin.support.followup');
+        Route::get('/assistance/{reference}/fichiers/{file}', [SupportCaseController::class, 'download'])->middleware('signed')->name('admin.support.files.download');
+        Route::get('/assistance/{reference}', [SupportCaseController::class, 'show'])->name('admin.support.show');
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('/assistance/{reference}/prendre', [SupportCaseController::class, 'claim'])->name('admin.support.claim');
+            Route::post('/assistance/{reference}/affecter', [SupportCaseController::class, 'assign'])->name('admin.support.assign');
+            Route::post('/assistance/{reference}/liberer', [SupportCaseController::class, 'release'])->name('admin.support.release');
+            Route::post('/assistance/{reference}/etat', [SupportCaseController::class, 'status'])->name('admin.support.status');
+            Route::post('/assistance/{reference}/reponse', [SupportCaseController::class, 'reply'])->name('admin.support.reply');
+            Route::post('/assistance/{reference}/cloture', [SupportCaseController::class, 'close'])->name('admin.support.close');
+        });
+        // Ouvrir le dossier (motif) et décider : confirmation récente d'identité exigée.
+        Route::post('/assistance/{reference}/ouvrir', [SupportCaseController::class, 'open'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.support.open');
+        Route::post('/assistance/{reference}/decision', [SupportCaseController::class, 'decide'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.support.decide');
+
+        // Réservé aux administrateurs : modération, utilisateurs, journal d'audit.
+        Route::middleware('administrator')->group(function () {
+            Route::get('/moderation', [ModerationController::class, 'index'])->name('admin.moderation');
+            Route::get('/moderation/services/{version}', [ModerationController::class, 'service'])->name('admin.moderation.service');
+            Route::get('/moderation/missions/{version}', [ModerationController::class, 'mission'])->name('admin.moderation.mission');
+            Route::get('/moderation/en-ligne/service/{id}', [ModerationController::class, 'liveService'])->name('admin.moderation.live.service');
+            Route::get('/moderation/en-ligne/mission/{id}', [ModerationController::class, 'liveMission'])->name('admin.moderation.live.mission');
+            Route::post('/moderation/{kind}/{version}/{decision}', [ModerationController::class, 'decide'])->whereIn('decision', ['approuver', 'refuser'])->middleware('throttle:30,1')->name('admin.moderation.decide');
+            Route::post('/moderation/en-ligne/{kind}/{id}/{action}', [ModerationController::class, 'toggle'])->whereIn('action', ['suspendre', 'remettre'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.moderation.toggle');
+
+            Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
+            Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
+            Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
+
+            Route::get('/journal', [AuditController::class, 'actions'])->name('admin.audit');
+            Route::get('/journal/securite', [AuditController::class, 'security'])->name('admin.audit.security');
+        });
     });
 });

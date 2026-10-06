@@ -32,6 +32,13 @@
     @endif
   </section>
 
+  {{-- Assistance et litige (lot 9) --}}
+  <section class="card" aria-labelledby="h-sup" style="margin-top:16px"><h2 class="t-h3" id="h-sup">Besoin d’aide ?</h2>
+    <div class="row" style="margin-top:8px"><a class="btn btn-secondary" href="{{ route('support.new', ['commande' => $d->reference]) }}"><x-fc.icon name="info" :size="18" />Contacter le support</a>
+      @if($d->supportCase)<a class="btn btn-secondary" href="{{ route('support.show', $d->supportCase) }}">Voir le dossier {{ $d->supportCase }}</a>@endif
+      @if(count($d->disputeKinds))<a class="btn btn-secondary" href="{{ route('orders.dispute', $d->reference) }}">{{ in_array('claim', $d->disputeKinds, true) ? 'Déposer une réclamation' : 'Litige ou annulation' }}</a>@endif</div>
+    <p class="muted small" style="margin-top:8px">Un litige suspend les actions de la commande ; rien n’est validé automatiquement.</p></section>
+
   {{-- Action attendue — calculée côté serveur, revérifiée à l'exécution --}}
   @if($closedOk)
     <section class="card" aria-labelledby="h-closed" style="border-left:4px solid var(--success-700)"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />Clôturée</p><h2 class="t-h2" id="h-closed" style="margin-top:6px">Livraison v{{ $dl['latestVersion'] }} validée : commande clôturée</h2>
@@ -42,6 +49,10 @@
       @if($d->closureNote && $d->stateValue === 'cancelled' && $d->closureReason === 'Demande refusée par le freelance')<p style="margin-top:8px"><strong>Motif :</strong> « {{ $d->closureNote }} »</p>@endif
       <p class="muted" style="margin-top:8px">Aucun montant n’a été encaissé. Aucune livraison n’est attendue.</p>
       @unless($isF)<div style="margin-top:16px"><a class="btn btn-secondary" href="{{ route('services.index') }}">Parcourir les services</a></div>@endunless</section>
+  @elseif($d->stateValue === 'disputed')
+    <section class="card" aria-labelledby="h-disp" style="border-left:4px solid var(--error-700)"><p class="eyebrow"><x-fc.icon name="error" :size="16" />En litige</p><h2 class="t-h2" id="h-disp" style="margin-top:6px">Cette commande fait l’objet d’un dossier d’assistance</h2>
+      <p style="margin-top:6px"><strong>Actions suspendues :</strong> livrer, demander une correction, valider la livraison et proposer ou accepter un report. <strong>Rien n’est validé automatiquement.</strong> Les messages de la commande restent possibles.</p>
+      <p style="margin-top:6px">Le reversement non exécuté est bloqué en interne. La décision est prise par l’équipe d’assistance, après examen des deux parties.@if($d->supportCase) <a href="{{ route('support.show', $d->supportCase) }}">Suivre le dossier {{ $d->supportCase }}</a>@endif</p></section>
   @elseif($d->stateValue === 'awaiting_acceptance' && $isF)
     <section class="action-card" aria-labelledby="h-action"><p class="eyebrow"><x-fc.icon name="arrow-right" :size="16" />Action attendue</p>
       <h2 class="t-h2" id="h-action" style="margin-top:6px">Répondre à la demande</h2>

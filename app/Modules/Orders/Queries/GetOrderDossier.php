@@ -17,6 +17,7 @@ use App\Modules\Orders\Data\OrderDossier;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Models\Order;
+use App\Modules\Support\Queries\DisputeOptions;
 use App\Shared\Dates;
 use App\Shared\Money;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,10 @@ final class GetOrderDossier
                 'brief_file_clean' => 'Fichier contrôlé : contrôle de sécurité réussi',
                 'brief_file_rejected' => 'Fichier refusé par le contrôle de sécurité',
                 'brief_file_removed' => "Fichier retiré par {$who}",
+                'dispute_opened' => 'Litige ou demande d’annulation ouvert (dossier '.($e->meta['case'] ?? '?').')',
+                'dispute_resumed' => 'Décision du support : poursuite de la prestation',
+                'dispute_validated' => 'Décision du support : livraison jugée conforme',
+                'dispute_cancelled' => 'Décision du support : commande annulée après paiement',
                 'delivery_submitted' => 'Livraison v'.($e->meta['version'] ?? '?').' soumise par '.$who,
                 'correction_requested' => 'Correction n° '.($e->meta['correction_number'] ?? '?').' demandée par '.$who.' (livraison v'.($e->meta['delivery_version'] ?? '?').')',
                 'extension_requested' => "Report d’échéance proposé par {$who}",
@@ -137,6 +142,7 @@ final class GetOrderDossier
             briefItems: $items->all(), briefNotes: $order->brief->notes, briefComplete: $brief['complete'], briefMissing: $brief['missing'],
             events: $events, actions: $actions,
             stepIndex: match ($order->state) {
+                OrderState::Disputed => 3,
                 OrderState::AwaitingAcceptance => 0, OrderState::AwaitingPayment => 1, OrderState::AwaitingBrief => 2, OrderState::InProgress, OrderState::RevisionRequested => 3,
                 OrderState::Delivered => 4, OrderState::Validated => 5, OrderState::Closed => 7, default => 0
             },
@@ -154,6 +160,8 @@ final class GetOrderDossier
             origin: $order->origin, proposalNumber: $order->origin === 'mission' ? (int) DB::table('proposal_versions')->where('id', $order->proposal_version_id)->value('number') : null,
             missionId: $order->origin === 'mission' && ! $isFreelancer ? $order->mission_id : null,
             messageUnread: app(Inbox::class)->unreadForOrder($viewer, $order->getKey()),
+            supportCase: app(DisputeOptions::class)->for($order->getKey(), $order->state->value)['live'],
+            disputeKinds: app(DisputeOptions::class)->for($order->getKey(), $order->state->value)['kinds'],
         );
     }
 

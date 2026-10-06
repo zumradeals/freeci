@@ -24,7 +24,7 @@
     @elseif(auth()->user()->hasRole('freelance'))<a href="{{ route('freelance.dashboard') }}"><x-fc.icon name="briefcase" />Espace freelance</a>
     @else<a href="{{ route('freelance.activate') }}"><x-fc.icon name="briefcase" />Activer l’espace freelance</a>@endif
   </nav>
-  @if(auth()->user()->isAdministrator())
+  @if(auth()->user()->isStaff())
   <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration</a></nav>
   @endif
   <nav class="side-nav side-bottom" aria-label="Compte et aide">

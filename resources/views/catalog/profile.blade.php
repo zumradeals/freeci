@@ -10,5 +10,6 @@
     @if(count($p['services']))<div class="svc-grid" style="margin-top:12px">@foreach($p['services'] as $service)<x-fc.service-card :service="$service" :level="3" />@endforeach</div>
     @else<p class="muted" style="margin-top:8px">Aucun service publié pour l’instant.</p>@endif</section>
   <p class="muted small" style="margin-top:24px">Aucun avis ni badge de vérification : ils n’existent pas encore sur FreeCI.</p>
+  @auth<p class="small muted" style="margin-top:12px"><a href="{{ route('support.report.form', ['profile', request()->route('slug')]) }}">Signaler ce profil</a></p>@endauth
 </div>
 </x-layouts.public>

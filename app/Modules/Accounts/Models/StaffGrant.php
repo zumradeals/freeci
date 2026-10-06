@@ -13,6 +13,9 @@ class StaffGrant extends Model
 
     public const ADMINISTRATOR = 'administrator';
 
+    /** Personnel d'assistance : traite les dossiers qui lui sont affectés ; aucun droit de modération, de gestion de comptes ni d'audit. */
+    public const SUPPORT = 'support';
+
     public $timestamps = false;
 
     protected $guarded = [];

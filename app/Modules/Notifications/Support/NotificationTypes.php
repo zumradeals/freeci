@@ -39,6 +39,8 @@ final class NotificationTypes
             'review_overdue' => ['label' => 'Délai d’examen dépassé', 'category' => $e, 'description' => 'Le délai d’examen d’une livraison est dépassé ; rien n’est validé automatiquement.'],
             'moderation_decision' => ['label' => 'Décision de modération', 'category' => $e, 'description' => 'Votre service ou votre mission est approuvé, à corriger ou suspendu.'],
             'account_status' => ['label' => 'Statut du compte', 'category' => $e, 'description' => 'Votre compte est suspendu ou réactivé.'],
+            'support_update' => ['label' => 'Assistance', 'category' => $e, 'description' => 'Un nouveau message ou un changement sur votre dossier d’assistance (le contenu n’est jamais envoyé par courriel).'],
+            'dispute_update' => ['label' => 'Litige ou annulation', 'category' => $e, 'description' => 'Un litige ou une demande d’annulation est ouvert, ou une décision est rendue sur votre commande.'],
             'mission_ended' => ['label' => 'Mission : action requise', 'category' => $e, 'description' => 'Une mission expire ou sa sélection se termine.'],
             'message_received' => ['label' => 'Nouveau message', 'category' => $o, 'description' => 'Vous recevez un message privé (le contenu n’est jamais envoyé par courriel).'],
             'proposal_received' => ['label' => 'Nouvelle proposition', 'category' => $o, 'description' => 'Un freelance répond à l’une de vos missions.'],

@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAdministrator;
 use App\Http\Middleware\EnsureAdminReady;
 use App\Http\Middleware\EnsureFreelanceSpace;
+use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\NoStore;
 use App\Http\Middleware\RequireRecentAuth;
 use App\Http\Middleware\SecurityHeaders;
@@ -24,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [SecurityHeaders::class]);
-        $middleware->alias(['no-store' => NoStore::class, 'administrator' => EnsureAdministrator::class, 'admin-ready' => EnsureAdminReady::class, 'recent-auth' => RequireRecentAuth::class, 'freelance' => EnsureFreelanceSpace::class]);
+        $middleware->alias(['no-store' => NoStore::class, 'administrator' => EnsureAdministrator::class, 'staff' => EnsureStaff::class, 'admin-ready' => EnsureAdminReady::class, 'recent-auth' => RequireRecentAuth::class, 'freelance' => EnsureFreelanceSpace::class]);
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('account.dashboard'));
     })

@@ -7,10 +7,12 @@
         <a class="kpi" href="{{ route('admin.moderation', ['onglet' => 'missions']) }}"><span class="n">{{ $d['missionsInReview'] }}</span><span class="l">mission{{ $d['missionsInReview'] > 1 ? 's' : '' }} à modérer</span></a>
         <a class="kpi" href="{{ route('admin.users') }}"><span class="n">{{ $d['users'] }}</span><span class="l">utilisateur{{ $d['users'] > 1 ? 's' : '' }}</span></a>
         <a class="kpi" href="{{ route('admin.users', ['statut' => 'suspended']) }}"><span class="n">{{ $d['suspended'] }}</span><span class="l">compte{{ $d['suspended'] > 1 ? 's' : '' }} suspendu{{ $d['suspended'] > 1 ? 's' : '' }}</span></a>
+        <a class="kpi" href="{{ route('admin.support') }}"><span class="n">{{ $d['cases']['unassigned'] }}</span><span class="l">dossier{{ $d['cases']['unassigned'] > 1 ? 's' : '' }} d’assistance non affecté{{ $d['cases']['unassigned'] > 1 ? 's' : '' }}</span></a>
+        <a class="kpi" href="{{ route('admin.support', ['onglet' => 'financier']) }}"><span class="n">{{ $d['cases']['toProcess'] }}</span><span class="l">à traiter financièrement</span></a>
         <a class="kpi" href="{{ route('admin.audit.security') }}"><span class="n">{{ $d['securityAlerts'] }}</span><span class="l">alerte{{ $d['securityAlerts'] > 1 ? 's' : '' }} de sécurité (24 h)</span></a>
       </div></section>
     <section aria-labelledby="h-fu"><h2 class="t-h2" id="h-fu">Besoins de suivi enregistrés ({{ $d['followUps'] }})</h2>
-      <div class="notice tone-info" style="margin-top:12px"><x-fc.icon name="info" /><p><strong>Ce ne sont pas des litiges pris en charge.</strong> Il s’agit de simples enregistrements (silence d’un client, désaccord signalé) : aucune procédure de litige n’existe encore, aucune action n’est déclenchée et vous n’avez pas accès au contenu des commandes depuis cet écran.</p></div>
+      <div class="notice tone-info" style="margin-top:12px"><x-fc.icon name="info" /><p><strong>Ce ne sont pas des litiges pris en charge.</strong> Il s’agit de simples enregistrements (silence d’un client, désaccord signalé) : les litiges ne s’ouvrent que par les parties. Ouvrir un dossier depuis un besoin de suivi est une action explicite (onglet « Besoins de suivi » de l’assistance) ; elle ne modifie pas la commande.</p></div>
       @if(count($d['followUpList']))
         <div class="table-wrap" style="margin-top:12px"><table class="list"><caption class="sr-only">Derniers besoins de suivi</caption><thead><tr><th scope="col">Commande</th><th scope="col">Nature</th><th scope="col">Enregistré</th></tr></thead><tbody>
           @foreach($d['followUpList'] as $f)<tr><td data-label="Commande">{{ $f['reference'] }}</td><td data-label="Nature">{{ $f['kind'] }}</td><td data-label="Enregistré">{{ $f['when'] }}</td></tr>@endforeach

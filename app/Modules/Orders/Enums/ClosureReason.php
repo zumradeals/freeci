@@ -10,6 +10,7 @@ enum ClosureReason: string
     case ExpiredAcceptance = 'expired_acceptance';
     case ExpiredPayment = 'expired_payment';
     case Validated = 'validated';
+    case CancelledAfterPayment = 'cancelled_after_payment';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum ClosureReason: string
             self::ExpiredAcceptance => 'Délai de réponse dépassé',
             self::ExpiredPayment => 'Délai de paiement dépassé',
             self::Validated => 'Livraison validée par le client',
+            self::CancelledAfterPayment => 'Commande annulée après paiement par décision du support',
         };
     }
 }

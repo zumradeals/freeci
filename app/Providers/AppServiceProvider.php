@@ -11,6 +11,8 @@ use App\Modules\Catalog\Models\ServiceEvent;
 use App\Modules\Missions\Models\MissionEvent;
 use App\Modules\Notifications\Actions\NotificationRouter;
 use App\Modules\Orders\Models\OrderEvent;
+use App\Modules\Support\Contracts\PayoutExecution;
+use App\Modules\Support\Support\NoPayoutExecution;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Un seul adaptateur de paiement : le simulateur. Aucun prestataire réel n'est choisi ni intégré.
         $this->app->bind(PaymentProvider::class, SandboxPaymentProvider::class);
+        // Aucun module de reversement n'existe : aucun reversement n'est exécuté. Le futur module financier remplace cette liaison.
+        $this->app->bind(PayoutExecution::class, NoPayoutExecution::class);
         $this->app->bind(FileScanner::class, fn () => config('freeci.files.scanner') === 'clamav'
             ? new ClamAvScanner((string) config('freeci.files.clamscan_binary'))
             : new UnavailableScanner);

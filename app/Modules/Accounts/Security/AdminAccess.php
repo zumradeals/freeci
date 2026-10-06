@@ -16,7 +16,7 @@ final class AdminAccess
     public function state(User $user, Session $session): array
     {
         return [
-            'grant' => $user->isAdministrator(),
+            'grant' => $user->isStaff(),
             'email' => $user->emailVerified(),
             'mfa' => $user->hasTwoFactor(),
             'session' => $this->mfaPassed($user, $session),

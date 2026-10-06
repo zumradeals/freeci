@@ -14,6 +14,9 @@ final class AuditLog
         'service.approve' => 'Service approuvé', 'service.request_changes' => 'Service : correction demandée', 'service.suspend' => 'Service suspendu', 'service.reinstate' => 'Service remis en ligne',
         'mission.approve' => 'Mission approuvée', 'mission.request_changes' => 'Mission : correction demandée', 'mission.suspend' => 'Mission suspendue', 'mission.reinstate' => 'Mission remise en ligne',
         'user.suspend' => 'Compte suspendu', 'user.reactivate' => 'Compte réactivé',
+        'case.claim' => 'Dossier : prise en charge', 'case.assign' => 'Dossier : affectation', 'case.release' => 'Dossier : fin d’affectation', 'case.open' => 'Dossier : ouverture motivée',
+        'case.view' => 'Dossier : consultation du contenu', 'case.download' => 'Dossier : pièce consultée', 'case.status' => 'Dossier : changement d’état', 'case.priority' => 'Dossier : priorité',
+        'case.close' => 'Dossier : clôture', 'case.decide' => 'Dossier : décision', 'case.from_follow_up' => 'Dossier ouvert depuis un besoin de suivi',
     ];
 
     public const SECURITY = [
@@ -21,7 +24,7 @@ final class AuditLog
         'email_verification_unavailable' => 'Vérification impossible (courrier non configuré)', 'email_verification_failed' => 'Échec d’envoi du lien de vérification', 'email_verified' => 'Adresse vérifiée', 'email_verification_rejected' => 'Lien de vérification rejeté',
         'mfa_enabled' => 'Double authentification activée', 'mfa_passed' => 'Double authentification franchie', 'mfa_failed' => 'Code de double authentification refusé', 'mfa_enroll_failed' => 'Code d’activation refusé',
         'mfa_locked' => 'Double authentification bloquée', 'mfa_recovery_used' => 'Code de récupération utilisé', 'mfa_codes_regenerated' => 'Codes de récupération régénérés', 'mfa_reset' => 'Double authentification réinitialisée (console)',
-        'reauth_ok' => 'Identité reconfirmée', 'reauth_failed' => 'Reconfirmation refusée', 'admin_granted' => 'Habilitation accordée (console)', 'admin_revoked' => 'Habilitation révoquée (console)',
+        'reauth_ok' => 'Identité reconfirmée', 'reauth_failed' => 'Reconfirmation refusée', 'admin_granted' => 'Habilitation accordée (console)', 'admin_revoked' => 'Habilitation révoquée (console)', 'support_granted' => 'Habilitation support accordée (console)', 'support_revoked' => 'Habilitation support révoquée (console)',
     ];
 
     public function recent(int $n): array

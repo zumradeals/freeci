@@ -24,4 +24,5 @@
   </section>
   @endunless
 </div>
+@auth<div class="container" style="margin:8px auto 48px"><p class="small muted"><a href="{{ route('support.report.form', ['mission', request()->route('slug')]) }}">Signaler cette mission</a></p></div>@endauth
 </x-layouts.public>

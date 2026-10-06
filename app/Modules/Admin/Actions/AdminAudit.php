@@ -24,6 +24,30 @@ final class AdminAudit
         }
     }
 
+    /** Personnel d'assistance (ou administrateur) : habilitation en vigueur + adresse vérifiée + double authentification. */
+    public function assertStaff(User $actor): void
+    {
+        $actor->refresh();
+        if (! $actor->isStaff() || ! $actor->emailVerified() || ! $actor->hasTwoFactor()) {
+            throw new ModerationDenied('Habilitation du personnel en vigueur, adresse vérifiée et double authentification requises.');
+        }
+    }
+
+    /** Comme `run()`, pour une action du personnel d'assistance. */
+    public function runStaff(User $actor, string $action, string $targetType, ?string $targetId, ?string $label, ?string $reason, callable $do): mixed
+    {
+        try {
+            $this->assertStaff($actor);
+            $result = $do();
+        } catch (ModerationDenied|ServiceStateConflict|MissionConflict|AccountRestricted|\DomainException $e) {
+            $this->record($actor, $action, $targetType, $targetId, $label, $reason, 'refused', $e->getMessage());
+            throw $e;
+        }
+        $this->record($actor, $action, $targetType, $targetId, $label, $reason, 'done');
+
+        return $result;
+    }
+
     /** @template T @param callable(): T $do @return T */
     public function run(User $actor, string $action, string $targetType, ?string $targetId, ?string $label, ?string $reason, callable $do): mixed
     {

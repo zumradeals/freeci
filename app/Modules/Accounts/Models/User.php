@@ -76,6 +76,17 @@ class User extends Authenticatable
         return $this->suspended_at !== null;
     }
 
+    /** Assistance : habilitation « support » datée en vigueur (un administrateur en vigueur est aussi habilité à traiter l'assistance). */
+    public function isSupport(): bool
+    {
+        return $this->staffGrants()->active()->where('capability', StaffGrant::SUPPORT)->exists();
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->isAdministrator() || $this->isSupport();
+    }
+
     public function freelanceProfile(): HasOne
     {
         return $this->hasOne(FreelanceProfile::class);

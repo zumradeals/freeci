@@ -64,6 +64,8 @@ return [
     ],
     // Administration : accès soumis à une adresse vérifiée, à la double authentification, et à une confirmation récente pour les actes sensibles.
     'admin' => ['mfa_session_minutes' => 480, 'reauth_minutes' => 10, 'mfa_attempts' => 5, 'mfa_lock_minutes' => 15, 'page_size' => 25, 'issuer' => 'FreeCI'],
+    // Assistance, signalements, litiges : bornes provisoires.
+    'support' => ['body_max' => 4000, 'per_day' => 10, 'messages_per_hour' => 30, 'max_files' => 20, 'page_size' => 25],
     'messaging' => ['body_max' => 4000, 'per_10_minutes' => 30, 'page_size' => 20],
 
     'files' => [
