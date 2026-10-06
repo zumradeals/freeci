@@ -1,0 +1,23 @@
+# Rotation des journaux FreeCI. Copier vers /etc/logrotate.d/freeci (root) en adaptant les chemins. Aucune infrastructure nouvelle : logrotate est fourni par Ubuntu.
+# Journaux applicatifs Laravel (LOG_CHANNEL=daily crée déjà un fichier par jour et en garde LOG_DAILY_DAYS ; ce bloc couvre un LOG_CHANNEL=single).
+/var/www/freeci/storage/logs/*.log {
+    weekly
+    rotate 8
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    su freeci freeci
+}
+# Journal des sauvegardes lancées par cron (deploy/cron.example).
+/var/log/freeci-backup.log {
+    monthly
+    rotate 6
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}
+# Durées de rotation ci-dessus = valeurs de départ proposées, à confirmer : elles ne sont pas une exigence validée de conservation.

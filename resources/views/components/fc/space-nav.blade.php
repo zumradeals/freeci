@@ -17,6 +17,7 @@
   <a href="{{ route('admin.finance') }}" @if($cur('admin.finance*')) aria-current="page" @endif><x-fc.icon name="card" />Finances</a>
   <a href="{{ route('admin.payments') }}" @if($cur('admin.payments*')) aria-current="page" @endif><x-fc.icon name="clipboard" />Paiements à vérifier</a>
   <a href="{{ route('admin.users') }}" @if($cur('admin.users*')) aria-current="page" @endif><x-fc.icon name="user" />Utilisateurs</a>
+  <a href="{{ route('admin.operations') }}" @if($cur('admin.operations')) aria-current="page" @endif><x-fc.icon name="grid" />Exploitation</a>
   <a href="{{ route('admin.audit') }}" @if($cur('admin.audit*')) aria-current="page" @endif><x-fc.icon name="clipboard" />Journal d’audit</a>
   @endif
   <a href="{{ route('admin.security') }}" @if($cur('admin.security*')) aria-current="page" @endif><x-fc.icon name="lock" />Ma sécurité</a>

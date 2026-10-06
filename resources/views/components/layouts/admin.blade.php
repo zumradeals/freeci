@@ -35,7 +35,7 @@
 </div>
 <footer class="site-footer slim"><div class="container">
   <p>FreeCI · démonstration (données fictives)</p>
-  <ul><li><a href="{{ route('coming-soon', 'aide') }}">Aide</a></li><li><a href="{{ route('coming-soon', 'conditions') }}">Conditions</a></li><li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li></ul>
+  <ul><li><a href="{{ route('info', 'aide') }}">Aide</a></li><li><a href="{{ route('info', 'conditions') }}">Conditions</a></li><li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li></ul>
 </div></footer>
 @include('partials.drawer', ['space' => 'admin'])
 @livewireScripts

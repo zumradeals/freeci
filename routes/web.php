@@ -7,6 +7,7 @@ use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\FreelanceDirectoryController;
 use App\Http\Controllers\FreelanceProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InfoPageController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PublicMissionController;
 use App\Http\Controllers\ServiceController;
@@ -22,6 +23,9 @@ Route::get('/freelances/{slug}', [FreelanceProfileController::class, 'show'])->n
 Route::get('/missions', [PublicMissionController::class, 'index'])->name('missions.index');
 Route::get('/missions/{slug}', [PublicMissionController::class, 'show'])->name('missions.show');
 Route::get('/medias/{id}/{variant}', [MediaController::class, 'show'])->name('media.show');
+
+// Pages d'information (brouillons tant que le porteur ne les a pas déclarées adoptées).
+Route::get('/informations/{page}', InfoPageController::class)->whereIn('page', array_keys(InfoPageController::PAGES))->name('info');
 
 Route::get('/bientot/{feature}', ComingSoonController::class)->name('coming-soon');
 

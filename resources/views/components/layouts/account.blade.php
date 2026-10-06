@@ -28,8 +28,8 @@
   <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration</a></nav>
   @endif
   <nav class="side-nav side-bottom" aria-label="Compte et aide">
-    <a href="{{ route('coming-soon', 'compte') }}"><x-fc.icon name="user" />Compte <x-fc.soon /></a>
-    <a href="{{ route('coming-soon', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
+    <a href="{{ route('account.settings') }}"><x-fc.icon name="user" />Compte</a>
+    <a href="{{ route('info', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
     <form method="post" action="{{ route('logout') }}">@csrf<button class="side-logout" type="submit"><x-fc.icon name="lock" />Se déconnecter</button></form>
   </nav>
 </div></aside>
@@ -42,7 +42,7 @@
 </div>
 <footer class="site-footer slim"><div class="container">
   <p>FreeCI · démonstration (données fictives)</p>
-  <ul><li><a href="{{ route('coming-soon', 'aide') }}">Aide</a></li><li><a href="{{ route('coming-soon', 'conditions') }}">Conditions</a></li><li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li></ul>
+  <ul><li><a href="{{ route('info', 'aide') }}">Aide</a></li><li><a href="{{ route('info', 'conditions') }}">Conditions</a></li><li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li></ul>
 </div></footer>
 @include('partials.drawer', ['space' => $space])
 @livewireScripts

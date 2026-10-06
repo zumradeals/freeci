@@ -18,6 +18,9 @@ final class AccountStanding
         if (self::suspended($user->getKey())) {
             throw new AccountRestricted;
         }
+        if (DB::table('account_closure_requests')->where('user_id', $user->getKey())->where('state', 'requested')->exists()) {
+            throw new AccountRestricted('Une fermeture de compte est demandée : vous ne pouvez pas démarrer de nouvelle activité. Annulez la demande (Compte) pour reprendre. Vos commandes en cours se poursuivent normalement.');
+        }
     }
 
     public static function suspended(string $userId): bool

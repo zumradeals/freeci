@@ -3,5 +3,8 @@
 17 2 * * * APP_DIR=/var/www/freeci BACKUP_DIR=/var/backups/freeci /var/www/freeci/deploy/backup.sh quotidienne >> /var/log/freeci-backup.log 2>&1
 # Purge hebdomadaire des jetons de réinitialisation expirés
 31 3 * * 0 cd /var/www/freeci && php artisan auth:clear-resets >> /var/log/freeci-backup.log 2>&1
-# Facultatif : persistance des expirations de demandes (l'exactitude ne dépend pas de ce passage)
+# Planificateur (expirations, rapprochements, avis, fermetures de comptes, suivi de l’exploitation)
 * * * * * cd /var/www/freeci && php8.3 artisan schedule:run >> /dev/null 2>&1
+# Test de restauration dans une base jetable (mensuel, de préférence sur une AUTRE machine ; ne touche jamais à la base de production)
+# 41 4 1 * * APP_DIR=/var/www/freeci BACKUP_DIR=/var/backups/freeci /var/www/freeci/deploy/restore-test.sh >> /var/log/freeci-backup.log 2>&1
+# Le cron « schedule:run » ci-dessus est NÉCESSAIRE pour : fermetures de comptes échues, publication des avis, rapprochements, état « tâches planifiées » de l'administration.

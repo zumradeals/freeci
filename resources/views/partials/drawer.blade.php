@@ -10,8 +10,8 @@
       @auth
         <div><p class="nav-title">Mon espace</p>
           <nav aria-label="Mon espace"><div class="nav-list"><x-fc.space-nav :space="$space ?? 'client'" :drawer="true" />
-            <a href="{{ route('coming-soon', 'compte') }}"><x-fc.icon name="user" />Compte <x-fc.soon /></a>
-            <a href="{{ route('coming-soon', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
+            <a href="{{ route('account.settings') }}"><x-fc.icon name="user" />Compte</a>
+            <a href="{{ route('info', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
           </div></nav>
           <form method="post" action="{{ route('logout') }}" style="margin-top:12px">@csrf<button class="btn btn-secondary btn-block" type="submit">Se déconnecter</button></form>
         </div>

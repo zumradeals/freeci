@@ -3,6 +3,8 @@
 #   APP_DIR (dossier parent de deploy/)  BACKUP_DIR (/var/backups/freeci)  KEEP_BACKUPS (14)
 #   PHP_BIN (php)  COMPOSER_BIN (composer ; peut contenir des espaces, ex. « php8.3 /usr/local/bin/composer »)  NPM_BIN (npm)  SKIP_FRONTEND_BUILD (0)
 #   PHP_FPM_SERVICE (vide = ne pas recharger ; ex. php8.3-fpm)  GIT_REMOTE (origin)
+#   Copie HORS VPS (facultative, désactivée par défaut) : BACKUP_OFFSITE_RCLONE (« remote:chemin ») ou BACKUP_OFFSITE_RSYNC (« utilisateur@hôte:/chemin »),
+#   avec BACKUP_GPG_PASSPHRASE_FILE (fichier droits 600 contenant la phrase de passe : la copie hors VPS est TOUJOURS chiffrée, car elle contient la clé APP_KEY).
 
 set -Eeuo pipefail
 
@@ -11,6 +13,9 @@ APP_DIR="${APP_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 # shellcheck disable=SC1091
 [ -f "$APP_DIR/deploy/local.env" ] && . "$APP_DIR/deploy/local.env"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/freeci}"
+BACKUP_OFFSITE_RCLONE="${BACKUP_OFFSITE_RCLONE:-}"
+BACKUP_OFFSITE_RSYNC="${BACKUP_OFFSITE_RSYNC:-}"
+BACKUP_GPG_PASSPHRASE_FILE="${BACKUP_GPG_PASSPHRASE_FILE:-}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-14}"
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
@@ -31,6 +36,14 @@ env_get() {
   line="$(grep -E "^${key}=" "$APP_DIR/.env" | tail -n1 || true)"
   line="${line#*=}"; line="${line%\"}"; line="${line#\"}"
   printf '%s' "$line"
+}
+
+# Fichier d'état des sauvegardes (lecture seule pour l'application) : « clé=valeur », une par ligne, aucune donnée sensible.
+status_set() {
+  local key="$1" value="$2" f="$BACKUP_DIR/STATUS" tmp
+  mkdir -p "$BACKUP_DIR"; tmp="$(mktemp "$BACKUP_DIR/.status.XXXXXX")"
+  { [ -f "$f" ] && grep -v "^${key}=" "$f" || true; echo "${key}=${value}"; } > "$tmp"
+  chmod 644 "$tmp"; mv -f "$tmp" "$f"
 }
 
 require_install() {

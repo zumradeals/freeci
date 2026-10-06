@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
+use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewModerationController;
@@ -35,6 +37,17 @@ use Illuminate\Support\Facades\Route;
 // Espace privé : toute route ici exige une session authentifiée ; réponses jamais mises en cache partagé.
 Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/espace', DashboardController::class)->name('account.dashboard');
+    // Compte : informations, mot de passe, adresse (vérifiée avant remplacement), sessions, export privé, fermeture.
+    Route::get('/espace/compte', [AccountController::class, 'show'])->name('account.settings');
+    Route::post('/espace/compte/nom', [AccountController::class, 'name'])->middleware('throttle:20,1')->name('account.name');
+    Route::post('/espace/compte/mot-de-passe', [AccountController::class, 'password'])->middleware('throttle:6,1')->name('account.password');
+    Route::post('/espace/compte/adresse', [AccountController::class, 'requestEmail'])->middleware('throttle:5,10')->name('account.email.request');
+    Route::get('/espace/compte/adresse/{id}/{token}', [AccountController::class, 'confirmEmail'])->middleware(['signed', 'throttle:10,1'])->name('account.email.confirm');
+    Route::post('/espace/compte/sessions/autres/fermer', [AccountController::class, 'revokeOthers'])->middleware('throttle:10,1')->name('account.sessions.revoke-others');
+    Route::post('/espace/compte/sessions/{id}/fermer', [AccountController::class, 'revokeSession'])->middleware('throttle:20,1')->name('account.sessions.revoke');
+    Route::post('/espace/compte/export', [AccountController::class, 'export'])->middleware('throttle:6,10')->name('account.export');
+    Route::post('/espace/compte/fermeture', [AccountController::class, 'requestClosure'])->middleware('throttle:5,10')->name('account.closure.request');
+    Route::post('/espace/compte/fermeture/annuler', [AccountController::class, 'cancelClosure'])->middleware('throttle:10,1')->name('account.closure.cancel');
     Route::get('/espace/commandes', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/espace/finances', [FinanceSpaceController::class, 'client'])->name('client.finances');
     // Favoris privés (service ou freelance), sans doublon ; jamais visibles des autres.
@@ -220,6 +233,8 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
 
             Route::get('/paiements', [ReconciliationController::class, 'index'])->name('admin.payments');
             Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
+
+            Route::get('/exploitation', OperationsController::class)->name('admin.operations');
 
             // Modération des avis : masquer / rétablir avec catégorie, motif et historique (confirmation récente d'identité).
             Route::get('/avis', [ReviewModerationController::class, 'index'])->name('admin.reviews');

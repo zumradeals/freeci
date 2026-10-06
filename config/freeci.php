@@ -115,4 +115,29 @@ return [
         'max_files' => 10,
         'max_total_mb' => 50,
     ],
+
+    // Gestion du compte (lot 13). Valeurs PROVISOIRES, non approuvées par le porteur : voir docs/21.
+    'account' => [
+        'closure_grace_days' => (int) env('FREECI_CLOSURE_GRACE_DAYS', 14),     // délai de réflexion avant anonymisation : PROVISOIRE
+        'email_change_minutes' => 60,
+        'export_per_day' => 5,
+    ],
+
+    // Identité de l'exploitant et pages d'information : AUCUNE valeur inventée. Vide = « à renseigner » (brouillon).
+    'legal' => [
+        'operator_name' => env('FREECI_OPERATOR_NAME'),
+        'operator_address' => env('FREECI_OPERATOR_ADDRESS'),
+        'operator_registration' => env('FREECI_OPERATOR_REGISTRATION'),
+        'publication_director' => env('FREECI_PUBLICATION_DIRECTOR'),
+        'host' => env('FREECI_HOST_NAME'),
+        'contact_email' => env('FREECI_CONTACT_EMAIL'),
+        // Pages dont le TEXTE a été adopté par le porteur (liste séparée par des virgules : conditions,confidentialite,mentions-legales,aide,contact,fonctionnement).
+        'approved' => array_filter(array_map('trim', explode(',', (string) env('FREECI_PAGES_APPROVED', '')))),
+    ],
+
+    // Exploitation : dossier où deploy/backup.sh écrit son fichier d'état (lecture seule côté application).
+    'ops' => [
+        'backup_dir' => env('FREECI_BACKUP_DIR', '/var/backups/freeci'),
+        'backup_max_age_hours' => 36,
+    ],
 ];

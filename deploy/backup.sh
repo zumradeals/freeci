@@ -27,5 +27,25 @@ install -m 600 "$APP_DIR/.env" "$dir/env.copy"
 mapfile -t old < <(ls -1d "$BACKUP_DIR"/[0-9]*T[0-9]*Z_* 2>/dev/null | sort | head -n "-${KEEP_BACKUPS}" || true)
 for d in "${old[@]:-}"; do [ -n "$d" ] && [ -f "$d/SHA256SUMS" ] && rm -rf -- "$d"; done
 
+[ -n "$(env_get APP_KEY)" ] || warn "APP_KEY est vide dans .env : les données chiffrées (destinations de reversement, secrets MFA) seraient irrécupérables."
+status_set local_ok_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+status_set local_dir "$(basename "$dir")"
+
+# Copie HORS VPS : facultative et désactivée par défaut. Son résultat n'est JAMAIS présumé : il est écrit dans STATUS, l'échec n'interrompt pas la mise à jour.
+offsite() {
+  if [ -z "$BACKUP_OFFSITE_RCLONE" ] && [ -z "$BACKUP_OFFSITE_RSYNC" ]; then status_set offsite disabled; return 0; fi
+  if [ -z "$BACKUP_GPG_PASSPHRASE_FILE" ] || [ ! -r "$BACKUP_GPG_PASSPHRASE_FILE" ]; then
+    warn "Copie hors VPS non faite : BACKUP_GPG_PASSPHRASE_FILE absent ou illisible (la copie contient APP_KEY : elle doit être chiffrée)."; status_set offsite failed_no_passphrase; return 1
+  fi
+  local bundle="$BACKUP_DIR/$(basename "$dir").tar.gpg"
+  tar -C "$BACKUP_DIR" -cf - "$(basename "$dir")" | gpg --batch --yes --quiet --pinentry-mode loopback --passphrase-file "$BACKUP_GPG_PASSPHRASE_FILE" --symmetric --cipher-algo AES256 -o "$bundle" \
+    || { status_set offsite failed_encrypt; return 1; }
+  if [ -n "$BACKUP_OFFSITE_RCLONE" ]; then rclone copy "$bundle" "$BACKUP_OFFSITE_RCLONE" || { rm -f "$bundle"; status_set offsite failed_transfer; return 1; }
+  else rsync -e ssh --chmod=F600 "$bundle" "$BACKUP_OFFSITE_RSYNC" || { rm -f "$bundle"; status_set offsite failed_transfer; return 1; }; fi
+  rm -f "$bundle"
+  status_set offsite ok; status_set offsite_ok_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+offsite || warn "La copie hors VPS a échoué : la sauvegarde LOCALE existe, mais aucune copie distante n'est confirmée (voir $BACKUP_DIR/STATUS)."
+
 log "Sauvegarde terminée : $dir ($(du -sh "$dir" | cut -f1))"
 echo "$dir"

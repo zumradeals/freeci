@@ -35,14 +35,14 @@
         <p class="muted" style="max-width:32em">Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.</p>
       </div>
       <div><h2>FreeCI</h2><ul>
-        <li><a href="{{ route('home') }}#comment">Comment ça marche</a></li>
-        <li><a href="{{ route('coming-soon', 'aide') }}">Centre d’aide</a></li></ul></div>
+        <li><a href="{{ route('info', 'fonctionnement') }}">Comment ça marche</a></li>
+        <li><a href="{{ route('info', 'aide') }}">Centre d’aide</a></li><li><a href="{{ route('info', 'contact') }}">Contact</a></li></ul></div>
       <div><h2>Informations</h2><ul>
-        <li><a href="{{ route('coming-soon', 'conditions') }}">Conditions d’utilisation</a></li>
-        <li><a href="{{ route('coming-soon', 'confidentialite') }}">Confidentialité</a></li>
-        <li><a href="{{ route('coming-soon', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
+        <li><a href="{{ route('info', 'conditions') }}">Conditions d’utilisation</a></li>
+        <li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li>
+        <li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
     </div>
-    <p class="legal">@unless(\App\Integrations\Payments\PaymentMode::isLive())Mode test : aucun argent réel. @endunless Textes juridiques et mentions de l’opérateur à rédiger.</p>
+    <p class="legal">@unless(\App\Integrations\Payments\PaymentMode::isLive())Mode test : aucun argent réel. @endunless Pages d’information : brouillons tant qu’elles ne sont pas adoptées.</p>
   </div>
 </footer>
 @include('partials.drawer')
