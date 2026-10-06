@@ -118,6 +118,18 @@ final class ServiceAuthoring
 
                 return $img;
             })->all();
+            // La première image alimente déjà la carte du catalogue et la galerie.
+            // Seule une image appartenant à cette version peut devenir principale.
+            $cover = $input['cover_image'] ?? null;
+            if ($cover !== null && $cover !== '') {
+                $index = collect($images)->search(fn ($img) => ($img['id'] ?? null) === $cover);
+                if ($index === false) {
+                    throw ValidationException::withMessages(['cover_image' => 'Choisissez une image de ce service.']);
+                }
+                $primary = $images[$index];
+                array_splice($images, $index, 1);
+                array_unshift($images, $primary);
+            }
             $v->forceFill($values + ['images' => $images, 'revision_no' => $v->revision_no + 1])->save();
 
             return $v;

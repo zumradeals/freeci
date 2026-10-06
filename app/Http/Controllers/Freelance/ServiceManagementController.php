@@ -12,6 +12,7 @@ use App\Modules\Catalog\Exceptions\ServiceStateConflict;
 use App\Modules\Files\Exceptions\FileRejected;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /** « Mes services » : création, rédaction, aperçu, soumission, retrait. Propriétaire seulement ; toute action revérifie l'état côté serveur. */
@@ -72,13 +73,22 @@ class ServiceManagementController extends Controller
         return view('freelance.service-edit', $d + ['space' => 'freelancer']);
     }
 
-    public function update(Request $request, string $service): RedirectResponse
+    public function update(Request $request, string $service, ServiceImages $images): RedirectResponse
     {
         $request->validate(['revision_no' => ['required', 'integer', 'min:1']]);
+        if ($request->file('image') !== null) {
+            $request->validate(['image' => ['required', 'file'], 'alt' => ['required', 'string', 'max:160']],
+                ['alt.required' => 'Décrivez l’image que vous avez choisie.']);
+        }
         $input = $request->all();
         $edit = route('freelance.services.edit', $service);
 
-        $resp = $this->guard(fn () => $this->authoring->save($request->user(), $service, $input, (int) $request->input('revision_no')), 'Brouillon enregistré. Il n’est visible que de vous.', $edit, $edit);
+        $resp = $this->guard(fn () => DB::transaction(function () use ($request, $service, $input, $images) {
+            $version = $this->authoring->save($request->user(), $service, $input, (int) $request->input('revision_no'));
+            if ($request->hasFile('image')) {
+                $images->add($request->user(), $service, $request->file('image'), (string) $request->input('alt'), $version->revision_no);
+            }
+        }), 'Brouillon enregistré. Il n’est visible que de vous.', $edit, $edit);
         if ($request->input('intent') === 'submit' && ! $resp->getSession()?->has('error')) {
             return redirect()->route('freelance.services.confirm', [$service, 'soumettre']);
         }
@@ -150,7 +160,10 @@ class ServiceManagementController extends Controller
             ['image.required' => 'Choisissez une image.', 'alt.required' => 'Décrivez l’image (texte alternatif).']);
         $edit = route('freelance.services.edit', $service);
 
-        return $this->guard(fn () => $images->add($request->user(), $service, $request->file('image'), (string) $request->input('alt'), (int) $request->input('revision_no')), 'Image ajoutée (réencodée et contrôlée).', $edit, $edit);
+        return $this->guard(fn () => DB::transaction(function () use ($request, $service, $images) {
+            $revision = $this->saveImageForm($request, $service);
+            $images->add($request->user(), $service, $request->file('image'), (string) $request->input('alt'), $revision);
+        }), 'Image ajoutée. Votre brouillon est enregistré.', $edit.'#images', $edit.'#images');
     }
 
     public function imageDestroy(Request $request, string $service, string $media, ServiceImages $images): RedirectResponse
@@ -158,6 +171,20 @@ class ServiceManagementController extends Controller
         $request->validate(['revision_no' => ['required', 'integer']]);
         $edit = route('freelance.services.edit', $service);
 
-        return $this->guard(fn () => $images->remove($request->user(), $service, $media, (int) $request->input('revision_no')), 'Image retirée de la liste.', $edit, $edit);
+        return $this->guard(fn () => DB::transaction(function () use ($request, $service, $media, $images) {
+            $revision = $this->saveImageForm($request, $service);
+            $images->remove($request->user(), $service, $media, $revision);
+        }), 'Image retirée. Votre brouillon est enregistré.', $edit.'#images', $edit.'#images');
+    }
+
+    private function saveImageForm(Request $request, string $service): int
+    {
+        $revision = (int) $request->input('revision_no');
+        // Les anciens clients qui n’envoient que l’image restent compatibles.
+        if ($request->has('editor_form')) {
+            return $this->authoring->save($request->user(), $service, $request->all(), $revision)->revision_no;
+        }
+
+        return $revision;
     }
 }

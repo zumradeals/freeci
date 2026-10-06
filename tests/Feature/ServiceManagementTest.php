@@ -322,6 +322,68 @@ class ServiceManagementTest extends TestCase
         $this->assertSame($s->slug, $s->fresh()->slug, 'adresse publique stable');
     }
 
+    public function test_editor_saves_text_with_images_and_preserves_it_when_an_image_is_rejected(): void
+    {
+        $s = $this->draft();
+        $url = "/freelance/services/{$s->id}/images";
+        $input = $this->form(['title' => 'Une nouvelle prestation avec ses images']) + ['editor_form' => '1'];
+        $this->actingAs($this->freelancer)->post($url, $input + [
+            'revision_no' => $s->versions()->first()->revision_no,
+            'image' => $this->pngUpload(), 'alt' => 'Première illustration',
+        ])->assertRedirect()->assertSessionHas('status');
+        $v = $s->versions()->first();
+        $this->assertSame($input['title'], $v->title);
+        $this->assertCount(1, $v->images);
+
+        $failed = array_merge($input, ['title' => 'Texte à conserver en cas de refus']);
+        $this->post($url, $failed + [
+            'revision_no' => $v->revision_no,
+            'image' => UploadedFile::fake()->createWithContent('image.png', 'not an image'), 'alt' => 'Image incorrecte',
+        ])->assertSessionHas('error')->assertSessionHasInput('title', $failed['title']);
+        $this->assertSame($v->revision_no, $v->fresh()->revision_no);
+        $this->assertSame($input['title'], $v->fresh()->title, 'image et texte forment une transaction');
+
+        $this->post("{$url}/{$v->images[0]['id']}/retirer", $failed + [
+            'revision_no' => $v->revision_no, 'cover_image' => $v->images[0]['id'],
+        ])->assertSessionHas('status');
+        $this->assertSame($failed['title'], $v->fresh()->title);
+        $this->assertSame([], $v->fresh()->images);
+    }
+
+    public function test_cover_must_belong_to_the_draft_and_becomes_the_public_catalog_image(): void
+    {
+        $s = $this->draft();
+        foreach (['Première image', 'Seconde image'] as $alt) {
+            $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/images", [
+                'revision_no' => $s->versions()->first()->revision_no, 'image' => $this->pngUpload(), 'alt' => $alt,
+            ])->assertSessionHas('status');
+        }
+        $v = $s->versions()->first();
+        $cover = $v->images[1]['id'];
+        $this->post("/freelance/services/{$s->id}/modifier", $this->form() + [
+            'revision_no' => $v->revision_no, 'cover_image' => 'foreign-image',
+        ])->assertSessionHasErrors('cover_image');
+        $this->assertSame($v->images, $v->fresh()->images);
+        $this->post("/freelance/services/{$s->id}/modifier", $this->form() + [
+            'revision_no' => $v->revision_no, 'cover_image' => $cover,
+        ])->assertSessionHas('status');
+        $this->assertSame($cover, $v->fresh()->images[0]['id']);
+        $this->publish($s);
+        $this->assertSame($cover, $s->fresh()->images[0]['id']);
+        $this->get('/')->assertSee("/medias/{$cover}/card", false);
+    }
+
+    public function test_save_also_uploads_a_selected_image_without_a_separate_add_click(): void
+    {
+        $s = $this->draft();
+        $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/modifier", $this->form() + [
+            'revision_no' => $s->versions()->first()->revision_no,
+            'image' => $this->pngUpload(), 'alt' => 'Image de couverture',
+        ])->assertSessionHas('status');
+        $this->assertCount(1, $s->versions()->first()->images);
+        $this->assertSame('draft', $s->versions()->first()->state);
+    }
+
     private function dbRefuses(callable $attempt): void
     {
         try {
