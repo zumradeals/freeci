@@ -87,3 +87,34 @@
   .editor-pagination { flex-wrap:wrap; }
   .editor-pagination .hint { font-size:.8rem; }
 }
+
+/* Revenus : synthèse compacte, mêmes champs et jetons que les autres espaces. */
+.earnings-page { display: grid; gap: 20px; min-width: 0; }
+.earnings-page .page-head { margin: 0; }
+.earnings-heading, .earnings-order-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.earnings-summary { display: grid; gap: 16px; }
+.earnings-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.earnings-metric { padding: 14px; border-radius: var(--r-sm); background: var(--canvas); min-width: 0; }
+.earnings-metric dt { font-size: .875rem; color: var(--ink-600); }
+.earnings-metric dd { margin: 8px 0 0; font-size: clamp(1.125rem, 1.5vw, 1.5rem); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.earnings-metric .earnings-metric-hint { font-size: .8125rem; font-weight: 400; color: var(--ink-600); }
+.earnings-metric-featured { background: var(--marine-900); color: white; }
+.earnings-metric-featured dt, .earnings-metric-featured .earnings-metric-hint { color: white; }
+.earnings-test .earnings-metric { background: transparent; border: 1px dashed var(--line-strong); }
+.earnings-details { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 20px; align-items: start; }
+.earnings-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.earnings-field-wide { grid-column: 1 / -1; }
+.main .earnings-form .field { max-width: none; min-width: 0; }
+.earnings-guide ol { padding-left: 22px; display: grid; gap: 18px; }
+.earnings-guide li::marker { color: var(--accent-700); font-weight: 700; }
+.earnings-guide li p { margin-top: 4px; }
+.earnings-order { padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 12px; overflow-wrap: anywhere; }
+.earnings-order-head > div { min-width: 0; }
+.earnings-order-link { display: inline-block; padding-block: 6px; font-weight: 600; }
+.earnings-order-amounts { display: flex; flex-wrap: wrap; gap: 16px 40px; }
+.earnings-order-amounts dt { color: var(--ink-600); font-size: .875rem; }
+.earnings-order-amounts dd { margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.earnings-reasons { padding-left: 20px; }
+.earnings-empty { margin-top: 16px; }
+@media (max-width: 1199px) { .earnings-details { grid-template-columns: minmax(0, 1fr); } .earnings-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 599px) { .earnings-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .earnings-form { grid-template-columns: minmax(0, 1fr); } .earnings-form .btn { width: 100%; } .earnings-metric { padding: 12px; } }

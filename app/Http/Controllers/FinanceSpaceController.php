@@ -31,6 +31,6 @@ class FinanceSpaceController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', 'Destination enregistrée. Elle doit être vérifiée par l’équipe avant tout reversement : rien n’est versé à ce stade.');
+        return back()->with('status', 'Coordonnées enregistrées. L’administrateur doit les vérifier avant tout versement. Aucun transfert n’a été effectué.');
     }
 }
