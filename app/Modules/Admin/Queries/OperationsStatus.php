@@ -5,6 +5,10 @@ namespace App\Modules\Admin\Queries;
 use App\Integrations\FileScan\FileScanner;
 use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\PaymentMode;
+use App\Modules\Admin\Legal\LegalDefaults;
+use App\Modules\Admin\Legal\LegalPages;
+use App\Modules\Admin\Settings\AppSettings;
+use App\Modules\Admin\Settings\SettingDefinitions;
 use App\Modules\Notifications\Support\MailStatus;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -125,12 +129,16 @@ final class OperationsStatus
         $sandbox = GeniusPayConfig::ready('sandbox');
         $items[] = ['key' => 'genius_sandbox', 'label' => 'Genius Pay — bac à sable', 'state' => $sandbox ? 'ok' : 'todo', 'detail' => $sandbox ? 'Clés et secret de webhook du bac à sable cohérents.' : 'Configuration du bac à sable incomplète.'];
         $items[] = ['key' => 'genius_live', 'label' => 'Genius Pay — paiements réels', 'state' => 'info', 'detail' => PaymentMode::isLive() ? 'Mode LIVE actif.' : 'Non activés (mode '.PaymentMode::environment().') : décision du porteur, indépendante de cette liste. Configuration live '.(GeniusPayConfig::ready('live') ? 'cohérente' : 'incomplète').', autorisation explicite '.(GeniusPayConfig::liveAuthorized() ? 'donnée' : 'non donnée').'.'];
-        $items[] = ['key' => 'commercial', 'label' => 'Paramètres commerciaux', 'state' => config('freeci.finance.commission_policy') === 'proposition-non-validee' ? 'todo' : 'ok', 'detail' => 'Commission de '.(config('freeci.finance.commission_bp') / 100).' % : '.(config('freeci.finance.commission_policy') === 'proposition-non-validee' ? 'proposition NON validée. ' : 'validée. ').'Délai de publication des avis ('.config('freeci.reviews.publication_days').' j) et délai de réflexion avant fermeture ('.config('freeci.account.closure_grace_days').' j) : provisoires.'];
-        $approved = config('freeci.legal.approved');
-        $missing = array_diff(array_keys(self::PAGES), $approved);
-        $items[] = ['key' => 'legal', 'label' => 'Pages d’information et légales', 'state' => $missing === [] ? 'ok' : 'todo', 'detail' => $missing === [] ? 'Toutes déclarées adoptées.' : 'Brouillons non adoptés : '.implode(', ', array_map(fn ($k) => self::PAGES[$k], $missing)).'.'];
+        $rows = AppSettings::rows();
+        $keys = array_merge(...array_values(array_map(fn ($g) => $g['approvable'] ? $g['keys'] : [], SettingDefinitions::groups())));
+        $pending = array_values(array_filter($keys, fn ($k) => ($rows[$k]->status ?? 'provisional') !== 'approved'));
+        $items[] = ['key' => 'commercial', 'label' => 'Paramètres commerciaux', 'state' => $pending === [] ? 'ok' : 'todo', 'link' => route('admin.settings'),
+            'detail' => $pending === [] ? 'Commission, délais et prix approuvés dans l’administration.' : count($pending).' paramètre(s) encore provisoire(s) ou jamais validés (commission '.(config('freeci.finance.commission_bp') / 100).' %, délais, prix) : à valider dans Paramètres.'];
+        $missing = array_filter(array_keys(LegalDefaults::PAGES), fn ($k) => ! LegalPages::adopted($k));
+        $items[] = ['key' => 'legal', 'label' => 'Pages d’information et légales', 'state' => $missing === [] ? 'ok' : 'todo', 'link' => route('admin.legal'),
+            'detail' => $missing === [] ? 'Toutes adoptées.' : 'Non adoptées (brouillon public) : '.implode(', ', array_map(fn ($k) => LegalDefaults::PAGES[$k], $missing)).'.'];
         $operator = filled(config('freeci.legal.operator_name')) && filled(config('freeci.legal.operator_address')) && filled(config('freeci.legal.contact_email'));
-        $items[] = ['key' => 'operator', 'label' => 'Identité et contact de l’exploitant', 'state' => $operator ? 'ok' : 'todo', 'detail' => $operator ? 'Renseignés dans la configuration.' : 'À renseigner (nom, adresse, contact) : non inventés.'];
+        $items[] = ['key' => 'operator', 'label' => 'Identité et contact de l’exploitant', 'state' => $operator ? 'ok' : 'todo', 'link' => route('admin.settings'), 'detail' => $operator ? 'Renseignés dans Paramètres.' : 'À renseigner dans Paramètres (nom, adresse, contact) : rien n’est inventé.'];
 
         return $items;
     }

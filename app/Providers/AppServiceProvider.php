@@ -7,6 +7,7 @@ use App\Integrations\FileScan\FileScanner;
 use App\Integrations\FileScan\UnavailableScanner;
 use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\PaymentProvider;
+use App\Modules\Admin\Settings\AppSettings;
 use App\Modules\Catalog\Models\ServiceEvent;
 use App\Modules\Finance\Support\FinancialPayoutExecution;
 use App\Modules\Missions\Models\MissionEvent;
@@ -34,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Paramètres saisis en administration, superposés à la configuration du code / du .env (lot 16).
+        AppSettings::apply();
+
         // Production : migrate:fresh, migrate:refresh, migrate:reset et db:wipe sont refusés (préservation des données).
         DB::prohibitDestructiveCommands($this->app->isProduction());
 

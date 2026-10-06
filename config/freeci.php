@@ -131,8 +131,6 @@ return [
         'publication_director' => env('FREECI_PUBLICATION_DIRECTOR'),
         'host' => env('FREECI_HOST_NAME'),
         'contact_email' => env('FREECI_CONTACT_EMAIL'),
-        // Pages dont le TEXTE a été adopté par le porteur (liste séparée par des virgules : conditions,confidentialite,mentions-legales,aide,contact,fonctionnement).
-        'approved' => array_filter(array_map('trim', explode(',', (string) env('FREECI_PAGES_APPROVED', '')))),
     ],
 
     // Exploitation : dossier où deploy/backup.sh écrit son fichier d'état (lecture seule côté application).

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\FinanceController;
+use App\Http\Controllers\Admin\LegalPagesController;
 use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\OperationsController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewModerationController;
 use App\Http\Controllers\Admin\SecurityController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SupportCaseController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ClientMissionController;
@@ -235,6 +237,17 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
 
             Route::get('/exploitation', OperationsController::class)->name('admin.operations');
+
+            // Paramètres de la plateforme et textes légaux : modifiables par l'administrateur (confirmation récente d'identité à chaque écriture, historique, audit).
+            Route::get('/parametres', [SettingsController::class, 'index'])->name('admin.settings');
+            Route::post('/parametres/{group}', [SettingsController::class, 'save'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.settings.save');
+            Route::get('/pages', [LegalPagesController::class, 'index'])->name('admin.legal');
+            Route::get('/pages/{slug}', [LegalPagesController::class, 'edit'])->name('admin.legal.edit');
+            Route::middleware(['recent-auth', 'throttle:20,1'])->group(function () {
+                Route::post('/pages/{slug}/brouillon', [LegalPagesController::class, 'draft'])->name('admin.legal.draft');
+                Route::post('/pages/{slug}/publier', [LegalPagesController::class, 'publish'])->name('admin.legal.publish');
+                Route::post('/pages/{slug}/retirer', [LegalPagesController::class, 'withdraw'])->name('admin.legal.withdraw');
+            });
 
             // Modération des avis : masquer / rétablir avec catégorie, motif et historique (confirmation récente d'identité).
             Route::get('/avis', [ReviewModerationController::class, 'index'])->name('admin.reviews');

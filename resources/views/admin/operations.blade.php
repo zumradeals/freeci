@@ -5,7 +5,7 @@
 
   <section class="card panel"><div class="card-head"><h2 class="t-h2">Préparation à l’ouverture</h2></div>
     <ul class="stack-sm" style="list-style:none;padding:0">@foreach($d['readiness'] as $r)
-      <li><span class="badge {{ ['ok' => 'tone-success', 'todo' => 'tone-warning', 'info' => 'tone-neutral'][$r['state']] }}">{{ ['ok' => 'Remplie', 'todo' => 'À traiter', 'info' => 'Information'][$r['state']] }}</span> <strong>{{ $r['label'] }}</strong><br><span class="muted small">{{ $r['detail'] }}</span></li>@endforeach</ul>
+      <li><span class="badge {{ ['ok' => 'tone-success', 'todo' => 'tone-warning', 'info' => 'tone-neutral'][$r['state']] }}">{{ ['ok' => 'Remplie', 'todo' => 'À traiter', 'info' => 'Information'][$r['state']] }}</span> <strong>{{ $r['label'] }}</strong>@if(isset($r['link']) && $r['state'] === 'todo') · <a href="{{ $r['link'] }}">Compléter</a>@endif<br><span class="muted small">{{ $r['detail'] }}</span></li>@endforeach</ul>
     <p class="muted small">Règle validée : un seul administrateur peut préparer, confirmer et exécuter une opération financière (aucun second approbateur).</p></section>
 
   <section class="card panel"><div class="card-head"><h2 class="t-h2">Tâches planifiées</h2></div>

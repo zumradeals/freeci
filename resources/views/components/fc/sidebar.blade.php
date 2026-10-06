@@ -20,6 +20,7 @@
       ]),
       'Assistance' => [$a('admin.support', 'Dossiers', 'message', 'admin.support*', [], $sq['unassigned'] > 0 ? (string) $sq['unassigned'] : null)],
       'Finances' => $isAdmin ? [$a('admin.finance', 'Opérations', 'card', 'admin.finance*'), $a('admin.payments', 'Rapprochements', 'clipboard', 'admin.payments*')] : [],
+      'Configuration' => $isAdmin ? [$a('admin.settings', 'Paramètres', 'grid', 'admin.settings*'), $a('admin.legal', 'Pages légales', 'clipboard', 'admin.legal*')] : [],
       'Exploitation' => array_filter([
         $isAdmin ? $a('admin.operations', 'État et préparation', 'grid', 'admin.operations') : null,
         $isAdmin ? $a('admin.audit', 'Journal d’audit', 'clipboard', 'admin.audit*') : null,

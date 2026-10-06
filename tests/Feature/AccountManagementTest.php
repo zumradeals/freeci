@@ -206,7 +206,8 @@ class AccountManagementTest extends TestCase
         $this->get('/informations/inconnue')->assertNotFound();
         $this->get('/')->assertSee('/informations/conditions', false)->assertSee('/informations/mentions-legales', false);
 
-        config(['freeci.legal.approved' => ['conditions'], 'freeci.legal.operator_name' => 'Société Test SARL', 'freeci.legal.contact_email' => 'contact@example.test']);
+        config(['freeci.legal.operator_name' => 'Société Test SARL', 'freeci.legal.contact_email' => 'contact@example.test']);
+        DB::table('legal_pages')->insert(['slug' => 'conditions', 'published_body' => 'Texte adopté.', 'published_version' => 1, 'published_at' => now()]);
         $this->get('/informations/conditions')->assertOk()->assertDontSee('Brouillon — texte non adopté');
         $this->get('/informations/mentions-legales')->assertSee('Société Test SARL')->assertSee('Brouillon — texte non adopté');
         $this->get('/informations/contact')->assertSee('contact@example.test');
