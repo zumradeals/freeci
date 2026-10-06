@@ -154,6 +154,17 @@ class GeniusPayProvider implements PaymentProvider
         }
         $envHeader = strtolower(trim($h('x-webhook-environment')));
         $data = json_decode($rawBody, true);
+        // Événement authentifié qui n'est PAS un paiement (ex. `webhook.test` du bouton « tester ») : enregistré et ignoré, jamais refusé (sinon reprises inutiles).
+        if (is_array($data) && is_string($data['event'] ?? null) && ! str_starts_with($data['event'], 'payment.')) {
+            $env = strtolower((string) ($data['data']['environment'] ?? $data['environment'] ?? ''));
+            if ($env !== $this->environment() || ($envHeader !== '' && $envHeader !== $env)) {
+                throw new InvalidProviderEvent('Environnement absent ou incohérent.');
+            }
+
+            return new ProviderEvent(self::NAME, hash('sha256', $data['event'].'|'.($data['id'] ?? $data['timestamp'] ?? $ts)), '', ProviderStatus::Other, [
+                'event' => mb_substr($data['event'], 0, 60), 'environment' => $env, 'signature_timestamp' => (int) $ts, 'body_sha256' => hash('sha256', $rawBody),
+            ]);
+        }
         $tx = is_array($data) ? ($data['data']['transaction'] ?? null) : null;
         if (! is_array($data) || ! is_string($data['event'] ?? null) || ! is_array($tx) || ! is_string($tx['reference'] ?? null) || $tx['reference'] === '' || strlen($tx['reference']) > 80) {
             throw new InvalidProviderEvent('Corps de notification invalide.');

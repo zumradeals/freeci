@@ -299,4 +299,17 @@ class PaymentModesTest extends TestCase
         })->atLeast()->once();
         $this->assertSame(0, DB::table('payment_events')->count());
     }
+
+    public function test_an_authenticated_non_payment_event_such_as_the_webhook_test_is_recorded_and_ignored_with_a_200(): void
+    {
+        $ts = time();
+        $body = json_encode(['id' => 'evt_1', 'event' => 'webhook.test', 'timestamp' => gmdate('c', $ts), 'environment' => 'sandbox', 'data' => ['object' => 'webhook', 'message' => 'test', 'webhook_id' => 'w1', 'environment' => 'sandbox']]);
+        $server = ['CONTENT_TYPE' => 'application/json', 'HTTP_X_WEBHOOK_SIGNATURE' => hash_hmac('sha256', $ts.'.'.$body, self::SB_HOOK), 'HTTP_X_WEBHOOK_TIMESTAMP' => (string) $ts];
+        $this->call('POST', '/webhooks/geniuspay', [], [], [], $server, $body)->assertOk();
+        $this->assertSame(0, DB::table('payments')->count());
+        $this->assertSame(0, DB::table('reconciliation_cases')->count());
+        // mauvaise signature : toujours refusée
+        $server['HTTP_X_WEBHOOK_SIGNATURE'] = str_repeat('a', 64);
+        $this->call('POST', '/webhooks/geniuspay', [], [], [], $server, $body)->assertStatus(401);
+    }
 }
