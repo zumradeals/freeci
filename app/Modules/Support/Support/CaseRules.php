@@ -30,7 +30,7 @@ final class CaseRules
 
     public const REPORT_REASONS = ['fraud' => 'Fraude ou arnaque', 'abuse' => 'Propos abusifs ou harcèlement', 'illegal' => 'Contenu illicite', 'private_contact' => 'Échange de coordonnées pour contourner la plateforme', 'false_info' => 'Informations fausses ou trompeuses', 'other' => 'Autre'];
 
-    public const TARGETS = ['profile' => 'Profil', 'service' => 'Service', 'mission' => 'Mission', 'message' => 'Message'];
+    public const TARGETS = ['profile' => 'Profil', 'service' => 'Service', 'mission' => 'Mission', 'message' => 'Message', 'review' => 'Avis', 'reply' => 'Réponse à un avis'];
 
     public const OUTCOMES = ['continue' => 'Poursuite de la prestation', 'validate_delivery' => 'Résolution du désaccord : livraison jugée conforme', 'cancel' => 'Annulation motivée de la commande', 'answered' => 'Réclamation examinée'];
 
@@ -71,6 +71,8 @@ final class CaseRules
             'service' => DB::table('services')->join('freelance_profiles as p', 'p.id', '=', 'services.freelance_profile_id')->where('services.id', $id)->value('p.user_id'),
             'mission' => DB::table('missions')->where('id', $id)->value('client_id'),
             'message' => DB::table('messages')->where('id', (int) $id)->value('sender_id'),
+            'review' => DB::table('reviews')->where('id', $id)->value('author_id'),
+            'reply' => DB::table('review_responses')->join('reviews', 'reviews.id', '=', 'review_responses.review_id')->where('reviews.id', $id)->value('review_responses.author_id'),
             default => null,
         };
     }

@@ -24,6 +24,7 @@
 </header>
 <main id="contenu" @if($mainClass) class="{{ $mainClass }}" @endif>
 @if(session('status'))<div class="container" style="padding-top:16px"><div class="notice tone-success" role="status"><x-fc.icon name="check-circle" /><p>{{ session('status') }}</p></div></div>@endif
+@if(session('error'))<div class="container" style="padding-top:16px"><div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ session('error') }}</p></div></div>@endif
 {{ $slot }}
 </main>
 <footer class="site-footer">

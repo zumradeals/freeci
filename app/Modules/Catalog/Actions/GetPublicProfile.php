@@ -13,7 +13,7 @@ use App\Modules\Catalog\Models\Service;
  */
 final class GetPublicProfile
 {
-    /** @return array{name:string,initials:string,headline:string,city:?string,bio:?string,skills:list<string>,isDemo:bool,services:list<ServiceCard>} */
+    /** @return array{id:string,name:string,initials:string,headline:string,city:?string,bio:?string,skills:list<string>,isDemo:bool,services:list<ServiceCard>} */
     public function __invoke(string $slug): array
     {
         $p = FreelanceProfile::query()->where('slug', $slug)->whereNotNull('published_at')->first() ?? throw new ServiceNotFound;
@@ -21,7 +21,7 @@ final class GetPublicProfile
             ->map(fn (Service $s) => ServiceProjection::card($s))->all();
 
         return [
-            'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city, 'bio' => $p->bio,
+            'id' => (string) $p->getKey(), 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city, 'bio' => $p->bio,
             'skills' => $p->skills ?? [], 'isDemo' => $p->is_demo, 'services' => $services,
         ];
     }

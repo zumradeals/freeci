@@ -42,6 +42,7 @@ final class NotificationTypes
             'support_update' => ['label' => 'Assistance', 'category' => $e, 'description' => 'Un nouveau message ou un changement sur votre dossier d’assistance (le contenu n’est jamais envoyé par courriel).'],
             'dispute_update' => ['label' => 'Litige ou annulation', 'category' => $e, 'description' => 'Un litige ou une demande d’annulation est ouvert, ou une décision est rendue sur votre commande.'],
             'finance_update' => ['label' => 'Remboursement ou reversement', 'category' => $e, 'description' => 'Un remboursement ou un reversement lié à votre commande est confirmé ou n’a pas abouti.'],
+            'review_published' => ['label' => 'Nouvel avis publié', 'category' => $o, 'description' => 'Un avis sur l’une de vos prestations vient d’être publié ; vous pouvez y répondre publiquement.'],
             'mission_ended' => ['label' => 'Mission : action requise', 'category' => $e, 'description' => 'Une mission expire ou sa sélection se termine.'],
             'message_received' => ['label' => 'Nouveau message', 'category' => $o, 'description' => 'Vous recevez un message privé (le contenu n’est jamais envoyé par courriel).'],
             'proposal_received' => ['label' => 'Nouvelle proposition', 'category' => $o, 'description' => 'Un freelance répond à l’une de vos missions.'],

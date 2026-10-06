@@ -904,3 +904,30 @@ a.kpi:hover { border-color: var(--marine-800); }
 .pager { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-top: 16px; }
 .hist { display: grid; gap: 8px; list-style: none; padding: 0; }
 .hist li { border-left: 3px solid var(--line-strong); padding-left: 12px; }
+
+/* Lot 12 — favoris, notes, avis, filtres supplémentaires */
+.svc .thumb { position: relative; }
+.fav { position: absolute; top: 10px; right: 10px; z-index: 3; margin: 0; }
+.fav-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-600); cursor: pointer; padding: 0; }
+.fav-btn:hover { color: var(--accent-700); border-color: var(--accent-500); }
+.fav-btn[aria-pressed="true"] { color: var(--accent-700); background: var(--accent-100); border-color: var(--accent-500); }
+.fav-btn[aria-pressed="true"] svg { fill: currentColor; }
+.rate-l { font-size: .9375rem; margin: 0; }
+.rating strong { font-weight: 650; }
+.rating [aria-hidden] { color: var(--accent-700); }
+.more-filters { grid-column: 1 / -1; }
+.more-filters > summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+.more-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); padding-top: 8px; }
+@media (min-width: 768px) { .more-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.review { border-top: 1px solid var(--line); padding-block: 14px; }
+.review:first-child { border-top: 0; }
+.review .stars { color: var(--accent-700); letter-spacing: .08em; }
+.review .rmeta { color: var(--ink-600); font-size: .875rem; }
+.review .reply { margin-top: 10px; padding: 10px 12px; background: var(--surface-2); border-left: 3px solid var(--line-strong); border-radius: var(--r-sm); }
+.rating-pick { display: flex; gap: 8px; flex-wrap: wrap; border: 0; padding: 0; margin: 0; }
+.rating-pick label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); cursor: pointer; background: var(--surface); }
+.rating-pick input { accent-color: var(--marine-800); }
+.rating-pick label:has(input:checked) { border-color: var(--marine-800); background: var(--marine-50); }
+.skill-chip { display: inline-block; }
+.fav-list { display: grid; gap: 12px; }
+.chips.applied .chip { color: var(--ink-900); border-color: var(--line-strong); background: var(--surface); }

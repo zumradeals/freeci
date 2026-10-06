@@ -55,6 +55,7 @@ final class GetPublishedService
             acceptsRequests: $service->accepts_requests,
             sellerUserId: $p->user_id,
             sellerSlug: $p->published_at !== null ? $p->slug : null,
+            id: (string) $service->getKey(),
         );
     }
 }

@@ -31,6 +31,17 @@ return [
     //  - l'ENVIRONNEMENT des NOUVELLES commandes et des NOUVEAUX paiements : « sandbox » (défaut, commandes de TEST) ou « live » (argent réel) ;
     //  - l'AUTORISATION de créer de nouveaux paiements (faux par défaut). La désactiver n'interrompt jamais le suivi des tentatives existantes.
     // Chaque commande et chaque tentative conservent leur environnement : changer ces réglages ne convertit rien d'engagé.
+    // Lot 12 — avis. Valeurs PROVISOIRES (CDC F36 : « après les deux dépôts ou quatorze jours » ; architecture §9 : « quatorze jours proposés »). Elles ne sont pas des décisions
+    // approuvées ; la date de visibilité de chaque avis est FIGÉE à son dépôt (changer la valeur n'affecte pas les avis existants).
+    'reviews' => [
+        // Un avis déposé devient public au plus tôt N jours après la clôture commerciale de la commande (le dépôt du freelance n'existe pas dans ce lot : voir docs/20).
+        'publication_days' => (int) env('FREECI_REVIEW_PUBLICATION_DAYS', 14),
+        'comment_min' => 10,
+        'comment_max' => 1500,
+        'reply_max' => 1000,
+        'per_page' => 10,
+    ],
+
     // Lot 11 — conditions financières. TOUTES ces valeurs sont des PROPOSITIONS DE TRAVAIL (docs/01 « valeurs commerciales à confirmer »), jamais des décisions
     // commerciales approuvées. Le taux est FIGÉ dans chaque accord à sa création : modifier cette valeur n'affecte aucune commande existante.
     'finance' => [

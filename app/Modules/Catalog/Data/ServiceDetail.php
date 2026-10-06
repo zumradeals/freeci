@@ -36,5 +36,16 @@ final readonly class ServiceDetail
         public bool $acceptsRequests = true,
         public string $sellerUserId = '',
         public ?string $sellerSlug = null,         // adresse du profil public, seulement si le profil est publié
+        public string $id = '',                    // vide pour un aperçu non publié
+        public int $ratingCount = 0,               // avis PUBLIÉS issus de ce service
+        public ?string $ratingAvg = null,
+        public bool $favorited = false,
     ) {}
+
+    public function withExtras(?array $stats, bool $favorited): self
+    {
+        return new self($this->slug, $this->title, $this->summary, $this->scope, $this->categorySlug, $this->categoryName, $this->sellerName, $this->sellerInitials, $this->sellerHeadline, $this->sellerCity,
+            $this->price, $this->deliveryDays, $this->revisionsIncluded, $this->deliverables, $this->exclusions, $this->clientInputs, $this->images, $this->isDemo, $this->version, $this->acceptsRequests,
+            $this->sellerUserId, $this->sellerSlug, $this->id, (int) ($stats['count'] ?? 0), $stats['avg'] ?? null, $favorited);
+    }
 }

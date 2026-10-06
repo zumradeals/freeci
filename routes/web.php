@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ComingSoonController;
+use App\Http\Controllers\FreelanceDirectoryController;
 use App\Http\Controllers\FreelanceProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
@@ -16,6 +17,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('services.show');
 
+Route::get('/freelances', [FreelanceDirectoryController::class, 'index'])->name('freelances.index');
 Route::get('/freelances/{slug}', [FreelanceProfileController::class, 'show'])->name('freelances.show');
 Route::get('/missions', [PublicMissionController::class, 'index'])->name('missions.index');
 Route::get('/missions/{slug}', [PublicMissionController::class, 'show'])->name('missions.show');

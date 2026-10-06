@@ -11,6 +11,8 @@
     <div>
       <p class="eyebrow cat-eyebrow">{{ $service->categoryName }}@if($service->isDemo) · <span class="tag-demo">Exemple fictif</span>@endif</p>
       <h1 class="t-h1">{{ $service->title }}</h1>
+      @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> <a class="small" href="#avis">Voir les avis</a></p>@endif
+      @if($service->id !== '')<p><x-fc.fav-button-inline kind="service" :slug="$service->slug" :on="$service->favorited" /></p>@endif
       <p class="seller-line"><span class="avatar" aria-hidden="true">{{ $service->sellerInitials }}</span><span><b>{{ $service->sellerName }}</b><small class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</small></span></p>
 
       <section class="buy-summary card" aria-label="Offre">
@@ -51,8 +53,13 @@
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
             @if($service->sellerSlug)<p style="margin-top:8px"><a href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
             @if($service->isDemo)<p class="muted small">Profil fictif de démonstration.</p>@endif</div></section>
-        <section aria-labelledby="s6"><h2 class="t-h2" id="s6">Avis</h2>
-          <p class="muted">Aucun avis pour l’instant. Les avis ne sont publiés qu’après une commande validée.</p></section>
+        <section aria-labelledby="s6" id="avis"><h2 class="t-h2" id="s6">Avis</h2>
+          @if(isset($reviews) && $reviews->total() > 0)
+            <p class="muted"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> — avis de clients ayant validé une commande de CE service (les avis issus d’une mission ne sont pas comptés ici).</p>
+            <x-fc.reviews :reviews="$reviews" />
+          @else
+            <p class="muted">Aucun avis pour l’instant. Les avis ne sont publiés qu’après une commande réelle validée et clôturée.</p>
+          @endif</section>
       </div>
     </div>
 

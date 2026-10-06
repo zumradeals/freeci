@@ -43,7 +43,8 @@
   @if($closedOk)
     <section class="card" aria-labelledby="h-closed" style="border-left:4px solid var(--success-700)"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />Clôturée</p><h2 class="t-h2" id="h-closed" style="margin-top:6px">Livraison v{{ $dl['latestVersion'] }} validée : commande clôturée</h2>
       <p style="margin-top:6px">Validée le {{ $dl['validatedAt'] }}. Cette clôture est <strong>commerciale</strong> : elle ne confirme ni ne déclenche aucun reversement.</p>
-      <p class="muted" style="margin-top:8px">Toutes les versions livrées restent consultables dans l’onglet « Livraisons ».</p></section>
+      <p class="muted" style="margin-top:8px">Toutes les versions livrées restent consultables dans l’onglet « Livraisons ».</p>
+      <p style="margin-top:12px"><a class="btn btn-secondary" href="{{ route('orders.review', $d->reference) }}">{{ $isF ? 'Voir l’avis du client' : 'Laisser un avis ou voir mon avis' }}</a>@if($d->environment === 'test') <span class="tag-demo">Commande de test : aperçu non public</span>@endif</p></section>
   @elseif($d->isFinal)
     <section class="card" aria-labelledby="h-closed"><p class="eyebrow">{{ $d->stateValue === 'expired' ? 'Expirée' : 'Annulée' }}</p><h2 class="t-h2" id="h-closed" style="margin-top:6px">{{ $d->closureReason }}</h2>
       @if($d->closureNote && $d->stateValue === 'cancelled' && $d->closureReason === 'Demande refusée par le freelance')<p style="margin-top:8px"><strong>Motif :</strong> « {{ $d->closureNote }} »</p>@endif

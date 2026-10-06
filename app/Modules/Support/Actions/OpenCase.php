@@ -3,6 +3,7 @@
 namespace App\Modules\Support\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Orders\Support\ReviewVisibility;
 use App\Modules\Support\Exceptions\SupportConflict;
 use App\Modules\Support\Support\CaseRules;
 use App\Shared\CommandReceipts;
@@ -109,6 +110,16 @@ final class OpenCase
                 $id = $m->id;
                 $owner = $m->client_id;
                 $label = (string) DB::table('mission_versions')->where('mission_id', $id)->orderByDesc('number')->value('title');
+                break;
+            case 'review':
+            case 'reply':
+                // Seul un contenu PUBLIC (publié, non masqué, commande réelle) se signale ; l'identifiant est celui de l'avis (la réponse lui est rattachée).
+                $rv = ReviewVisibility::published(DB::table('reviews'))->where('reviews.id', $id)->first(['reviews.id', 'reviews.author_id', 'reviews.subject_id', 'reviews.rating', 'reviews.comment']) ?? $none();
+                $reply = $type === 'reply' ? (DB::table('review_responses')->where('review_id', $rv->id)->whereNull('hidden_at')->first() ?? $none()) : null;
+                $id = $rv->id;
+                $owner = $type === 'review' ? $rv->author_id : $reply->author_id;
+                $label = $type === 'review' ? 'Avis ('.$rv->rating.'/5)' : 'Réponse à un avis';
+                $snapshot = mb_substr($type === 'review' ? $rv->comment : $reply->body, 0, 2000);
                 break;
             default:      // message : seulement un message d'une conversation dont on est participant, jamais le sien
                 $row = DB::table('messages')->join('conversations as c', 'c.id', '=', 'messages.conversation_id')->where('messages.id', (int) $id)

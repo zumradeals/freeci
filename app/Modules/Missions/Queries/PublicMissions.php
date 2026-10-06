@@ -21,8 +21,24 @@ use Illuminate\Support\Facades\DB;
  */
 final class PublicMissions
 {
-    public function search(?string $q, ?string $categorySlug, int $perPage = 12): LengthAwarePaginator
+    public const SORTS = ['echeance', 'recentes', 'budget-croissant', 'budget-decroissant'];
+
+    /**
+     * Filtres : texte, catégorie, budget (min/max, FCFA), date limite de candidature dans N jours au plus. Aucune compétence n'est portée par une mission : pas de filtre
+     * « compétence » ici. Pagination STABLE (identifiant en dernier) ; seuls les besoins OUVERTS et publiés sont listés.
+     *
+     * @param  array{budget_min?: mixed, budget_max?: mixed, delai?: mixed, tri?: ?string}  $filters
+     */
+    public function search(?string $q, ?string $categorySlug, int $perPage = 12, array $filters = []): LengthAwarePaginator
     {
+        $int = fn (mixed $v, int $max) => is_numeric($v) && (int) $v > 0 && (int) $v <= $max ? (int) $v : null;
+        $bmin = $int($filters['budget_min'] ?? null, 1_000_000_000);
+        $bmax = $int($filters['budget_max'] ?? null, 1_000_000_000);
+        if ($bmin !== null && $bmax !== null && $bmin > $bmax) {
+            [$bmin, $bmax] = [$bmax, $bmin];
+        }
+        $days = $int($filters['delai'] ?? null, 365);
+        $sort = in_array($filters['tri'] ?? null, self::SORTS, true) ? $filters['tri'] : 'echeance';
         $q = $q === null ? null : trim($q);
         $query = Mission::query()->where('missions.status', 'open')
             ->whereNotExists(fn ($w) => $w->select(DB::raw(1))->from('users')->whereColumn('users.id', 'missions.client_id')->whereNotNull('users.suspended_at'))
@@ -35,7 +51,14 @@ final class PublicMissions
                     $w->whereRaw('(freeci_unaccent(v.title) ILIKE freeci_unaccent(?) OR freeci_unaccent(v.description) ILIKE freeci_unaccent(?))', [$like, $like]);
                 }
             })
-            ->orderBy('v.application_deadline')->select('missions.slug', 'v.title', 'v.description', 'v.budget_xof', 'v.application_deadline', 'c.name as category', 'missions.is_demo');
+            ->when($bmin !== null, fn ($w) => $w->where('v.budget_xof', '>=', $bmin))->when($bmax !== null, fn ($w) => $w->where('v.budget_xof', '<=', $bmax))
+            ->when($days !== null, fn ($w) => $w->where('v.application_deadline', '<=', now()->addDays($days)))
+            ->tap(fn ($w) => match ($sort) {
+                'recentes' => $w->orderByDesc('missions.published_at'),
+                'budget-croissant' => $w->orderBy('v.budget_xof'),
+                'budget-decroissant' => $w->orderByDesc('v.budget_xof'),
+                default => $w->orderBy('v.application_deadline'),
+            })->orderBy('missions.id')->select('missions.slug', 'v.title', 'v.description', 'v.budget_xof', 'v.application_deadline', 'c.name as category', 'missions.is_demo');
 
         return $query->paginate($perPage)->withQueryString()->through(fn ($r) => [
             'slug' => $r->slug, 'title' => $r->title, 'excerpt' => mb_substr($r->description, 0, 220).(mb_strlen($r->description) > 220 ? '…' : ''), 'budget' => Money::xof((int) $r->budget_xof),

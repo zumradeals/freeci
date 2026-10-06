@@ -28,6 +28,7 @@ final class ServiceProjection
             imageSrc: $image['card'] ?? $image['src'] ?? null,
             imageAlt: $image['alt'] ?? null,
             isDemo: $s->is_demo,
+            id: (string) $s->getKey(),
         );
     }
 

@@ -9,12 +9,14 @@ use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\ReconciliationController;
+use App\Http\Controllers\Admin\ReviewModerationController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SupportCaseController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FinanceSpaceController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Support\AssistanceController;
 use App\Http\Controllers\Support\DisputeController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +37,10 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/espace', DashboardController::class)->name('account.dashboard');
     Route::get('/espace/commandes', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/espace/finances', [FinanceSpaceController::class, 'client'])->name('client.finances');
+    // Favoris privés (service ou freelance), sans doublon ; jamais visibles des autres.
+    Route::get('/espace/favoris', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/favoris/{kind}/{slug}', [FavoriteController::class, 'toggle'])->whereIn('kind', ['service', 'freelance'])->middleware('throttle:60,1')->name('favorites.toggle');
+    Route::post('/espace/favoris/{id}/retirer', [FavoriteController::class, 'remove'])->whereNumber('id')->middleware('throttle:60,1')->name('favorites.remove');
 
     // Demande de prestation (client) — la reprise après connexion revient ici (URL « intended » interne).
     Route::get('/services/{slug}/demande', [OrderRequestController::class, 'create'])->name('services.request');
@@ -112,6 +119,11 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/commandes/{reference}/report/retirer', [DeliveryController::class, 'extensionWithdraw'])->middleware('throttle:10,1')->name('orders.extension.withdraw');
     Route::get('/commandes/{reference}/report/{decision}', [DeliveryController::class, 'extensionAnswerForm'])->whereIn('decision', ['accepter', 'refuser'])->name('orders.extension.answer');
     Route::post('/commandes/{reference}/report/{decision}', [DeliveryController::class, 'extensionAnswer'])->whereIn('decision', ['accepter', 'refuser'])->middleware('throttle:10,1')->name('orders.extension.answer.store');
+
+    // Avis : le client de la commande dépose (une fois) ; le freelance évalué répond (une fois).
+    Route::get('/commandes/{reference}/avis', [ReviewController::class, 'show'])->name('orders.review');
+    Route::post('/commandes/{reference}/avis', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('orders.review.store');
+    Route::post('/avis/{review}/reponse', [ReviewController::class, 'reply'])->whereUuid('review')->middleware('throttle:10,1')->name('reviews.reply');
 
     // Espace freelance : activation puis pages réservées au rôle freelance.
     Route::get('/freelance/activer', [FreelanceController::class, 'activate'])->name('freelance.activate');
@@ -208,6 +220,10 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
 
             Route::get('/paiements', [ReconciliationController::class, 'index'])->name('admin.payments');
             Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
+
+            // Modération des avis : masquer / rétablir avec catégorie, motif et historique (confirmation récente d'identité).
+            Route::get('/avis', [ReviewModerationController::class, 'index'])->name('admin.reviews');
+            Route::post('/avis/{review}/{action}', [ReviewModerationController::class, 'act'])->whereUuid('review')->whereIn('action', ['masquer', 'retablir'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.reviews.act');
 
             // Finances : remboursements, commissions, reversements. Lecture : administrateurs ; écriture : confirmation récente d'identité à chaque action.
             Route::get('/finances', [FinanceController::class, 'index'])->name('admin.finance');

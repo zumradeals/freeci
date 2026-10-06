@@ -23,3 +23,5 @@ if (config('freeci.notifications.queue_via_scheduler')) {
 }
 // Remboursements Genius Pay envoyés par API : lecture du paiement chez le prestataire, jamais de renvoi (lot 11).
 Schedule::command('freeci:finance:reconcile')->everyFiveMinutes()->withoutOverlapping();
+// Avis devenus publics : notification du freelance (idempotent ; l'affichage public n'en dépend pas).
+Schedule::command('freeci:reviews:publish')->hourly()->withoutOverlapping();
