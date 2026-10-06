@@ -214,10 +214,10 @@ final class ProcessProviderEvent
     /** Remboursement effectué CHEZ le prestataire : enregistré et signalé pour traitement ; aucun remboursement n'est exécuté ni déduit par FreeCI. */
     private function refunded(Payment $payment, Order $order): string
     {
-        // Une opération de remboursement API ouverte pour ce paiement : l'événement n'est pas cru sur parole, le paiement est relu chez le prestataire (lot 11).
+        //         // Une notification « remboursé » n'établit ni le montant ni le rattachement à une opération FreeCI : elle marque l'opération « à vérifier » (rapprochement manuel), jamais « confirmée ».
         $op = DB::table('financial_operations')->where('payment_id', $payment->getKey())->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])->value('id');
-        if ($op !== null && app(FinancialOperations::class)->reconcile($op) === 'confirmed') {
-            return 'applied';
+        if ($op !== null) {
+            app(FinancialOperations::class)->reconcile($op);
         }
         $this->flag($order, $payment, 'refunded_by_provider');
 

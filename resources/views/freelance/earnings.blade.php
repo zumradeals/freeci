@@ -16,9 +16,9 @@
     @if($d['beneficiary'])<p>{{ ['mobile_money' => 'Mobile money', 'bank_transfer' => 'Virement bancaire', 'other' => 'Autre'][$d['beneficiary']['method']] }} · titulaire « {{ $d['beneficiary']['holder'] }} » — <span class="badge tone-{{ $d['beneficiary']['status'] === 'verified' ? 'success' : 'warning' }}">{{ $d['beneficiary']['status'] === 'verified' ? 'Vérifiée' : 'En attente de vérification' }}</span> <span class="muted small">(la destination n’est jamais réaffichée)</span></p>@else<p class="muted">Aucune destination déclarée : sans destination vérifiée, aucun reversement n’est possible.</p>@endif
     @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first() }}</p></div>@endif
     <form method="post" action="{{ route('freelance.earnings.beneficiary') }}" class="stack-sm">@csrf
-      <label>Moyen<select name="method"><option value="mobile_money">Mobile money</option><option value="bank_transfer">Virement bancaire</option><option value="other">Autre</option></select></label>
-      <label>Titulaire<input name="holder" minlength="2" maxlength="120" required></label>
-      <label>Numéro ou coordonnées<input name="destination" minlength="6" maxlength="120" autocomplete="off" required></label>
+      <div class="field"><label for="f15">Moyen</label><select id="f15" name="method"><option value="mobile_money">Mobile money</option><option value="bank_transfer">Virement bancaire</option><option value="other">Autre</option></select></div>
+      <div class="field"><label for="f16">Titulaire</label><input id="f16" name="holder" minlength="2" maxlength="120" required></div>
+      <div class="field"><label for="f17">Numéro ou coordonnées</label><input id="f17" name="destination" minlength="6" maxlength="120" autocomplete="off" required></div>
       <p class="muted small">Une nouvelle déclaration remplace la précédente et doit être vérifiée par l’équipe avant tout reversement.</p>
       <button class="btn btn-secondary" type="submit">Enregistrer la destination</button></form></section>
 

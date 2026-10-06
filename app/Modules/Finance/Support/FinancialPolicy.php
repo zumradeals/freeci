@@ -20,14 +20,6 @@ final class FinancialPolicy
         return $baseXof - self::commission($baseXof, $basisPoints);
     }
 
-    /** Nombre d'approbations DISTINCTES exigées (le demandeur n'approuve jamais). Seuil non validé : configurable. */
-    public static function requiredApprovals(int $amountXof): int
-    {
-        $threshold = config('freeci.finance.dual_approval_threshold_xof');
-
-        return $threshold !== null && $amountXof >= (int) $threshold ? 2 : 1;
-    }
-
     /** Nom de compte du registre : suffixe « _simulated » pour tout ce qui vient du mode test (jamais confondu avec du réel). */
     public static function account(string $base, bool $simulated): string
     {

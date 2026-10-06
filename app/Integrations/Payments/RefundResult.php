@@ -16,7 +16,7 @@ final readonly class RefundResult
         public ?int $amountRefunded = null,
     ) {}
 
-    public static function confirmed(?string $refundReference, int $amount): self
+    public static function confirmed(string $refundReference, int $amount): self
     {
         return new self('confirmed', 'ok', $refundReference, $amount);
     }

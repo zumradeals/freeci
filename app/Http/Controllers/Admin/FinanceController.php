@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
- * Finances (administrateurs, MFA, confirmation récente d'identité à chaque action d'écriture). Les actions revérifient tout côté serveur ;
+ * Finances (administrateurs, MFA, confirmation récente d'identité à chaque action d'écriture). Un seul administrateur peut préparer, confirmer et exécuter. Les actions revérifient tout côté serveur ;
  * aucun montant ni état n'est lu dans la requête (sauf le montant d'un remboursement demandé, plafonné par le registre).
  */
 class FinanceController extends Controller
@@ -35,14 +35,14 @@ class FinanceController extends Controller
     {
         $d = $request->validate(['amount' => ['nullable', 'integer', 'min:1', 'max:100000000'], 'reason' => ['required', 'string', 'min:10', 'max:500'], 'operation_key' => ['required', 'string', 'max:60']]);
 
-        return $this->run(fn () => $ops->requestRefund($request->user(), $decision, isset($d['amount']) ? (int) $d['amount'] : null, $d['reason'], $d['operation_key']), 'Remboursement demandé. Rien n’est remboursé : il doit être approuvé par d’autres personnes puis exécuté.', fn ($id) => route('admin.finance.show', $ops->op($id)->reference));
+        return $this->run(fn () => $ops->requestRefund($request->user(), $decision, isset($d['amount']) ? (int) $d['amount'] : null, $d['reason'], $d['operation_key']), 'Remboursement préparé et fonds réservés. Rien n’est remboursé : relisez le récapitulatif, confirmez-le, puis exécutez.', fn ($id) => route('admin.finance.show', $ops->op($id)->reference));
     }
 
     public function requestPayout(Request $request, FinancialOperations $ops, string $reference): RedirectResponse
     {
         $d = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:500'], 'operation_key' => ['required', 'string', 'max:60']]);
 
-        return $this->run(fn () => $ops->requestPayout($request->user(), $reference, $d['reason'], $d['operation_key']), 'Reversement demandé et fonds réservés. Rien n’est versé : approbation puis exécution manuelle requises.', fn ($id) => route('admin.finance.show', $ops->op($id)->reference));
+        return $this->run(fn () => $ops->requestPayout($request->user(), $reference, $d['reason'], $d['operation_key']), 'Reversement préparé et fonds réservés. Rien n’est versé : relisez le récapitulatif, confirmez-le, puis enregistrez l’exécution manuelle.', fn ($id) => route('admin.finance.show', $ops->op($id)->reference));
     }
 
     public function act(Request $request, FinancialOperations $ops, string $reference, string $action): RedirectResponse
@@ -53,12 +53,17 @@ class FinanceController extends Controller
         $note = fn () => $request->validate(['note' => ['required', 'string', 'min:10', 'max:500']])['note'];
 
         return match ($action) {
-            'approuver' => $this->run(fn () => $ops->approve($actor, $id, $note()), 'Votre approbation est enregistrée.'),
+            'confirmer' => $this->run(function () use ($request, $ops, $actor, $id) {
+                $d = $request->validate(['confirm' => ['accepted'], 'note' => ['nullable', 'string', 'max:500']], ['confirm.accepted' => 'Confirmez explicitement le récapitulatif (montant, bénéficiaire, environnement).']);
+                $ops->approve($actor, $id, true, (string) ($d['note'] ?? ''));
+            }, 'Récapitulatif confirmé : vous pouvez maintenant exécuter ou enregistrer l’opération. Rien n’est encore effectué.'),
             'refuser' => $this->run(fn () => $ops->reject($actor, $id, $note()), 'Opération refusée : la réservation est libérée.'),
             'annuler' => $this->run(fn () => $ops->cancel($actor, $id, $note()), 'Opération annulée : la réservation est libérée.'),
             'executer-api' => $this->run(fn () => $ops->executeRefundViaApi($actor, $id), 'Demande de remboursement envoyée à Genius Pay : le résultat est lu et vérifié, il peut être « à vérifier ».'),
-            'marquer-echec' => $this->run(fn () => $ops->markNotRefunded($actor, $id, $note()), 'Échec constaté après vérification : la réservation est libérée.'),
-            'reprendre' => $this->run(fn () => $ops->resume($actor, $id, $note()), 'Reprise autorisée après vérification : l’opération est de nouveau « approuvée ».'),
+            'rapprocher' => $this->run(function () use ($request, $ops, $actor, $id) {
+                $d = $request->validate(['outcome' => ['required', 'in:refunded,not_refunded'], 'reference' => ['required', 'string', 'max:80'], 'proof' => ['required', 'string', 'min:20', 'max:500'], 'amount_confirm' => ['nullable', 'integer'], 'confirm' => ['accepted']]);
+                $ops->reconcileManually($actor, $id, $d['outcome'], ['reference' => $d['reference'], 'proof' => $d['proof'], 'amount_confirm' => $d['amount_confirm'] ?? 0, 'confirm' => '1']);
+            }, 'Rapprochement manuel enregistré (référence et justificatif conservés).'),
             'enregistrer' => $this->run(function () use ($request, $ops, $actor, $id) {
                 $d = $request->validate(['external_reference' => ['required', 'string', 'max:80'], 'proof_note' => ['required', 'string', 'min:10', 'max:500'], 'amount_confirm' => ['required', 'integer'], 'confirm' => ['accepted']]);
                 $ops->recordManual($actor, $id, $d);

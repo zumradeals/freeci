@@ -43,7 +43,11 @@ final class Beneficiaries
                 throw new FinanceConflict('Déclaration introuvable ou déjà traitée.');
             }
             if ($b->user_id === $admin->getKey()) {
-                throw new FinanceConflict('Vous ne pouvez pas vérifier votre propre destination de reversement.');
+                // Conflit d'intérêts : refusé dès que l'administrateur est freelance d'une commande RÉELLE ; toléré (audit) pour tester en sandbox avec son propre compte.
+                if (DB::table('orders')->where('freelancer_id', $admin->getKey())->where('environment', 'live')->exists()) {
+                    throw new FinanceConflict('Conflit d’intérêts : vous ne pouvez pas vérifier votre propre destination de reversement, car vous êtes freelance de commandes réelles.');
+                }
+                $this->audit->record($admin, 'finance.sandbox_party', 'beneficiary', $id, null, null, 'done', 'Administrateur vérifiant sa propre destination : toléré (aucune commande réelle), à usage de test.');
             }
             DB::table('payout_beneficiaries')->where('id', $id)->where('status', 'pending')->update(['status' => 'verified', 'verified_by' => $admin->getKey(), 'verified_at' => now(), 'updated_at' => now()]);
         });

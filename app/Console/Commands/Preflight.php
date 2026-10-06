@@ -61,7 +61,6 @@ class Preflight extends Command
         $this->check('Mode live non activé sans autorisation explicite', ! PaymentMode::isLive() || GeniusPayConfig::liveAuthorized(), 'FREECI_PAYMENT_MODE=live sans FREECI_LIVE_PAYMENTS_AUTHORIZED=true', false);
         $this->check('Paiements en mode test : aucun argent réel', ! PaymentMode::isLive(), 'MODE LIVE actif : les nouvelles commandes sont réelles', false);
         $this->check('Opérations financières « à vérifier »', ! Schema::hasTable('financial_operations') || DB::table('financial_operations')->where('state', 'to_verify')->doesntExist(), 'au moins une opération de remboursement est incertaine : voir /admin/finances (aucun renvoi automatique)', false);
-        $this->check('Double validation financière configurée', config('freeci.finance.dual_approval_threshold_xof') !== null, 'FREECI_FINANCE_DUAL_APPROVAL_XOF vide : aucune double validation (seuil non validé par le porteur)', false);
         $this->check('Service de contrôle des fichiers', config('freeci.files.scanner') === 'clamav' && app(FileScanner::class)->isOperational(), 'aucun service d\'analyse opérationnel : le dépôt de fichiers du brief est désactivé (voir docs/10)', false);
         $this->check('Disque privé des fichiers inscriptible', $this->privateDiskWritable(), storage_path('app/private/files'));
 

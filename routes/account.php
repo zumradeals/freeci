@@ -215,7 +215,7 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::middleware(['recent-auth', 'throttle:20,1'])->group(function () {
                 Route::post('/finances/decisions/{decision}/rembourser', [FinanceController::class, 'requestRefund'])->whereNumber('decision')->name('admin.finance.refund');
                 Route::post('/finances/commandes/{reference}/reverser', [FinanceController::class, 'requestPayout'])->name('admin.finance.payout');
-                Route::post('/finances/operations/{reference}/{action}', [FinanceController::class, 'act'])->whereIn('action', ['approuver', 'refuser', 'annuler', 'executer-api', 'enregistrer', 'marquer-echec', 'reprendre'])->name('admin.finance.act');
+                Route::post('/finances/operations/{reference}/{action}', [FinanceController::class, 'act'])->whereIn('action', ['confirmer', 'refuser', 'annuler', 'executer-api', 'enregistrer', 'rapprocher'])->name('admin.finance.act');
                 Route::post('/finances/destinations/{id}/{action}', [FinanceController::class, 'beneficiary'])->whereIn('action', ['verifier', 'desactiver'])->name('admin.finance.beneficiary');
             });
 

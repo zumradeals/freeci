@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Rapprochement des opérations de remboursement envoyées par API : LECTURE seule du paiement chez le prestataire (jamais d'envoi, jamais de renvoi).
- * « refunded » ⇒ confirmé ; un envoi resté « en cours » au-delà de 10 minutes passe « à vérifier ». Aucune opération n'est échouée ni relancée ici :
- * constater un échec ou reprendre un envoi sont des actions humaines explicites.
+ * Un envoi resté « en cours » au-delà de 10 minutes passe « à vérifier » ; un statut « refunded » est signalé mais ne confirme RIEN (montant et rattachement non établis).
+ * Aucune opération n'est confirmée, échouée ni relancée ici : seul un rapprochement manuel documenté conclut.
  */
 class FinanceReconcile extends Command
 {
@@ -21,7 +21,7 @@ class FinanceReconcile extends Command
     {
         $ids = DB::table('financial_operations')->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])
             ->where(fn ($q) => $q->whereNull('last_checked_at')->orWhere('last_checked_at', '<', now()->subMinutes(5)))->orderBy('created_at')->limit(max(1, (int) $this->option('limit')))->pluck('id');
-        $n = ['confirmed' => 0, 'pending' => 0, 'uncertain' => 0, 'not_applicable' => 0];
+        $n = ['provider_reports_refunded' => 0, 'pending' => 0, 'uncertain' => 0, 'not_applicable' => 0];
         foreach ($ids as $id) {
             try {
                 $n[$ops->reconcile($id)]++;
@@ -30,7 +30,7 @@ class FinanceReconcile extends Command
                 $n['uncertain']++;
             }
         }
-        $this->info("Opérations lues : {$ids->count()} · confirmées : {$n['confirmed']} · toujours ouvertes : ".($n['pending'] + $n['uncertain']).'.');
+        $this->info("Opérations lues : {$ids->count()} · « remboursé » indiqué par le prestataire (à rapprocher manuellement) : {$n['provider_reports_refunded']} · autres : ".($n['pending'] + $n['uncertain']).'. Aucune opération n’est confirmée ni libérée par cette commande.');
 
         return self::SUCCESS;
     }

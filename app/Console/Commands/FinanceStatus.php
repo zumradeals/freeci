@@ -14,11 +14,11 @@ class FinanceStatus extends Command
 
     public function handle(): int
     {
-        $threshold = config('freeci.finance.dual_approval_threshold_xof');
         $this->table(['Paramètre', 'Valeur', 'Statut'], [
             ['Taux de commission des NOUVEAUX accords (FREECI_COMMISSION_BP)', config('freeci.finance.commission_bp').' pb ('.(config('freeci.finance.commission_bp') / 100).' %)', 'PROPOSITION non validée ; figé dans chaque accord à sa création'],
             ['Étiquette de politique', (string) config('freeci.finance.commission_policy'), '—'],
-            ['Seuil de double validation (FREECI_FINANCE_DUAL_APPROVAL_XOF)', $threshold === null ? 'désactivée' : number_format((int) $threshold, 0, ',', ' ').' FCFA', 'NON VALIDÉ par le porteur'],
+            ['Validation des opérations financières', 'un seul administrateur', 'décision du porteur : préparer, confirmer explicitement, exécuter ; MFA + confirmation récente + journal'],
+            ['Conflit d\'intérêts', 'bloqué sur commande RÉELLE, autorisé en SANDBOX', 'avec indication explicite et audit'],
             ['Remboursement total par API Genius Pay', 'disponible', 'documenté : POST /payments/{reference}/refund'],
             ['Remboursement partiel par API', 'non exécuté', 'règles des remboursements successifs et idempotence non établies : enregistrement manuel'],
             ['Reversement par API Genius Pay', 'INDISPONIBLE', 'aucune API de reversement documentée : suivi interne + enregistrement manuel'],

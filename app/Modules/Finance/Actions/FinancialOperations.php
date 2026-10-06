@@ -7,6 +7,7 @@ use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\ProviderStatus;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Admin\Actions\AdminAudit;
+use App\Modules\Finance\Models\ReconciliationCase;
 use App\Modules\Finance\Support\FinanceConflict;
 use App\Modules\Finance\Support\FinancialPolicy;
 use App\Modules\Finance\Support\OrderFunds;
@@ -22,13 +23,16 @@ use Illuminate\Support\Str;
  * Opérations financières (remboursement, reversement) : demande, approbation, exécution, rapprochement.
  *
  * Principes (architecture §9–10) :
- *  - DÉCISION du support ≠ OPÉRATION financière ≠ EXÉCUTION : une décision ne « rembourse » rien. Une opération est demandée puis approuvée par d'AUTRES personnes.
+ *  - DÉCISION du support ≠ OPÉRATION financière ≠ RÉSULTAT D'EXÉCUTION : une décision ne « rembourse » rien. Un SEUL administrateur peut préparer, confirmer
+ *    (explicitement, après récapitulatif) et exécuter une opération : aucun second approbateur, aucun seuil de double validation (décision du porteur).
  *  - Réservation à la demande dans le registre (le solde « escrow » d'une commande ne peut pas être engagé deux fois : verrou de commande + contrainte en base) ;
  *    libérée par une écriture CORRECTRICE si l'opération est refusée, annulée ou échoue ; confirmée seulement par un résultat établi.
  *  - Appel sortant : référence enregistrée AVANT l'appel, `approved → in_progress` conditionnel, appel hors transaction, JAMAIS rejoué à l'aveugle :
- *    délai dépassé / réponse illisible ⇒ « à vérifier » ; reprise = lecture du paiement chez le prestataire PUIS décision explicite.
+ *    délai dépassé / réponse illisible / incohérente ⇒ « à vérifier », fonds réservés. Un statut lu chez le prestataire (« refunded », « completed ») n'établit ni le
+ *    montant remboursé, ni son rattachement, ni un échec : seul un RAPPROCHEMENT MANUEL documenté (référence + justificatif) confirme ou libère l'opération.
  *  - Aucun reversement par API (rien n'est documenté par Genius Pay) : action manuelle distincte, avec référence externe, justificatif, auteur et contrôle explicite.
- *  - Réservé aux administrateurs (MFA, adresse vérifiée, confirmation récente à la route), jamais à une partie de la commande, journalisé.
+ *  - Réservé aux administrateurs (MFA, adresse vérifiée, confirmation récente à la route), journalisé. Conflit d'intérêts : un administrateur partie à une commande RÉELLE
+ *    ne peut pas agir dessus ; sur une commande de TEST (sandbox) il le peut, avec indication explicite et audit.
  */
 final class FinancialOperations
 {
@@ -53,7 +57,7 @@ final class FinancialOperations
             try {
                 CommandReceipts::once($actor->getKey(), 'finance.request_refund', $key, ['d' => $dec->id, 'a' => $amount, 'r' => $reason], function () use ($actor, $dec, $amount, $reason, $opKey) {
                     $order = $this->lockOrder($dec->order_id);
-                    $this->assertNotParty($actor, $order);
+                    $this->assertNoConflictOfInterest($actor, $order);
                     $payment = OrderFunds::confirmedPayment($order->id);
                     if ($payment === null) {
                         throw new FinanceConflict('Aucun paiement confirmé sur cette commande : rien à rembourser.');
@@ -105,7 +109,7 @@ final class FinancialOperations
             try {
                 CommandReceipts::once($actor->getKey(), 'finance.request_payout', $key, ['o' => $order0->id, 'r' => $reason], function () use ($actor, $order0, $reason, $opKey) {
                     $order = $this->lockOrder($order0->id);
-                    $this->assertNotParty($actor, $order);
+                    $this->assertNoConflictOfInterest($actor, $order);
                     $e = PayoutEligibility::evaluate($order);       // recalculée SOUS LE VERROU de commande (même verrou que l'ouverture d'un litige)
                     if (! $e['eligible']) {
                         throw new FinanceConflict('Reversement non éligible : '.implode(' ', array_map(fn ($r) => PayoutEligibility::REASONS[$r], $e['reasons'])));
@@ -133,33 +137,35 @@ final class FinancialOperations
 
     // ------------------------------------------------------------------ approbation
 
-    public function approve(User $actor, string $opId, string $note): void
+    /** Confirmation EXPLICITE du récapitulatif (montant, bénéficiaire, environnement) : le même administrateur que le demandeur peut la donner. */
+    public function approve(User $actor, string $opId, bool $confirmed, string $note = ''): void
     {
-        $this->decide($actor, $opId, $note, 'approved');
+        $this->decide($actor, $opId, $note, 'approved', $confirmed);
     }
 
     public function reject(User $actor, string $opId, string $note): void
     {
-        $this->decide($actor, $opId, $note, 'rejected');
+        $this->decide($actor, $opId, $note, 'rejected', true);
     }
 
-    private function decide(User $actor, string $opId, string $note, string $decision): void
+    private function decide(User $actor, string $opId, string $note, string $decision, bool $confirmed): void
     {
         $note = trim($note);
         $op0 = $this->op($opId);
-        $this->audit->run($actor, 'finance.operation.'.($decision === 'approved' ? 'approve' : 'reject'), 'financial_operation', $opId, $op0?->reference, $note, function () use ($actor, $opId, $note, $decision) {
-            $this->validateReason($note);
+        $this->audit->run($actor, 'finance.operation.'.($decision === 'approved' ? 'confirm' : 'reject'), 'financial_operation', $opId, $op0?->reference, $note, function () use ($actor, $opId, $note, $decision, $confirmed) {
+            if ($decision === 'rejected') {
+                $this->validateReason($note);
+            } elseif (! $confirmed) {
+                throw new FinanceConflict('Confirmez explicitement le récapitulatif (montant, bénéficiaire, environnement) avant de poursuivre.');
+            }
             DB::transaction(function () use ($actor, $opId, $note, $decision) {
                 [$order, $op] = $this->lockBoth($opId);
-                $this->assertNotParty($actor, $order);
+                $this->assertNoConflictOfInterest($actor, $order);
                 if ($op->state !== 'requested') {
-                    throw new FinanceConflict('Cette opération n’attend plus d’approbation.');
-                }
-                if ($op->requested_by === $actor->getKey()) {
-                    throw new FinanceConflict('Le demandeur ne peut pas approuver sa propre demande.');
+                    throw new FinanceConflict('Cette opération n’attend plus de confirmation.');
                 }
                 if (DB::table('financial_operation_approvals')->where('operation_id', $op->id)->where('approver_id', $actor->getKey())->exists()) {
-                    throw new FinanceConflict('Vous avez déjà pris position sur cette opération.');
+                    throw new FinanceConflict('Cette opération a déjà été confirmée ou refusée.');
                 }
                 // L'approbation porte sur l'ACTION EXACTE : l'empreinte est recalculée depuis les caractéristiques actuelles.
                 $fp = FinancialPolicy::fingerprint($op->kind, $op->order_id, $op->payment_id, (int) $op->amount_xof, $op->beneficiary_id, $op->environment, $op->scope);
@@ -175,12 +181,8 @@ final class FinancialOperations
 
                     return;
                 }
-                $n = DB::table('financial_operation_approvals')->where('operation_id', $op->id)->where('decision', 'approved')->count();
-                $this->event($op->id, 'approval', $actor->getKey(), null, null, 'Approbation '.$n.'/'.FinancialPolicy::requiredApprovals((int) $op->amount_xof).'.');
-                if ($n >= FinancialPolicy::requiredApprovals((int) $op->amount_xof)) {
-                    $this->transition($op->id, 'requested', 'approved', ['approved_at' => now()]);
-                    $this->event($op->id, 'approved', $actor->getKey(), 'requested', 'approved', 'Opération approuvée : exécution possible.');
-                }
+                $this->transition($op->id, 'requested', 'approved', ['approved_at' => now()]);
+                $this->event($op->id, 'approved', $actor->getKey(), 'requested', 'approved', 'Récapitulatif confirmé explicitement : exécution ou enregistrement possible.');
             });
         });
     }
@@ -193,7 +195,7 @@ final class FinancialOperations
             $this->validateReason($note);
             DB::transaction(function () use ($actor, $opId, $note) {
                 [$order, $op] = $this->lockBoth($opId);
-                $this->assertNotParty($actor, $order);
+                $this->assertNoConflictOfInterest($actor, $order);
                 if (! in_array($op->state, ['requested', 'approved'], true)) {
                     throw new FinanceConflict('Seule une opération non encore exécutée peut être annulée.');
                 }
@@ -225,7 +227,7 @@ final class FinancialOperations
             // 2) réclamation : `approved → in_progress` conditionnel + référence sortante enregistrée AVANT l'appel
             $claimed = DB::transaction(function () use ($actor, $opId) {
                 [$order, $op] = $this->lockBoth($opId);
-                $this->assertNotParty($actor, $order);
+                $this->assertNoConflictOfInterest($actor, $order);
                 if ($op->state !== 'approved') {
                     return false;
                 }
@@ -282,7 +284,7 @@ final class FinancialOperations
             }
             DB::transaction(function () use ($actor, $opId, $d, $ref, $proof) {
                 [$order, $op] = $this->lockBoth($opId);
-                $this->assertNotParty($actor, $order);
+                $this->assertNoConflictOfInterest($actor, $order);
                 if ($op->state !== 'approved') {
                     throw new FinanceConflict('Seule une opération approuvée peut être enregistrée comme effectuée.');
                 }
@@ -306,9 +308,12 @@ final class FinancialOperations
     // ------------------------------------------------------------------ rapprochement
 
     /**
-     * Lecture du paiement chez le prestataire (jamais d'envoi) pour une opération API ouverte. `refunded` ⇒ confirmé ; sinon l'opération reste telle quelle.
+     * Lecture du paiement chez le prestataire (jamais d'envoi, jamais de confirmation, jamais de libération des fonds). Le statut lu n'est qu'une INFORMATION :
+     *  - « refunded » n'établit ni le montant remboursé (la lecture ne le fournit pas), ni son rattachement à notre demande (un remboursement a pu être fait ailleurs) ;
+     *  - « completed » après un délai dépassé n'établit pas un échec (traitement possiblement en cours, asynchrone, ou réponse perdue).
+     * Dans les deux cas l'opération reste « à vérifier » avec ses fonds réservés ; seul le rapprochement manuel documenté (`reconcileManually`) conclut.
      *
-     * @return string confirmed | pending | uncertain | not_applicable
+     * @return string provider_reports_refunded | pending | uncertain | not_applicable
      */
     public function reconcile(string $opId): string
     {
@@ -319,62 +324,82 @@ final class FinancialOperations
         $payment = DB::table('payments')->where('id', $op->payment_id)->first();
         DB::table('financial_operations')->where('id', $op->id)->update(['last_checked_at' => now()]);
         $v = $this->gateways->forEnvironment($op->environment)->verify((string) $payment->provider_transaction_reference);
-        if ($v->status === ProviderStatus::Refunded && $op->scope === 'total') {
-            // Un remboursement TOTAL au statut « refunded » : le montant est celui du paiement. Référence du remboursement non lue (non fournie par la lecture).
-            $this->settle($opId, 'api', null, ['note' => 'Confirmé par lecture du statut du paiement chez le prestataire.']);
-
-            return 'confirmed';
-        }
         if ($op->state === 'in_progress' && $op->executed_at !== null && Carbon::parse($op->executed_at)->diffInMinutes(now()) >= 10) {
             $this->markUncertain($op->id, 'interrupted');                // envoi interrompu avant d'enregistrer la réponse : résultat inconnu
+            $op = $this->op($opId);
+        }
+        if ($v->status === ProviderStatus::Refunded) {
+            if ($op->state === 'in_progress') {
+                $this->markUncertain($op->id, 'provider_reports_refunded');
+            } elseif ($op->uncertain_reason !== 'provider_reports_refunded') {
+                DB::table('financial_operations')->where('id', $op->id)->where('state', 'to_verify')->update(['uncertain_reason' => 'provider_reports_refunded', 'updated_at' => now()]);
+                $this->event($op->id, 'provider_reports_refunded', null, 'to_verify', 'to_verify', 'Le prestataire indique « remboursé » : ni le montant ni le rattachement à cette demande ne sont établis. Rapprochement manuel requis ; rien n’est confirmé.');
+            }
+            ReconciliationCase::query()->firstOrCreate(['order_id' => $op->order_id, 'payment_id' => $op->payment_id, 'reason' => 'refund_unproven_provider_refunded'], ['details' => ['operation' => $op->reference]]);
+
+            return 'provider_reports_refunded';
         }
 
         return $v->status === ProviderStatus::Succeeded ? 'pending' : 'uncertain';
     }
 
-    /** Opération « à vérifier » : lecture FRAÎCHE obligatoire. Si le paiement est toujours « complété » chez le prestataire, le remboursement n'a pas eu lieu → échec constaté. */
-    public function markNotRefunded(User $actor, string $opId, string $note): void
+    /**
+     * Rapprochement MANUEL d'une opération « à vérifier », documenté par l'administrateur (référence + justificatif + confirmation explicite). C'est le seul moyen
+     * de conclure : l'API ne fournit pas d'élément fiable (montant remboursé, rattachement, preuve d'échec) à partir d'une simple lecture.
+     *  - `refunded` : le remboursement a été constaté (référence du remboursement ou du tableau de bord) pour le montant exact de l'opération → confirmé ;
+     *  - `not_refunded` : l'absence de remboursement a été constatée → échoué, réservation libérée par écriture correctrice. Refusé si le prestataire indique « remboursé ».
+     *
+     * @param  array{reference: string, proof: string, amount_confirm?: int|string, confirm: mixed}  $d
+     */
+    public function reconcileManually(User $actor, string $opId, string $outcome, array $d): void
     {
-        $this->afterFreshLookup($actor, $opId, $note, 'finance.refund.mark_failed', function ($op, $order, $actorId, $note) {
-            $this->close($op, $order, 'failed', $actorId, 'not_refunded_confirmed', 'Échec constaté après lecture du paiement chez le prestataire (non remboursé) : '.$note);
-        });
-    }
-
-    /** Reprise explicite d'un envoi : seulement après lecture fraîche montrant le paiement toujours « complété » ; l'opération repasse « approuvée » (l'appel est idempotent chez le prestataire). */
-    public function resume(User $actor, string $opId, string $note): void
-    {
-        $this->afterFreshLookup($actor, $opId, $note, 'finance.refund.resume', function ($op, $order, $actorId, $note) {
-            $this->transition($op->id, 'to_verify', 'approved', ['uncertain_reason' => null]);
-            $this->event($op->id, 'resumed', $actorId, 'to_verify', 'approved', 'Reprise autorisée après vérification (paiement toujours « complété » chez le prestataire) : '.$note);
-        });
-    }
-
-    private function afterFreshLookup(User $actor, string $opId, string $note, string $action, callable $apply): void
-    {
-        $note = trim($note);
         $op0 = $this->op($opId);
-        $this->audit->run($actor, $action, 'financial_operation', $opId, $op0?->reference, $note, function () use ($actor, $opId, $note, $apply) {
-            $this->validateReason($note);
+        $this->audit->run($actor, 'finance.refund.reconcile_manually', 'financial_operation', $opId, $op0?->reference, $d['proof'] ?? null, function () use ($actor, $opId, $outcome, $d) {
+            $ref = trim((string) ($d['reference'] ?? ''));
+            $proof = trim((string) ($d['proof'] ?? ''));
+            if (! in_array($outcome, ['refunded', 'not_refunded'], true)) {
+                throw new FinanceConflict('Résultat constaté inconnu.');
+            }
+            if (! preg_match('/^[A-Za-z0-9][A-Za-z0-9._\-\/ ]{3,79}$/', $ref)) {
+                throw new FinanceConflict('Référence requise (4 à 80 caractères) : référence du remboursement, ou du contrôle effectué dans le tableau de bord du prestataire.');
+            }
+            if (mb_strlen($proof) < 20 || mb_strlen($proof) > 500) {
+                throw new FinanceConflict('Décrivez le justificatif (20 à 500 caractères) : ce que vous avez constaté, où et quand.');
+            }
+            if (empty($d['confirm'])) {
+                throw new FinanceConflict('Confirmez explicitement votre constat.');
+            }
             $op = $this->op($opId) ?? throw new FinanceConflict('Opération introuvable.');
-            if ($op->kind !== 'refund' || $op->execution_mode !== 'api' || $op->state !== 'to_verify') {
-                throw new FinanceConflict('Seule une opération « à vérifier » envoyée par API est concernée.');
+            if ($op->kind !== 'refund' || $op->execution_mode !== 'api' || ! in_array($op->state, ['to_verify', 'in_progress'], true)) {
+                throw new FinanceConflict('Seule une opération de remboursement envoyée par API et « à vérifier » est concernée.');
             }
-            $payment = DB::table('payments')->where('id', $op->payment_id)->first();
-            $v = $this->gateways->forEnvironment($op->environment)->verify((string) $payment->provider_transaction_reference);
-            if ($v->status === ProviderStatus::Refunded) {
-                $this->settle($opId, 'api', null, ['note' => 'Confirmé par lecture du statut du paiement chez le prestataire.']);
-                throw new FinanceConflict('Le prestataire indique que le paiement est remboursé : l’opération est confirmée, aucune autre action n’est nécessaire.');
+            if ($op->state === 'in_progress' && ($op->executed_at === null || Carbon::parse($op->executed_at)->diffInMinutes(now()) < 10)) {
+                throw new FinanceConflict('Un envoi est peut-être encore en cours : attendez 10 minutes avant de le rapprocher.');
             }
-            if ($v->status !== ProviderStatus::Succeeded) {
-                throw new FinanceConflict('Le statut du paiement chez le prestataire est indéterminé : impossible de conclure pour l’instant.');
+            $lookup = null;
+            if ($outcome === 'not_refunded') {
+                $payment = DB::table('payments')->where('id', $op->payment_id)->first();
+                $lookup = $this->gateways->forEnvironment($op->environment)->verify((string) $payment->provider_transaction_reference)->status;
+                if ($lookup === ProviderStatus::Refunded) {
+                    throw new FinanceConflict('Le prestataire indique « remboursé » : l’absence de remboursement ne peut pas être constatée. Identifiez le montant et la référence du remboursement, puis constatez-le.');
+                }
+            } elseif ((int) ($d['amount_confirm'] ?? 0) !== (int) $op->amount_xof) {
+                throw new FinanceConflict('Retapez le montant exact effectivement remboursé : il doit être égal à celui de l’opération.');
             }
-            DB::transaction(function () use ($actor, $opId, $note, $apply) {
+            DB::transaction(function () use ($actor, $opId, $outcome, $ref, $proof, $lookup) {
                 [$order, $o] = $this->lockBoth($opId);
-                $this->assertNotParty($actor, $order);
-                if ($o->state !== 'to_verify') {
+                $this->assertNoConflictOfInterest($actor, $order);
+                if (! in_array($o->state, ['to_verify', 'in_progress'], true)) {
                     throw new FinanceConflict('L’opération a changé entre-temps.');
                 }
-                $apply($o, $order, $actor->getKey(), $note);
+                DB::table('financial_operations')->where('id', $o->id)->update(['reconciled_by' => $actor->getKey(), 'reconciled_at' => now(), 'reconciliation_reference' => $ref,
+                    'reconciliation_proof' => mb_substr($proof, 0, 500), 'row_version' => $o->row_version + 1, 'updated_at' => now()]);
+                if ($outcome === 'refunded') {
+                    $this->settle($opId, 'api', $actor->getKey(), ['note' => 'Remboursement CONSTATÉ manuellement (référence '.$ref.') : '.$proof]);
+                } else {
+                    $this->close($this->op($opId), $order, 'failed', $actor->getKey(), 'not_refunded_declared',
+                        'Absence de remboursement CONSTATÉE manuellement (référence '.$ref.'; lecture du prestataire : '.($lookup?->value ?? 'indéterminée').', non probante seule) : '.$proof);
+                }
             });
         });
     }
@@ -475,11 +500,22 @@ final class FinancialOperations
         }
     }
 
-    private function assertNotParty(User $actor, object $order): void
+    /**
+     * Conflit d'intérêts. Commande RÉELLE dont l'administrateur est client ou freelance : bloqué (il ne se rembourse ni ne se verse lui-même). Commande de TEST (sandbox) :
+     * autorisé pour permettre de tester le parcours avec son propre compte — avec une ligne d'audit explicite. Cela n'impose jamais un second administrateur
+     * pour les commandes ordinaires des autres utilisateurs.
+     */
+    private function assertNoConflictOfInterest(User $actor, object $order): void
     {
-        if (in_array($actor->getKey(), [$order->client_id, $order->freelancer_id], true)) {
-            throw new FinanceConflict('Vous êtes partie à cette commande : vous ne pouvez agir sur ses opérations financières ni les approuver.');
+        if (! in_array($actor->getKey(), [$order->client_id, $order->freelancer_id], true)) {
+            return;
         }
+        if ($order->environment === 'test') {
+            $this->audit->record($actor, 'finance.sandbox_party', 'order', $order->id, $order->reference, null, 'done', 'Administrateur partie à une commande de TEST (sandbox) : parcours financier autorisé, aucun argent réel.');
+
+            return;
+        }
+        throw new FinanceConflict('Conflit d’intérêts : vous êtes client ou freelance de cette commande RÉELLE. Un administrateur ne peut pas rembourser, verser ni confirmer une opération sur sa propre commande réelle ; ce blocage ne concerne pas les commandes des autres utilisateurs ni les commandes de test (sandbox).');
     }
 
     private function lockOrder(string $orderId): object

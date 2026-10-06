@@ -4,7 +4,6 @@ namespace App\Modules\Finance\Queries;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\Support\FinanceLabels;
-use App\Modules\Finance\Support\FinancialPolicy;
 use App\Modules\Finance\Support\OrderFunds;
 use App\Modules\Finance\Support\PayoutEligibility;
 use App\Modules\Support\Support\CaseRules;
@@ -21,11 +20,9 @@ final class FinanceAdmin
         $row = fn ($o) => [
             'id' => $o->id, 'reference' => $o->reference, 'kind' => FinanceLabels::KINDS[$o->kind], 'kind_raw' => $o->kind, 'scope' => $o->scope, 'order' => $o->order_reference, 'amount' => (int) $o->amount_xof,
             'state' => $o->state, 'label' => FinanceLabels::state($o->state), 'tone' => FinanceLabels::TONES[$o->state], 'simulated' => (bool) $o->is_simulated, 'environment' => $o->environment,
-            'mode' => $o->execution_mode, 'when' => Dates::format(Carbon::parse($o->created_at)), 'mine' => $o->requested_by === $viewer->getKey(), 'reason' => $o->uncertain_reason,
-            'approvals' => (int) ($o->approvals ?? 0), 'required' => FinancialPolicy::requiredApprovals((int) $o->amount_xof),
+            'mode' => $o->execution_mode, 'when' => Dates::format(Carbon::parse($o->created_at)), 'reason' => $o->uncertain_reason,
         ];
-        $base = fn () => DB::table('financial_operations as f')->join('orders as o', 'o.id', '=', 'f.order_id')
-            ->selectRaw("f.*, o.reference as order_reference, (select count(*) from financial_operation_approvals a where a.operation_id = f.id and a.decision = 'approved') as approvals");
+        $base = fn () => DB::table('financial_operations as f')->join('orders as o', 'o.id', '=', 'f.order_id')->select('f.*', 'o.reference as order_reference');
 
         $decisions = DB::table('support_decisions as d')->join('support_cases as c', 'c.id', '=', 'd.case_id')->join('orders as o', 'o.id', '=', 'c.order_id')
             ->where('d.financial_status', 'to_process')
@@ -34,7 +31,7 @@ final class FinanceAdmin
             ->orderBy('d.created_at')->limit(50)->get(['d.id', 'd.financial_need', 'd.financial_note', 'c.reference as case_reference', 'o.reference as order_reference', 'o.id as order_id']);
 
         return [
-            'toApprove' => $base()->where('f.state', 'requested')->orderBy('f.created_at')->get()->map($row)->all(),
+            'toConfirm' => $base()->where('f.state', 'requested')->orderBy('f.created_at')->get()->map($row)->all(),
             'open' => $base()->whereIn('f.state', ['approved', 'in_progress', 'to_verify'])->orderBy('f.created_at')->get()->map($row)->all(),
             'history' => $base()->whereIn('f.state', ['confirmed', 'failed', 'rejected', 'cancelled'])->orderByDesc('f.created_at')->limit(50)->get()->map($row)->all(),
             'decisions' => $decisions->map(function ($d) {
@@ -101,19 +98,22 @@ final class FinanceAdmin
             'lines' => DB::table('ledger_lines')->where('batch_id', $b->id)->orderBy('id')->get(['account', 'amount_xof'])->map(fn ($l) => ['account' => $l->account, 'amount' => (int) $l->amount_xof])->all(),
         ])->all();
         $isParty = in_array($viewer->getKey(), [$op->client_id, $op->freelancer_id], true);
-        $approvedBy = collect($approvals)->count();
-        $already = DB::table('financial_operation_approvals')->where('operation_id', $op->id)->where('approver_id', $viewer->getKey())->exists();
-        $required = FinancialPolicy::requiredApprovals((int) $op->amount_xof);
+        $sandbox = $op->order_environment === 'test';
+        $blocked = $isParty && ! $sandbox;                       // conflit d'intérêts : commande RÉELLE dont le lecteur est client ou freelance
+        $confirmedBy = collect($approvals)->firstWhere('decision', 'approved');
         $beneficiary = $op->beneficiary_id === null ? null : DB::table('payout_beneficiaries')->where('id', $op->beneficiary_id)->first(['method', 'holder_name', 'status']);
+        $stuck = $op->state === 'in_progress' && $op->executed_at !== null && Carbon::parse($op->executed_at)->diffInMinutes(now()) >= 10;
+        $payment = DB::table('payments')->where('id', $op->payment_id)->first(['provider_reference', 'provider_transaction_reference', 'amount_xof']);
 
         return [
             'op' => $op, 'label' => FinanceLabels::state($op->state), 'tone' => FinanceLabels::TONES[$op->state], 'kind' => FinanceLabels::KINDS[$op->kind],
             'requester' => $names[$op->requested_by] ?? '—', 'executor' => $op->executed_by ? ($names[$op->executed_by] ?? '—') : null, 'client' => $names[$op->client_id] ?? '—', 'freelancer' => $names[$op->freelancer_id] ?? '—',
-            'approvals' => $approvals, 'required' => $required, 'events' => $events, 'batches' => $batches, 'beneficiary' => $beneficiary, 'simulated' => (bool) $op->is_simulated,
-            'canApprove' => $op->state === 'requested' && ! $isParty && $op->requested_by !== $viewer->getKey() && ! $already, 'canCancel' => in_array($op->state, ['requested', 'approved'], true) && ! $isParty,
-            'canExecuteApi' => $op->kind === 'refund' && $op->state === 'approved' && $op->scope === 'total' && ! $isParty,
-            'canRecord' => $op->state === 'approved' && ! $isParty && ($op->kind === 'payout' || $op->scope === 'partial' || $op->execution_mode !== 'api'),
-            'canVerify' => $op->state === 'to_verify' && $op->kind === 'refund' && ! $isParty, 'isParty' => $isParty, 'alreadyDecided' => $already, 'approved' => $approvedBy,
+            'approvals' => $approvals, 'confirmedBy' => $confirmedBy['who'] ?? null, 'events' => $events, 'batches' => $batches, 'beneficiary' => $beneficiary, 'simulated' => (bool) $op->is_simulated, 'payment' => $payment,
+            'canConfirm' => $op->state === 'requested' && ! $blocked, 'canCancel' => in_array($op->state, ['requested', 'approved'], true) && ! $blocked,
+            'canExecuteApi' => $op->kind === 'refund' && $op->state === 'approved' && $op->scope === 'total' && ! $blocked,
+            'canRecord' => $op->state === 'approved' && ! $blocked && ($op->kind === 'payout' || $op->scope === 'partial' || $op->execution_mode !== 'api'),
+            'canReconcile' => $op->kind === 'refund' && $op->execution_mode === 'api' && ($op->state === 'to_verify' || $stuck) && ! $blocked,
+            'conflictBlocked' => $blocked, 'sandboxParty' => $isParty && $sandbox,
         ];
     }
 }

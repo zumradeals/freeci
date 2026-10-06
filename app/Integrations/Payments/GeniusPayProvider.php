@@ -141,8 +141,11 @@ class GeniusPayProvider implements PaymentProvider
             return RefundResult::uncertain('response_inconsistent');          // le prestataire a peut-être agi autrement que demandé : jamais « effectué »
         }
         $ref = $d['refund_reference'] ?? null;
+        if (! is_string($ref) || $ref === '' || strlen($ref) > 80) {
+            return RefundResult::uncertain('refund_reference_missing');         // sans référence de remboursement, le rattachement n'est pas établi
+        }
 
-        return RefundResult::confirmed(is_string($ref) && $ref !== '' && strlen($ref) <= 80 ? $ref : null, $expectedAmountXof);
+        return RefundResult::confirmed($ref, $expectedAmountXof);
     }
 
     /** Identifiant du compte marchand lié aux clés de cet environnement (source fiable côté serveur), mis en cache une heure. */

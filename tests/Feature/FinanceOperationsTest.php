@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Modules\Accounts\Actions\GrantAdministrator;
 use App\Modules\Accounts\Models\User;
-use App\Modules\Catalog\Exceptions\ModerationDenied;
+use App\Modules\Accounts\Security\Totp;
+use App\Modules\Accounts\Security\TwoFactor;
 use App\Modules\Finance\Actions\Beneficiaries;
 use App\Modules\Finance\Actions\FinancialOperations;
 use App\Modules\Finance\Actions\ProcessProviderEvent;
@@ -39,15 +40,11 @@ class FinanceOperationsTest extends TestCase
 {
     use AdminFixtures, OrderFixtures, RefreshDatabase;
 
-    private string $refundMode = 'ok';      // ok | timeout | 409 | 422 | inconsistent
+    private string $refundMode = 'ok';      // ok | timeout | 409 | 422 | inconsistent | noref
 
     private int $refundCalls = 0;
 
-    private User $a1;
-
-    private User $a2;
-
-    private User $a3;
+    private User $a1;                  // UN SEUL administrateur : il prépare, confirme et exécute
 
     protected function setUp(): void
     {
@@ -56,9 +53,6 @@ class FinanceOperationsTest extends TestCase
         $this->setUpParties();
         $this->withoutMiddleware(ThrottleRequests::class);
         $this->a1 = $this->readyAdmin(['name' => 'Admin Un']);
-        $this->a2 = $this->readyAdmin(['name' => 'Admin Deux']);
-        $this->a3 = $this->readyAdmin(['name' => 'Admin Trois']);
-        config(['freeci.finance.dual_approval_threshold_xof' => 100000]);
     }
 
     protected function fakeGenius(): void
@@ -86,7 +80,7 @@ class FinanceOperationsTest extends TestCase
                     return Http::response(['success' => false], 422);
                 }
 
-                return Http::response(['success' => true, 'message' => 'Refund processed', 'data' => ['reference' => $ref, 'status' => 'refunded', 'refund_reference' => 'TXN-R1', 'amount_refunded' => $this->refundMode === 'inconsistent' ? 1 : $amount, 'currency' => 'XOF', 'environment' => 'sandbox']], 200);
+                return Http::response(['success' => true, 'message' => 'Refund processed', 'data' => ['reference' => $ref, 'status' => 'refunded', 'refund_reference' => $this->refundMode === 'noref' ? null : 'TXN-R1', 'amount_refunded' => $this->refundMode === 'inconsistent' ? 1 : $amount, 'currency' => 'XOF', 'environment' => 'sandbox']], 200);
             }
             if (str_starts_with($path, '/api/v1/merchant/payments/')) {
                 $ref = basename($path);
@@ -155,8 +149,6 @@ class FinanceOperationsTest extends TestCase
         foreach ([1, 7, 199, 5000, 33333, 123457] as $base) {
             $this->assertSame($base, FinancialPolicy::commission($base, 1250) + FinancialPolicy::freelancerShare($base, 1250));
         }
-        $this->assertSame(1, FinancialPolicy::requiredApprovals(99999));
-        $this->assertSame(2, FinancialPolicy::requiredApprovals(100000));
     }
 
     public function test_the_commission_rate_is_frozen_in_the_agreement_and_never_changes_retroactively(): void
@@ -174,7 +166,7 @@ class FinanceOperationsTest extends TestCase
 
     // ---------------------------------------------------------------- remboursement total par API
 
-    public function test_a_total_refund_is_requested_approved_then_executed_by_api_and_only_then_shown_as_refunded(): void
+    public function test_one_administrator_prepares_confirms_and_executes_a_total_refund_and_only_then_it_is_shown_as_refunded(): void
     {
         $o = $this->paid();
         $dec = $this->decision($o, 'refund');
@@ -189,17 +181,19 @@ class FinanceOperationsTest extends TestCase
         // idempotence : même clé = même opération, aucune seconde réservation
         $this->assertSame($id, $this->ops()->requestRefund($this->a1, $dec, null, 'Remboursement décidé par le support.', 'k1'));
         $this->assertSame(1, DB::table('financial_operations')->count());
-        // séparation : le demandeur n'approuve pas ; une partie à la commande non plus
+        // la confirmation est EXPLICITE : sans case cochée, rien n'avance ; le même administrateur peut ensuite confirmer
         try {
-            $this->ops()->approve($this->a1, $id, 'Je valide ma propre demande.');
-            $this->fail('auto-approbation');
+            $this->ops()->approve($this->a1, $id, false);
+            $this->fail('confirmation implicite');
         } catch (FinanceConflict $e) {
-            $this->assertStringContainsString('demandeur', $e->getMessage());
+            $this->assertStringContainsString('explicitement', $e->getMessage());
         }
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+        $this->assertSame('requested', $this->opRow($id)->state);
+        $this->ops()->approve($this->a1, $id, true);
         $this->assertSame('approved', $this->opRow($id)->state);
+        $this->assertSame(1, DB::table('financial_operation_approvals')->where('operation_id', $id)->count());
 
-        $this->ops()->executeRefundViaApi($this->a2, $id);
+        $this->ops()->executeRefundViaApi($this->a1, $id);
         $op = $this->opRow($id);
         $this->assertSame(['confirmed', 'api', 'TXN-R1'], [$op->state, $op->execution_mode, $op->provider_refund_reference]);
         $this->assertSame(1, $this->refundCalls);
@@ -212,73 +206,87 @@ class FinanceOperationsTest extends TestCase
         $this->actingAs($this->client)->get('/espace/finances')->assertSee('Confirmé')->assertSee('aucun argent réel');
         // jamais deux fois
         $this->expectException(FinanceConflict::class);
-        $this->ops()->executeRefundViaApi($this->a3, $id);
+        $this->ops()->executeRefundViaApi($this->a1, $id);
     }
 
-    public function test_a_timeout_is_never_retried_blindly_and_recovery_goes_through_a_lookup(): void
+    public function test_a_timeout_is_never_retried_and_a_completed_lookup_alone_proves_no_failure(): void
     {
         $o = $this->paid();
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
-
+        $this->ops()->approve($this->a1, $id, true);
         $this->refundMode = 'timeout';
-        $this->ops()->executeRefundViaApi($this->a2, $id);
+        $this->ops()->executeRefundViaApi($this->a1, $id);
         $op = $this->opRow($id);
         $this->assertSame(['to_verify', 'transport'], [$op->state, $op->uncertain_reason]);
         $this->assertSame(1, $this->refundCalls);
         $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'), 'la réservation est conservée jusqu’au rapprochement');
         $this->assertSame(0, OrderFunds::summary($o->id)['refunded']);
-        // pas de renvoi automatique ni par le rapprochement planifié (lecture seule)
+        // le rapprochement planifié LIT seulement : « completed » ne prouve pas un échec, rien ne change, rien n'est renvoyé
+        $this->geniusStatus = 'completed';
         Artisan::call('freeci:finance:reconcile');
-        $this->assertSame(1, $this->refundCalls);
-        $this->assertSame('to_verify', $this->opRow($id)->state);
-        // pas d'exécution directe depuis « à vérifier »
+        $this->assertSame(['to_verify', 1], [$this->opRow($id)->state, $this->refundCalls]);
+        $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'));
+        $this->assertSame(0, $this->balance($o, 'escrow_simulated'));
+        // aucune exécution directe depuis « à vérifier » : pas de renvoi à l'aveugle
         try {
-            $this->ops()->executeRefundViaApi($this->a3, $id);
+            $this->ops()->executeRefundViaApi($this->a1, $id);
             $this->fail('renvoi à l’aveugle');
         } catch (FinanceConflict) {
             $this->assertSame(1, $this->refundCalls);
         }
-        // la lecture du paiement dit « complété » : le remboursement n'a pas eu lieu ; reprise explicite → approuvée, puis nouvel envoi
-        $this->ops()->resume($this->a3, $id, 'Lecture : paiement toujours complété chez le prestataire.');
-        $this->assertSame('approved', $this->opRow($id)->state);
-        $this->refundMode = 'ok';
-        $this->ops()->executeRefundViaApi($this->a3, $id);
-        $this->assertSame('confirmed', $this->opRow($id)->state);
-        $this->assertSame(2, $this->refundCalls);
-        $this->assertSame(1, DB::table('ledger_batches')->where('operation_id', $id)->where('kind', 'refund_confirmed')->count());
+        // il n'existe plus de « reprise » ni de « constat d'échec » fondés sur une lecture
+        $this->assertFalse(method_exists($this->ops(), 'resume') || method_exists($this->ops(), 'markNotRefunded'));
     }
 
-    public function test_when_the_provider_shows_the_payment_as_refunded_the_uncertain_operation_is_confirmed_by_reading_and_never_sent_again(): void
+    public function test_a_refunded_status_never_confirms_by_itself_and_only_a_documented_manual_reconciliation_does(): void
     {
         $o = $this->paid();
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+        $this->ops()->approve($this->a1, $id, true);
         $this->refundMode = 'timeout';
-        $this->ops()->executeRefundViaApi($this->a2, $id);
-        $this->geniusStatus = 'refunded';                                  // le prestataire a bien remboursé malgré le délai dépassé
+        $this->ops()->executeRefundViaApi($this->a1, $id);
+        $this->geniusStatus = 'refunded';                                  // la lecture dit « refunded » : ni montant ni rattachement établis
         Artisan::call('freeci:finance:reconcile');
-        $this->assertSame('confirmed', $this->opRow($id)->state);
-        $this->assertSame(1, $this->refundCalls, 'confirmé par lecture, sans nouvel envoi');
+        $op = $this->opRow($id);
+        $this->assertSame(['to_verify', 'provider_reports_refunded'], [$op->state, $op->uncertain_reason]);
+        $this->assertSame(1, $this->refundCalls, 'aucun nouvel envoi');
+        $this->assertSame(0, OrderFunds::summary($o->id)['refunded']);
+        $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'), 'fonds toujours réservés');
+        $this->assertSame(1, DB::table('reconciliation_cases')->where('reason', 'refund_unproven_provider_refunded')->count());
+        // rapprochement manuel : référence, justificatif suffisant, montant EXACT retapé, confirmation explicite
+        $d = ['reference' => 'TXN-R-DASH-77', 'proof' => 'Tableau de bord Genius Pay : remboursement total de 35 000 FCFA visible le 6 octobre.', 'amount_confirm' => 35000, 'confirm' => '1'];
+        foreach ([['amount_confirm' => 34999], ['confirm' => null], ['proof' => 'trop court'], ['reference' => 'x']] as $override) {
+            try {
+                $this->ops()->reconcileManually($this->a1, $id, 'refunded', $override + $d);
+                $this->fail('rapprochement accepté à tort');
+            } catch (FinanceConflict) {
+                $this->assertSame('to_verify', $this->opRow($id)->state);
+            }
+        }
+        $this->ops()->reconcileManually($this->a1, $id, 'refunded', $d);
+        $op = $this->opRow($id);
+        $this->assertSame(['confirmed', 'api', 'TXN-R-DASH-77', $this->a1->id], [$op->state, $op->execution_mode, $op->reconciliation_reference, $op->reconciled_by]);
         $this->assertSame(35000, OrderFunds::summary($o->id)['refunded']);
+        $this->assertSame(0, $this->balance($o, 'refund_reserved_simulated'));
+        $this->assertSame(1, $this->refundCalls);
     }
 
     public function test_an_inconsistent_or_ambiguous_response_is_never_presented_as_done_and_definitive_refusals_release_the_funds(): void
     {
-        foreach (['inconsistent' => 'response_inconsistent', '409' => 'refund_not_allowed'] as $mode => $reason) {
+        foreach (['inconsistent' => 'response_inconsistent', '409' => 'refund_not_allowed', 'noref' => 'refund_reference_missing'] as $mode => $reason) {
             $o = $this->paid();
             $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k-'.$mode);
-            $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+            $this->ops()->approve($this->a1, $id, true);
             $this->refundMode = $mode;
-            $this->ops()->executeRefundViaApi($this->a2, $id);
+            $this->ops()->executeRefundViaApi($this->a1, $id);
             $this->assertSame(['to_verify', $reason], [$this->opRow($id)->state, $this->opRow($id)->uncertain_reason], $mode);
             $this->assertSame(0, OrderFunds::summary($o->id)['refunded']);
         }
         $this->refundMode = '422';
         $o = $this->paid();
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k-422');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
-        $this->ops()->executeRefundViaApi($this->a2, $id);
+        $this->ops()->approve($this->a1, $id, true);
+        $this->ops()->executeRefundViaApi($this->a1, $id);
         $this->assertSame('failed', $this->opRow($id)->state);
         $this->assertSame(35000, $this->balance($o, 'escrow_simulated'), 'réservation libérée par une écriture correctrice');
         $this->assertSame(0, $this->balance($o, 'refund_reserved_simulated'));
@@ -288,29 +296,42 @@ class FinanceOperationsTest extends TestCase
         $this->assertNotEmpty($this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Nouvelle demande après échec constaté.', 'k-422b'));
     }
 
-    public function test_marking_failure_after_uncertainty_requires_a_fresh_lookup_showing_the_payment_still_completed(): void
+    public function test_declaring_that_nothing_was_refunded_requires_evidence_and_is_refused_when_the_provider_says_refunded(): void
     {
         $o = $this->paid();
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+        $this->ops()->approve($this->a1, $id, true);
         $this->refundMode = 'timeout';
-        $this->ops()->executeRefundViaApi($this->a2, $id);
-        $this->geniusStatus = 'down';
+        $this->ops()->executeRefundViaApi($this->a1, $id);
+        $d = ['reference' => 'CTRL-2026-10-06', 'proof' => 'Tableau de bord : paiement complété, aucune ligne de remboursement le 6 octobre à 11 h.', 'confirm' => '1'];
+        // le prestataire dit « remboursé » : l'absence de remboursement ne peut pas être constatée
+        $this->geniusStatus = 'refunded';
         try {
-            $this->ops()->markNotRefunded($this->a3, $id, 'Je suppose que ça a échoué.');
-            $this->fail('échec constaté sans preuve');
+            $this->ops()->reconcileManually($this->a1, $id, 'not_refunded', $d);
+            $this->fail('échec constaté malgré « refunded »');
         } catch (FinanceConflict $e) {
-            $this->assertStringContainsString('indéterminé', $e->getMessage());
+            $this->assertStringContainsString('remboursé', $e->getMessage());
         }
-        $this->assertSame('to_verify', $this->opRow($id)->state);
+        // sans justificatif suffisant ou sans confirmation : refusé
         $this->geniusStatus = 'completed';
-        $this->ops()->markNotRefunded($this->a3, $id, 'Lecture : le paiement est toujours complété.');
-        $this->assertSame('failed', $this->opRow($id)->state);
+        foreach ([['proof' => 'court'], ['confirm' => null], ['reference' => 'x']] as $override) {
+            try {
+                $this->ops()->reconcileManually($this->a1, $id, 'not_refunded', $override + $d);
+                $this->fail('constat accepté à tort');
+            } catch (FinanceConflict) {
+                $this->assertSame('to_verify', $this->opRow($id)->state);
+            }
+        }
+        $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'));
+        // constat documenté : l'opération échoue et la réservation est libérée par une écriture correctrice
+        $this->ops()->reconcileManually($this->a1, $id, 'not_refunded', $d);
+        $op = $this->opRow($id);
+        $this->assertSame(['failed', 'CTRL-2026-10-06', $this->a1->id], [$op->state, $op->reconciliation_reference, $op->reconciled_by]);
         $this->assertSame(35000, $this->balance($o, 'escrow_simulated'));
+        $this->assertSame(0, $this->balance($o, 'refund_reserved_simulated'));
+        $this->assertSame(1, DB::table('ledger_batches')->where('operation_id', $id)->whereNotNull('reverses_batch_id')->count());
         $this->assertSame(1, DB::table('order_events')->where('order_id', $o->id)->where('type', 'refund_failed')->count());
     }
-
-    // ---------------------------------------------------------------- remboursement partiel : manuel seulement
 
     public function test_partial_refunds_are_capped_never_sent_by_api_and_recorded_manually_with_evidence(): void
     {
@@ -327,9 +348,9 @@ class FinanceOperationsTest extends TestCase
         $id = $this->ops()->requestRefund($this->a1, $dec, 10000, 'Remboursement partiel décidé.', 'k1');
         $this->assertSame('partial', $this->opRow($id)->scope);
         $this->assertSame(25000, $this->balance($o, 'escrow_simulated'));
-        $this->ops()->approve($this->a2, $id, 'Montant conforme à la décision du support.');
+        $this->ops()->approve($this->a1, $id, true);
         try {
-            $this->ops()->executeRefundViaApi($this->a2, $id);
+            $this->ops()->executeRefundViaApi($this->a1, $id);
             $this->fail('partiel par API');
         } catch (FinanceConflict $e) {
             $this->assertStringContainsString('partiel', $e->getMessage());
@@ -339,15 +360,15 @@ class FinanceOperationsTest extends TestCase
         $d = ['external_reference' => 'WAVE-123456', 'proof_note' => 'Capture du transfert Wave du 6 octobre.', 'amount_confirm' => 10000, 'confirm' => '1'];
         foreach ([['amount_confirm' => 9999], ['confirm' => null], ['proof_note' => 'court'], ['external_reference' => 'x']] as $override) {
             try {
-                $this->ops()->recordManual($this->a3, $id, $override + $d);
+                $this->ops()->recordManual($this->a1, $id, $override + $d);
                 $this->fail('enregistrement accepté à tort');
             } catch (FinanceConflict) {
                 $this->assertSame('approved', $this->opRow($id)->state);
             }
         }
-        $this->ops()->recordManual($this->a3, $id, $d);
+        $this->ops()->recordManual($this->a1, $id, $d);
         $op = $this->opRow($id);
-        $this->assertSame(['confirmed', 'manual', 'WAVE-123456', $this->a3->id], [$op->state, $op->execution_mode, $op->external_reference, $op->executed_by]);
+        $this->assertSame(['confirmed', 'manual', 'WAVE-123456', $this->a1->id], [$op->state, $op->execution_mode, $op->external_reference, $op->executed_by]);
         $this->assertSame(10000, OrderFunds::summary($o->id)['refunded']);
         // plafond cumulé : le reste seulement
         $dec2 = $this->decision($o, 'partial');
@@ -357,42 +378,70 @@ class FinanceOperationsTest extends TestCase
 
     // ---------------------------------------------------------------- autorisations et concurrence
 
-    public function test_above_the_threshold_two_distinct_approvers_are_required_and_a_party_can_never_act_on_its_own_order(): void
+    public function test_no_second_approver_or_threshold_exists_whatever_the_amount_and_one_admin_runs_the_whole_path(): void
     {
-        config(['freeci.finance.dual_approval_threshold_xof' => 30000]);
+        $this->service->update(['price_xof' => 400000]);
         $o = $this->paid();
+        $this->assertSame(400000, (int) DB::table('payments')->where('order_id', $o->id)->value('amount_xof'));
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Première approbation du dossier.');
-        $this->assertSame('requested', $this->opRow($id)->state, 'une seule approbation ne suffit pas au-dessus du seuil');
-        try {
-            $this->ops()->approve($this->a2, $id, 'Seconde approbation du même approbateur.');
-            $this->fail('approbateur compté deux fois');
-        } catch (FinanceConflict $e) {
-            $this->assertStringContainsString('déjà pris position', $e->getMessage());
-        }
-        $this->ops()->approve($this->a3, $id, 'Seconde approbation distincte.');
+        $this->ops()->approve($this->a1, $id, true);                                  // une seule confirmation, même pour 400 000 FCFA
         $this->assertSame('approved', $this->opRow($id)->state);
-        $this->assertSame(2, DB::table('financial_operation_approvals')->where('operation_id', $id)->count());
+        $this->ops()->executeRefundViaApi($this->a1, $id);
+        $this->assertSame('confirmed', $this->opRow($id)->state);
+        $this->assertSame(1, DB::table('financial_operation_approvals')->where('operation_id', $id)->count());
+        // plus aucune trace de seuil ni de second approbateur dans le code, la configuration et les exemples d'environnement
+        $this->assertArrayNotHasKey('dual_approval_threshold_xof', config('freeci.finance'));
+        $this->assertFalse(method_exists(FinancialPolicy::class, 'requiredApprovals'));
+        foreach (['.env.example', 'deploy/env.production.example', 'config/freeci.php'] as $f) {
+            $this->assertStringNotContainsString('DUAL_APPROVAL', file_get_contents(base_path($f)), $f);
+        }
+        // la protection reste : opération en double, plafond, une seule confirmation
+        $this->expectException(FinanceConflict::class);
+        $this->ops()->approve($this->a1, $id, true);
+    }
 
-        // un administrateur qui est LE CLIENT de la commande ne peut ni demander, ni approuver, ni exécuter
+    public function test_an_admin_party_to_a_sandbox_order_can_test_the_path_with_audit_but_never_on_a_real_order(): void
+    {
+        $o = $this->paid();
         app(GrantAdministrator::class)($this->client, 'test');
-        $o2 = $this->paid();                                                       // commande dont le client est désormais administrateur
+        $mfa = app(TwoFactor::class);
+        $mfa->confirm($this->client, Totp::code($mfa->begin($this->client)['secret'], Totp::step()));
+        DB::table('users')->where('id', $this->client->id)->update(['email_verified_at' => now()]);
+        $self = $this->client->fresh();
+        // commande de TEST dont l'administrateur est le client : autorisé, indiqué et audité
+        $id = $this->ops()->requestRefund($self, $this->decision($o, 'refund'), null, 'Test du parcours avec mon propre compte.', 'k1');
+        $this->ops()->approve($self, $id, true);
+        $this->ops()->executeRefundViaApi($self, $id);
+        $this->assertSame('confirmed', $this->opRow($id)->state);
+        $this->assertGreaterThanOrEqual(3, DB::table('admin_actions')->where('actor_id', $self->id)->where('action', 'finance.sandbox_party')->where('result', 'done')->count());
+        $this->asAdmin($self)->get('/admin/finances/operations/'.$this->opRow($id)->reference)->assertOk()->assertSee('commande de TEST');
+
+        // commande RÉELLE (environnement forcé pour le test) : conflit d'intérêts, expliqué ; un autre administrateur n'a, lui, aucune restriction
+        $o2 = $this->paid();
+        DB::statement('ALTER TABLE orders DISABLE TRIGGER orders_environment_fixed');
+        DB::table('orders')->where('id', $o2->id)->update(['environment' => 'live']);
+        DB::statement('ALTER TABLE orders ENABLE TRIGGER orders_environment_fixed');
         $dec = $this->decision($o2, 'refund');
         try {
-            $this->ops()->requestRefund($this->client, $dec, null, 'Je me rembourse moi-même.', 'self');
-            $this->fail('auto-demande');
-        } catch (FinanceConflict|ModerationDenied $e) {
-            $this->assertSame(0, DB::table('financial_operations')->where('order_id', $o2->id)->count());
+            $this->ops()->requestRefund($self, $dec, null, 'Je me rembourse moi-même.', 'self');
+            $this->fail('conflit d’intérêts ignoré');
+        } catch (FinanceConflict $e) {
+            $this->assertStringContainsString('Conflit d’intérêts', $e->getMessage());
+            $this->assertStringContainsString('RÉELLE', $e->getMessage());
         }
-        $id2 = $this->ops()->requestRefund($this->a1, $dec, null, 'Remboursement décidé par le support.', 'k-ok');
-        foreach (['approve', 'reject', 'cancel'] as $m) {
+        $this->assertSame(1, DB::table('admin_actions')->where('actor_id', $self->id)->where('action', 'finance.refund.request')->where('result', 'refused')->count());
+        $id2 = $this->ops()->requestRefund($this->a1, $dec, null, 'Remboursement décidé par le support.', 'k2');      // un SEUL autre administrateur suffit
+        $this->ops()->approve($this->a1, $id2, true);
+        $this->assertSame('approved', $this->opRow($id2)->state);
+        foreach ([fn () => $this->ops()->approve($self, $id2, true), fn () => $this->ops()->cancel($self, $id2, 'Annulation de ma propre commande réelle.')] as $try) {
             try {
-                $this->ops()->$m($this->client, $id2, 'Action sur ma propre commande.');
-                $this->fail("{$m} par une partie");
-            } catch (FinanceConflict|ModerationDenied) {
-                $this->assertSame('requested', $this->opRow($id2)->state);
+                $try();
+                $this->fail('action sur sa propre commande réelle');
+            } catch (FinanceConflict) {
+                $this->assertSame('approved', $this->opRow($id2)->state);
             }
         }
+        $this->asAdmin($self)->get('/admin/finances/operations/'.$this->opRow($id2)->reference)->assertOk()->assertSee('Conflit d’intérêts');
     }
 
     public function test_the_same_funds_can_never_be_consumed_twice_and_the_database_backs_it_up(): void
@@ -401,7 +450,7 @@ class FinanceOperationsTest extends TestCase
         $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
         // une seconde opération ouverte sur le même paiement : refusée ; et aucun fonds disponible
         try {
-            $this->ops()->requestRefund($this->a2, $this->decision($o, 'partial'), 1000, 'Autre remboursement concurrent.', 'k2');
+            $this->ops()->requestRefund($this->a1, $this->decision($o, 'partial'), 1000, 'Autre remboursement concurrent.', 'k2');
             $this->fail('deux remboursements ouverts');
         } catch (FinanceConflict) {
             $this->assertSame(1, DB::table('financial_operations')->count());
@@ -428,7 +477,7 @@ class FinanceOperationsTest extends TestCase
                 $this->assertStringContainsString('ne peuvent pas être remplacées', $e->getMessage().'ne peuvent pas être remplacées');
             }
         }
-        $this->ops()->cancel($this->a2, $id, 'Demande annulée par erreur de saisie.');
+        $this->ops()->cancel($this->a1, $id, 'Demande annulée par erreur de saisie.');
         $this->assertSame('cancelled', $this->opRow($id)->state);
         $this->assertSame(35000, $this->balance($o, 'escrow_simulated'));
         try {
@@ -453,7 +502,7 @@ class FinanceOperationsTest extends TestCase
     {
         app(Beneficiaries::class)->declare($this->freelancer, 'mobile_money', 'Kader Freelance', '+2250700000000');
         if ($verified) {
-            app(Beneficiaries::class)->verify($this->a3, DB::table('payout_beneficiaries')->where('status', 'pending')->value('id'), 'Appel de contrôle effectué au titulaire.');
+            app(Beneficiaries::class)->verify($this->a1, DB::table('payout_beneficiaries')->where('status', 'pending')->value('id'), 'Appel de contrôle effectué au titulaire.');
         }
     }
 
@@ -490,7 +539,7 @@ class FinanceOperationsTest extends TestCase
 
     private function beneficiary_verify(): void
     {
-        app(Beneficiaries::class)->verify($this->a3, DB::table('payout_beneficiaries')->where('status', 'pending')->value('id'), 'Appel de contrôle effectué au titulaire.');
+        app(Beneficiaries::class)->verify($this->a1, DB::table('payout_beneficiaries')->where('status', 'pending')->value('id'), 'Appel de contrôle effectué au titulaire.');
     }
 
     public function test_a_payout_is_reserved_approved_and_only_recorded_manually_never_by_api_and_never_from_a_request_alone(): void
@@ -507,13 +556,13 @@ class FinanceOperationsTest extends TestCase
         $this->assertSame(0, OrderFunds::summary($o->id)['paid_out']);
         // aucun second reversement, ni remboursement sur les mêmes fonds
         try {
-            $this->ops()->requestPayout($this->a2, $o->reference, 'Doublon de demande.', 'p2');
+            $this->ops()->requestPayout($this->a1, $o->reference, 'Doublon de demande.', 'p2');
             $this->fail('deux reversements');
         } catch (FinanceConflict) {
             $this->assertSame(1, DB::table('financial_operations')->where('kind', 'payout')->count());
         }
         try {
-            $this->ops()->requestRefund($this->a2, $this->decision($o, 'partial', false), 1000, 'Remboursement concurrent.', 'r1');
+            $this->ops()->requestRefund($this->a1, $this->decision($o, 'partial', false), 1000, 'Remboursement concurrent.', 'r1');
             $this->fail('remboursement sur des fonds réservés');
         } catch (FinanceConflict $e) {
             $this->assertStringContainsString('Plafond', $e->getMessage());
@@ -524,9 +573,9 @@ class FinanceOperationsTest extends TestCase
     private function approveRecordAndFinish(Order $o, string $id): void
     {
         // pas d'API : aucune exécution API possible pour un reversement
-        $this->ops()->approve($this->a2, $id, 'Part du freelance conforme à l’accord.');
+        $this->ops()->approve($this->a1, $id, true);
         try {
-            $this->ops()->executeRefundViaApi($this->a2, $id);
+            $this->ops()->executeRefundViaApi($this->a1, $id);
             $this->fail('reversement par API');
         } catch (FinanceConflict) {
             $this->assertSame(0, $this->refundCalls);
@@ -535,13 +584,13 @@ class FinanceOperationsTest extends TestCase
         DB::table('payout_holds')->insert(['order_id' => $o->id, 'case_id' => $this->decisionCase($o), 'reason' => 'Litige ouvert', 'created_at' => now()]);
         $d = ['external_reference' => 'WAVE-PAYOUT-1', 'proof_note' => 'Capture du transfert Wave au freelance.', 'amount_confirm' => 31500, 'confirm' => '1'];
         try {
-            $this->ops()->recordManual($this->a3, $id, $d);
+            $this->ops()->recordManual($this->a1, $id, $d);
             $this->fail('enregistrement malgré un litige');
         } catch (FinanceConflict $e) {
             $this->assertStringContainsString('litige', $e->getMessage());
         }
         DB::table('payout_holds')->where('order_id', $o->id)->update(['released_at' => now()]);
-        $this->ops()->recordManual($this->a3, $id, $d);
+        $this->ops()->recordManual($this->a1, $id, $d);
         $op = $this->opRow($id);
         $this->assertSame(['confirmed', 'manual', 'WAVE-PAYOUT-1'], [$op->state, $op->execution_mode, $op->external_reference]);
         $this->assertSame([0, 3500, 0, 31500], [$this->balance($o, 'escrow_simulated'), $this->balance($o, 'platform_commission_simulated'), $this->balance($o, 'payout_reserved_simulated'), $this->balance($o, 'external_freelancer_simulated')]);
@@ -585,14 +634,14 @@ class FinanceOperationsTest extends TestCase
         $this->assertSame(0, DB::table('financial_operations')->count());
         $this->asAdmin($this->a1)->post("/admin/finances/decisions/{$dec}/rembourser", ['reason' => 'Remboursement décidé par le support.', 'operation_key' => 'x1'])->assertRedirect()->assertSessionHas('status');
         $ref = DB::table('financial_operations')->value('reference');
-        $this->asAdmin($this->a2)->get("/admin/finances/operations/{$ref}")->assertOk()->assertSee('Les fonds sont')->assertSee('réservés')->assertSee('Approuver');
-        $this->asAdmin($this->a1)->get("/admin/finances/operations/{$ref}")->assertSee('Vous êtes le demandeur');
-        $this->asAdmin($this->a2)->post("/admin/finances/operations/{$ref}/approuver", ['note' => 'Vérifié sur le dossier et le plafond.'])->assertSessionHas('status');
+        $this->asAdmin($this->a1)->get("/admin/finances/operations/{$ref}")->assertOk()->assertSee('Les fonds sont')->assertSee('réservés')->assertSee('Confirmer le récapitulatif')->assertSee('TEST (sandbox)');
+        $this->asAdmin($this->a1)->post("/admin/finances/operations/{$ref}/confirmer", [])->assertSessionHasErrors('confirm');
+        $this->asAdmin($this->a1)->post("/admin/finances/operations/{$ref}/confirmer", ['confirm' => '1'])->assertSessionHas('status');
         $this->assertSame('approved', DB::table('financial_operations')->where('reference', $ref)->value('state'));
-        $this->assertSame([1, 1], [DB::table('admin_actions')->where('action', 'finance.refund.request')->where('result', 'done')->count(), DB::table('admin_actions')->where('action', 'finance.operation.approve')->where('result', 'done')->count()]);
+        $this->assertSame([1, 1], [DB::table('admin_actions')->where('action', 'finance.refund.request')->where('result', 'done')->count(), DB::table('admin_actions')->where('action', 'finance.operation.confirm')->where('result', 'done')->count()]);
     }
 
-    public function test_a_payment_refunded_notification_is_reconciled_by_reading_and_a_refund_made_elsewhere_is_only_flagged(): void
+    public function test_a_payment_refunded_notification_never_confirms_an_operation_and_a_refund_made_elsewhere_is_only_flagged(): void
     {
         $o = $this->paid();
         $payment = DB::table('payments')->first();
@@ -605,21 +654,22 @@ class FinanceOperationsTest extends TestCase
             return $this->call('POST', '/webhooks/geniuspay', [], [], [], $server, $body);
         };
         config(['freeci.payments.genius.sandbox.webhook_secret' => 'whsec_test_sandbox_0123456789']);
-        // aucun remboursement FreeCI : l'événement est seulement signalé (rapprochement), jamais converti en remboursement
+        // aucun remboursement FreeCI : l'événement est seulement signalé (rapprochement)
         $this->geniusStatus = 'refunded';
         $hook('whsec_test_sandbox_0123456789')->assertOk();
         $this->assertSame(0, DB::table('financial_operations')->count());
         $this->assertSame(1, DB::table('reconciliation_cases')->where('reason', 'refunded_by_provider')->count());
-        // avec une opération API incertaine : confirmée par lecture
+        // avec une opération API incertaine : l'opération reste « à vérifier » (montant et rattachement non établis), jamais confirmée
         $this->geniusStatus = 'completed';
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+        $this->ops()->approve($this->a1, $id, true);
         $this->refundMode = 'timeout';
-        $this->ops()->executeRefundViaApi($this->a2, $id);
+        $this->ops()->executeRefundViaApi($this->a1, $id);
         $this->geniusStatus = 'refunded';
         $hook('whsec_test_sandbox_0123456789', 1)->assertOk();
         DB::table('payment_events')->where('processing', 'received')->pluck('id')->each(fn ($e) => app(ProcessProviderEvent::class)->process((int) $e));
-        $this->assertSame('confirmed', $this->opRow($id)->state);
+        $this->assertSame(['to_verify', 'provider_reports_refunded'], [$this->opRow($id)->state, $this->opRow($id)->uncertain_reason]);
+        $this->assertSame(0, OrderFunds::summary($o->id)['refunded']);
         $this->assertSame(1, $this->refundCalls);
     }
 
@@ -636,10 +686,10 @@ class FinanceOperationsTest extends TestCase
     {
         $o = $this->paid();
         $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
-        $this->ops()->approve($this->a2, $id, 'Vérifié sur le dossier et le plafond.');
+        $this->ops()->approve($this->a1, $id, true);
         // arrêt brutal après la réclamation (`in_progress`) et avant l'enregistrement de la réponse
         DB::table('financial_operations')->where('id', $id)->update(['state' => 'in_progress', 'execution_mode' => 'api', 'provider' => 'genius_pay', 'provider_reference' => 'RF-CRASH', 'attempts' => 1,
-            'executed_by' => $this->a2->id, 'executed_at' => now()->subMinutes(30)]);
+            'executed_by' => $this->a1->id, 'executed_at' => now()->subMinutes(30)]);
         Artisan::call('freeci:finance:reconcile');
         $this->assertSame(['to_verify', 'interrupted'], [$this->opRow($id)->state, $this->opRow($id)->uncertain_reason]);
         $this->assertSame(0, $this->refundCalls, 'la reprise ne renvoie jamais : lecture seule');
