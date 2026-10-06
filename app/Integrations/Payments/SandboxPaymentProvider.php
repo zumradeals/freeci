@@ -17,6 +17,11 @@ class SandboxPaymentProvider implements PaymentProvider
         return self::NAME;
     }
 
+    public function environment(): string
+    {
+        return 'simulator';
+    }
+
     public function createCheckout(CheckoutRequest $request): CheckoutResult
     {
         DB::table('sandbox_transactions')->insertOrIgnore([

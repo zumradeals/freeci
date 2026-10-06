@@ -18,8 +18,19 @@ class Payment extends Model
     {
         return [
             'state' => PaymentState::class, 'amount_xof' => 'integer', 'is_simulated' => 'boolean',
-            'pending_at' => 'datetime', 'confirmed_at' => 'datetime', 'failed_at' => 'datetime', 'last_checked_at' => 'datetime',
+            'pending_at' => 'datetime', 'confirmed_at' => 'datetime', 'failed_at' => 'datetime', 'last_checked_at' => 'datetime', 'provider_expires_at' => 'datetime', 'binding_verified_at' => 'datetime',
         ];
+    }
+
+    /** Référence à interroger chez le prestataire : celle qu'il a attribuée (Genius Pay), sinon la nôtre (simulateur). */
+    public function verificationReference(): string
+    {
+        return $this->provider_transaction_reference ?? $this->provider_reference;
+    }
+
+    public function isSandboxProvider(): bool
+    {
+        return $this->provider === 'genius_pay';
     }
 
     public function order(): BelongsTo

@@ -52,7 +52,7 @@ class OrderAccessTest extends TestCase
 
         $forbidden->assertNotFound();
         $missing->assertNotFound();
-        $normalize = fn ($html) => preg_replace(['/<!-- Livewire Scripts -->\s*<script[^>]*><\/script>/', '/(data-csrf|csrf-token)="[^"]*"/', '/\?id=[0-9a-f]+/'], '', $html);
+        $normalize = fn ($html) => preg_replace(['/<!-- Livewire Scripts -->\s*<script[^>]*><\/script>/', '/(data-csrf|csrf-token)="[^"]*"/', '/\?id=[0-9a-f]+/', '/wire:(id|key|snapshot)="[^"]*"/', '/lw-\d+-\d+/'], '', $html);
         $this->assertSame($normalize($forbidden->getContent()), $normalize($missing->getContent()), 'rien ne distingue un dossier interdit d’un dossier inexistant');
     }
 

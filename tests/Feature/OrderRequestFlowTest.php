@@ -255,7 +255,8 @@ class OrderRequestFlowTest extends TestCase
 
         // aucune route publique ne permet de « marquer payé » ; aucune colonne de paiement dans la table des commandes
         // Seules les routes de paiement SIMULÉ prévues existent ; aucune ne « confirme » ni ne « marque payé ».
-        $allowed = ['commandes/{reference}/paiement', 'commandes/{reference}/paiement/actualiser', 'webhooks/sandbox-payments'];
+        // Retour du navigateur (informatif : il déclenche seulement une revérification serveur), webhook Genius Pay (signature + revérification), rapprochement administrateur (trace, aucune exécution).
+        $allowed = ['commandes/{reference}/paiement', 'commandes/{reference}/paiement/actualiser', 'commandes/{reference}/paiement/retour', 'webhooks/sandbox-payments', 'webhooks/geniuspay', 'admin/paiements', 'admin/paiements/{id}/examiner'];
         foreach (app('router')->getRoutes() as $route) {
             $line = $route->uri().' '.($route->getName() ?? '');
             $this->assertDoesNotMatchRegularExpression('/paid|mark|confirm-?pay|confirmer/i', $line, $route->uri());

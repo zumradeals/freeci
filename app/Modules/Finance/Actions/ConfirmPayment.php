@@ -65,7 +65,7 @@ final class ConfirmPayment
                 return 'reconciliation';
             }
 
-            $order->events()->create(['type' => 'payment_confirmed', 'actor_id' => null, 'note' => 'Paiement simulé confirmé ('.$payment->provider_reference.').']);
+            $order->events()->create(['type' => 'payment_confirmed', 'actor_id' => null, 'note' => ($payment->environment === 'sandbox' ? 'Paiement Genius Pay (bac à sable, aucun argent réel) confirmé, vérifié côté serveur (' : 'Paiement simulé confirmé (').$payment->provider_reference.').']);
             if ($order->mission_id !== null) {
                 app(MissionLifecycle::class)->onPaymentConfirmed($order);        // la mission n'est attribuée QU'ICI, paiement vérifié côté serveur
             }
@@ -79,7 +79,7 @@ final class ConfirmPayment
     {
         ReconciliationCase::query()->firstOrCreate(
             ['order_id' => $order->getKey(), 'payment_id' => $payment->getKey(), 'reason' => $reason],
-            ['details' => ['payment_state' => $payment->state->value, 'order_state' => $order->state->value]],
+            ['details' => ['payment_state' => $payment->state->value, 'order_state' => $order->state->value, 'environment' => $payment->environment, 'amount_xof' => (int) $payment->amount_xof]],
         );
     }
 }

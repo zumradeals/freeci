@@ -7,6 +7,7 @@
         <a class="kpi" href="{{ route('admin.moderation', ['onglet' => 'missions']) }}"><span class="n">{{ $d['missionsInReview'] }}</span><span class="l">mission{{ $d['missionsInReview'] > 1 ? 's' : '' }} à modérer</span></a>
         <a class="kpi" href="{{ route('admin.users') }}"><span class="n">{{ $d['users'] }}</span><span class="l">utilisateur{{ $d['users'] > 1 ? 's' : '' }}</span></a>
         <a class="kpi" href="{{ route('admin.users', ['statut' => 'suspended']) }}"><span class="n">{{ $d['suspended'] }}</span><span class="l">compte{{ $d['suspended'] > 1 ? 's' : '' }} suspendu{{ $d['suspended'] > 1 ? 's' : '' }}</span></a>
+        <a class="kpi" href="{{ route('admin.payments') }}"><span class="n">{{ $d['paymentsToReview'] }}</span><span class="l">paiement{{ $d['paymentsToReview'] > 1 ? 's' : '' }} à vérifier</span></a>
         <a class="kpi" href="{{ route('admin.support') }}"><span class="n">{{ $d['cases']['unassigned'] }}</span><span class="l">dossier{{ $d['cases']['unassigned'] > 1 ? 's' : '' }} d’assistance non affecté{{ $d['cases']['unassigned'] > 1 ? 's' : '' }}</span></a>
         <a class="kpi" href="{{ route('admin.support', ['onglet' => 'financier']) }}"><span class="n">{{ $d['cases']['toProcess'] }}</span><span class="l">à traiter financièrement</span></a>
         <a class="kpi" href="{{ route('admin.audit.security') }}"><span class="n">{{ $d['securityAlerts'] }}</span><span class="l">alerte{{ $d['securityAlerts'] > 1 ? 's' : '' }} de sécurité (24 h)</span></a>

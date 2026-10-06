@@ -2,27 +2,28 @@
 
 namespace App\Modules\Finance\Actions;
 
-use App\Integrations\Payments\PaymentProvider;
+use App\Integrations\Payments\PaymentProviders;
 use App\Integrations\Payments\ProviderStatus;
 use App\Integrations\Payments\Verification;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\Payment;
+use App\Modules\Finance\Models\ReconciliationCase;
 use App\Modules\Finance\SandboxGate;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 /**
- * `Finance\RefreshPaymentStatus` : vérification serveur auprès du prestataire (limitée : une toutes les 10 s).
- * C'est le rapprochement quand une notification est perdue. Un navigateur ne peut rien confirmer : il demande seulement
- * au SERVEUR d'interroger le prestataire.
+ * `Finance\RefreshPaymentStatus` : vérification serveur auprès du prestataire de LA TENTATIVE (limitée : une toutes les 10 s).
+ * C'est le rapprochement quand une notification est perdue ou qu'un appel de création a dépassé son délai (même demande rejouée, jamais une
+ * nouvelle tentative). Un navigateur ne peut rien confirmer : il demande seulement au SERVEUR d'interroger le prestataire.
  */
 final class RefreshPaymentStatus
 {
     public const MIN_INTERVAL_SECONDS = 10;
 
-    public function __construct(private PaymentProvider $provider, private ConfirmPayment $confirm, private SandboxGate $gate) {}
+    public function __construct(private PaymentProviders $providers, private ConfirmPayment $confirm, private SandboxGate $gate, private CheckoutRecorder $recorder, private PaymentVerifier $verifier) {}
 
     /** @return array{0: ?Payment, 1: bool} [tentative, vrai si la limite d'actualisation a été atteinte] */
     public function __invoke(User $client, string $reference): array
@@ -38,26 +39,57 @@ final class RefreshPaymentStatus
         if ($payment->last_checked_at !== null && $payment->last_checked_at->gt(now()->subSeconds(self::MIN_INTERVAL_SECONDS))) {
             return [$payment, true];
         }
-        DB::table('payments')->where('id', $payment->getKey())->update(['last_checked_at' => now()]);
 
-        $v = $this->provider->verify($payment->provider_reference);
+        return [$this->forPayment($payment, $order), false];
+    }
+
+    /** Vérification d'une tentative OUVERTE (aussi appelée par la tâche de rapprochement). */
+    public function forPayment(Payment $payment, ?Order $order = null): Payment
+    {
+        $order ??= Order::query()->whereKey($payment->order_id)->firstOrFail();
+        DB::table('payments')->where('id', $payment->getKey())->update(['last_checked_at' => now()]);
+        $provider = $this->providers->named($payment->provider);
+
+        // Genius Pay : tentative créée mais référence du prestataire inconnue (délai dépassé à la création) → on REJOUE la même création (idempotente).
+        if ($payment->isSandboxProvider() && $payment->provider_transaction_reference === null) {
+            $result = $this->recorder->run($payment);
+            $payment = $payment->fresh();
+            if ($result !== 'pending' || $payment->provider_transaction_reference === null) {
+                return $payment;
+            }
+        }
+
+        $v = $provider->verify($payment->verificationReference());
         match ($v->status) {
             ProviderStatus::Succeeded => $this->confirmIfConsistent($payment, $order, $v),
             ProviderStatus::Failed => $this->setState($payment, PaymentState::Failed, 'provider_declined'),
             ProviderStatus::Indeterminate => $this->setState($payment, PaymentState::Unknown),
+            ProviderStatus::Refunded => $this->flag($order, $payment, 'refunded_by_provider', $v),
             // Référence inconnue du prestataire après 2 minutes : l'appel de création n'a jamais abouti → tentative échouée.
             ProviderStatus::NotFound => $payment->created_at->lt(now()->subMinutes(2)) ? $this->setState($payment, PaymentState::Failed, 'checkout_incomplete') : null,
-            ProviderStatus::Pending => null,
+            ProviderStatus::Pending, ProviderStatus::Other => null,
         };
 
-        return [$payment->fresh(), false];
+        return $payment->fresh();
     }
 
     private function confirmIfConsistent(Payment $payment, Order $order, Verification $v): void
     {
-        if ($v->amountXof === $payment->amount_xof && $v->currency === $payment->currency && $v->orderReference === $order->reference) {
+        $reason = $this->verifier->inconsistency($payment, $order, $v);
+        if ($reason === null) {
             ($this->confirm)($payment->getKey());
+
+            return;
         }
+        $this->flag($order, $payment, $reason, $v);        // « à vérifier » : aucune confirmation, aucun démarrage
+    }
+
+    private function flag(Order $order, Payment $payment, string $reason, Verification $v): void
+    {
+        ReconciliationCase::query()->firstOrCreate(
+            ['order_id' => $order->getKey(), 'payment_id' => $payment->getKey(), 'reason' => $reason],
+            ['details' => ['verified_status' => $v->status->value, 'verified_amount' => $v->amountXof, 'environment' => $payment->environment]],
+        );
     }
 
     private function setState(Payment $payment, PaymentState $to, ?string $code = null): void

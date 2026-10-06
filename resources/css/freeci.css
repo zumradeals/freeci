@@ -561,6 +561,7 @@ table.list td.c-title .ref { color: var(--ink-600); font-size: .875rem; display:
 .defs > div { display: grid; gap: 2px 24px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .defs > div:last-child { border-bottom: 0; }
 @media (min-width: 768px) { .defs > div { grid-template-columns: 200px minmax(0, 1fr); } }
+@media (min-width: 768px) { .defs-stack > div { grid-template-columns: minmax(0, 1fr); } }   /* carte étroite (récapitulatif) : libellé au-dessus de la valeur */
 .defs dt { color: var(--ink-600); font-size: .9375rem; }
 .defs dd { font-weight: 550; }
 .defs dd > small { display: block; font-weight: 450; color: var(--ink-600); font-size: .875rem; margin-top: 2px; }

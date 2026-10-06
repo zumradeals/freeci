@@ -2,7 +2,8 @@
 
 namespace App\Modules\Finance\Actions;
 
-use App\Integrations\Payments\PaymentProvider;
+use App\Integrations\Payments\GeniusPayProvider;
+use App\Integrations\Payments\PaymentProviders;
 use App\Integrations\Payments\ProviderEvent;
 use App\Integrations\Payments\ProviderStatus;
 use App\Modules\Finance\Enums\PaymentState;
@@ -13,52 +14,156 @@ use App\Modules\Orders\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Traite une notification déjà AUTHENTIFIÉE (signature vérifiée par l'adaptateur). Dédoublonnée par identifiant d'événement,
- * non régressive (un état final ne change plus), et la confirmation n'est jamais crue sur parole : elle est revérifiée.
+ * Traite une notification déjà AUTHENTIFIÉE (signature vérifiée par l'adaptateur). Deux temps :
+ *  1. `record` : l'événement est ENREGISTRÉ durablement (dédoublonné par identifiant) — rien d'autre ;
+ *  2. `process` : traitement (synchrone pour le simulateur, asynchrone pour Genius Pay) — non régressif, et la confirmation n'est JAMAIS crue sur parole :
+ *     elle est revérifiée auprès du prestataire (statut, montant, devise, référence, environnement) avant tout effet.
+ * Résultats : applied | duplicate | ignored | rejected | reconciliation | review (information manquante ou incertaine : à revérifier, aucun démarrage).
  */
 final class ProcessProviderEvent
 {
-    public function __construct(private PaymentProvider $provider, private ConfirmPayment $confirm, private SandboxGate $gate) {}
+    public function __construct(private PaymentProviders $providers, private ConfirmPayment $confirm, private SandboxGate $gate, private PaymentVerifier $verifier, private CheckoutRecorder $recorder) {}
 
-    /** @return string 'applied' | 'duplicate' | 'ignored' | 'rejected' | 'reconciliation' */
+    /** Enregistrement + traitement immédiat (simulateur). */
     public function __invoke(ProviderEvent $event): string
+    {
+        [$id, $duplicate] = $this->record($event, 'processed');
+
+        return $duplicate ? 'duplicate' : $this->process((int) $id);
+    }
+
+    /** @return array{0: ?int, 1: bool} [identifiant de la ligne (nouvelle), vrai si l'événement était déjà connu] */
+    public function record(ProviderEvent $event, string $processing = 'received'): array
     {
         $inserted = DB::table('payment_events')->insertOrIgnore([
             'provider' => $event->provider, 'provider_event_id' => $event->eventId, 'provider_reference' => $event->reference,
-            'type' => $event->status->value, 'payload' => json_encode($event->payload), 'received_at' => now(),
+            'type' => $event->status->value, 'payload' => json_encode($event->payload), 'received_at' => now(), 'processing' => $processing === 'processed' ? 'received' : $processing,
+            'environment' => $event->payload['environment'] ?? null, 'signature_timestamp' => $event->payload['signature_timestamp'] ?? null,
         ]);
+        $row = DB::table('payment_events')->where(['provider' => $event->provider, 'provider_event_id' => $event->eventId])->first(['id']);
         if ($inserted === 0) {
-            // Événement reçu plusieurs fois : compté, jamais ré-appliqué.
-            DB::table('payment_events')->where(['provider' => $event->provider, 'provider_event_id' => $event->eventId])->increment('duplicate_count');
+            // Événement reçu plusieurs fois (reprises du prestataire comprises) : compté, jamais ré-appliqué.
+            DB::table('payment_events')->where('id', $row->id)->increment('duplicate_count');
 
-            return 'duplicate';
+            return [null, true];
         }
 
-        $outcome = $this->apply($event);
-        DB::table('payment_events')->where(['provider' => $event->provider, 'provider_event_id' => $event->eventId])
-            ->update(['outcome' => $outcome, 'payment_id' => Payment::query()->where('provider_reference', $event->reference)->value('id')]);
+        return [(int) $row->id, false];
+    }
+
+    /** Traite une ligne enregistrée. Idempotent : une ligne déjà traitée n'est jamais ré-appliquée. */
+    public function process(int $rowId): string
+    {
+        $row = DB::table('payment_events')->where('id', $rowId)->first();
+        if ($row === null || $row->processing === 'processed') {
+            return 'duplicate';
+        }
+        $payload = json_decode((string) $row->payload, true) ?: [];
+        $event = new ProviderEvent($row->provider, $row->provider_event_id, (string) $row->provider_reference, ProviderStatus::from($row->type), $payload);
+        $payment = $this->find($event);
+        DB::table('payment_events')->where('id', $rowId)->increment('attempts');
+
+        try {
+            $outcome = $this->apply($event, $payment);
+        } catch (\Throwable $e) {
+            report($e);
+            $outcome = 'review';
+        }
+
+        $review = $outcome === 'review';
+        DB::table('payment_events')->where('id', $rowId)->update([
+            'outcome' => $review ? null : $outcome, 'payment_id' => $payment?->getKey(), 'processing' => $review ? 'needs_review' : 'processed', 'processed_at' => now(),
+            'review_reason' => $review ? mb_substr((string) ($this->reviewReason ?? 'verification_incomplete'), 0, 60) : null,
+        ]);
+        $this->reviewReason = null;
 
         return $outcome;
     }
 
-    private function apply(ProviderEvent $event): string
+    private ?string $reviewReason = null;
+
+    private function find(ProviderEvent $event): ?Payment
     {
-        $payment = Payment::query()->where('provider_reference', $event->reference)->first();
+        if ($event->provider === GeniusPayProvider::NAME) {
+            $p = Payment::query()->where('provider', $event->provider)->where('provider_transaction_reference', $event->reference)->first();
+            if ($p !== null) {
+                return $p;
+            }
+            // Notification reçue avant que la réponse de création ait été enregistrée : retrouvée par NOTRE référence de tentative (métadonnée envoyée).
+            $attempt = $event->payload['transaction']['attempt'] ?? null;
+
+            return is_string($attempt) ? Payment::query()->where('provider', $event->provider)->where('provider_reference', $attempt)->first() : null;
+        }
+
+        return Payment::query()->where('provider', $event->provider)->where('provider_reference', $event->reference)->first();
+    }
+
+    private function apply(ProviderEvent $event, ?Payment $payment): string
+    {
         if ($payment === null) {
             return 'ignored';                              // référence inconnue
         }
         $order = Order::query()->whereKey($payment->order_id)->firstOrFail();
         if (! $this->gate->allows($order)) {
-            return 'rejected';                             // simulateur désactivé ou commande non autorisée
+            $this->flag($order, $payment, 'gate_denied');
+
+            return 'rejected';                             // simulateur désactivé ou commande non autorisée : signalé, rien ne démarre
+        }
+        if ($payment->isSandboxProvider()) {
+            $early = $this->checkGenius($event, $payment, $order);
+            if ($early !== null) {
+                return $early;
+            }
         }
 
         return match ($event->status) {
             ProviderStatus::Pending => $this->transition($payment, PaymentState::Pending),
             ProviderStatus::Indeterminate => $this->transition($payment, PaymentState::Unknown),
-            ProviderStatus::Failed => $this->fail($payment),
+            ProviderStatus::Failed => $this->fail($payment, $order, (string) ($event->payload['event'] ?? '') === 'payment.cancelled' ? 'provider_cancelled' : 'provider_declined'),
             ProviderStatus::Succeeded => $this->succeed($payment, $order),
-            ProviderStatus::NotFound => 'ignored',
+            ProviderStatus::Refunded => $this->refunded($payment, $order),
+            ProviderStatus::NotFound, ProviderStatus::Other => 'ignored',
         };
+    }
+
+    /** Contrôles propres à Genius Pay : environnement, compte marchand, rattachement de la référence. @return string|null issue finale si un contrôle échoue */
+    private function checkGenius(ProviderEvent $event, Payment $payment, Order $order): ?string
+    {
+        if (($event->payload['environment'] ?? null) !== $payment->environment) {
+            $this->flag($order, $payment, 'environment_mismatch');
+
+            return 'rejected';
+        }
+        $provider = $this->providers->named($payment->provider);
+        $merchant = $provider instanceof GeniusPayProvider ? $provider->merchantId() : null;
+        $eventMerchant = $event->payload['merchant_id'] ?? null;
+        if ($merchant === null || $eventMerchant === null) {
+            $this->reviewReason = $merchant === null ? 'merchant_unverifiable' : 'merchant_missing';
+
+            return 'review';                               // information manquante : état « à vérifier », aucun démarrage
+        }
+        if (! hash_equals($merchant, (string) $eventMerchant)) {
+            $this->flag($order, $payment, 'merchant_mismatch');
+
+            return 'rejected';
+        }
+        // Référence du prestataire pas encore enregistrée (notification arrivée avant la réponse de création) : on rejoue la MÊME création idempotente.
+        if ($payment->provider_transaction_reference === null) {
+            $this->recorder->run($payment);
+            $payment->refresh();
+        }
+        if ($payment->provider_transaction_reference === null) {
+            $this->reviewReason = 'reference_unbound';
+
+            return 'review';
+        }
+        if ($payment->provider_transaction_reference !== $event->reference) {
+            $this->flag($order, $payment, 'reference_mismatch');
+
+            return 'rejected';
+        }
+
+        return null;
     }
 
     private function transition(Payment $payment, PaymentState $to): string
@@ -70,12 +175,12 @@ final class ProcessProviderEvent
         return $n === 1 ? 'applied' : 'ignored';          // régression ignorée (ex. « en attente » après « confirmé »)
     }
 
-    private function fail(Payment $payment): string
+    private function fail(Payment $payment, Order $order, string $code): string
     {
         $n = Payment::query()->whereKey($payment->getKey())->whereIn('state', ['created', 'pending', 'unknown'])
-            ->update(['state' => PaymentState::Failed->value, 'failed_at' => now(), 'failure_code' => 'provider_declined', 'row_version' => DB::raw('row_version + 1'), 'updated_at' => now()]);
+            ->update(['state' => PaymentState::Failed->value, 'failed_at' => now(), 'failure_code' => $code, 'row_version' => DB::raw('row_version + 1'), 'updated_at' => now()]);
         if ($n === 1) {
-            Order::query()->whereKey($payment->order_id)->first()?->events()->create(['type' => 'payment_failed', 'actor_id' => null, 'note' => 'Paiement simulé non abouti ('.$payment->provider_reference.').']);
+            $order->events()->create(['type' => 'payment_failed', 'actor_id' => null, 'note' => 'Paiement non abouti ('.$payment->provider_reference.').']);
 
             return 'applied';
         }
@@ -85,13 +190,16 @@ final class ProcessProviderEvent
 
     private function succeed(Payment $payment, Order $order): string
     {
-        // La notification n'est jamais crue sur parole : le statut, le montant, la devise et la commande sont revérifiés.
-        $v = $this->provider->verify($payment->provider_reference);
-        if ($v->status !== ProviderStatus::Succeeded || $v->amountXof !== $payment->amount_xof || $v->currency !== $payment->currency || $v->orderReference !== $order->reference) {
-            ReconciliationCase::query()->create([
-                'order_id' => $order->getKey(), 'payment_id' => $payment->getKey(), 'reason' => 'verification_mismatch',
-                'details' => ['verified_status' => $v->status->value, 'verified_amount' => $v->amountXof],
-            ]);
+        // La notification n'est jamais crue sur parole : statut, montant, devise, référence et environnement sont revérifiés auprès du prestataire.
+        $v = $this->providers->named($payment->provider)->verify($payment->verificationReference());
+        if ($v->status === ProviderStatus::Indeterminate || ($v->status === ProviderStatus::Pending && $payment->isSandboxProvider())) {
+            $this->reviewReason = $v->status === ProviderStatus::Pending ? 'success_not_yet_visible' : 'verification_unavailable';
+
+            return 'review';                               // incertain : on revérifiera, rien ne démarre
+        }
+        $reason = $this->verifier->inconsistency($payment, $order, $v);
+        if ($reason !== null) {
+            $this->flag($order, $payment, $reason, ['verified_status' => $v->status->value, 'verified_amount' => $v->amountXof]);
 
             return 'rejected';
         }
@@ -101,5 +209,22 @@ final class ProcessProviderEvent
             'reconciliation' => 'reconciliation',
             default => 'ignored',          // déjà confirmé : aucun second effet
         };
+    }
+
+    /** Remboursement effectué CHEZ le prestataire : enregistré et signalé pour traitement ; aucun remboursement n'est exécuté ni déduit par FreeCI. */
+    private function refunded(Payment $payment, Order $order): string
+    {
+        $this->flag($order, $payment, 'refunded_by_provider');
+
+        return 'reconciliation';
+    }
+
+    /** @param array<string, mixed> $details */
+    private function flag(Order $order, Payment $payment, string $reason, array $details = []): void
+    {
+        ReconciliationCase::query()->firstOrCreate(
+            ['order_id' => $order->getKey(), 'payment_id' => $payment->getKey(), 'reason' => $reason],
+            ['details' => $details + ['environment' => $payment->environment, 'payment_state' => $payment->state->value]],
+        );
     }
 }

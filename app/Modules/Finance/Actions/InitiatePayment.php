@@ -2,8 +2,8 @@
 
 namespace App\Modules\Finance\Actions;
 
-use App\Integrations\Payments\CheckoutRequest;
-use App\Integrations\Payments\PaymentProvider;
+use App\Integrations\Payments\GeniusPayConfig;
+use App\Integrations\Payments\PaymentProviders;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Exceptions\PaymentAlreadyConfirmed;
@@ -19,7 +19,6 @@ use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Models\Order;
 use App\Shared\CommandReceipts;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -29,7 +28,7 @@ use Illuminate\Support\Str;
  */
 final class InitiatePayment
 {
-    public function __construct(private PaymentProvider $provider, private SandboxGate $gate, private ExpireOverdueOrders $expire) {}
+    public function __construct(private PaymentProviders $providers, private SandboxGate $gate, private ExpireOverdueOrders $expire, private CheckoutRecorder $recorder) {}
 
     /** @return array{0: Payment, 1: bool} [tentative, vrai si répétition de la même opération] */
     public function __invoke(User $client, string $reference, string $operationKey): array
@@ -48,7 +47,9 @@ final class InitiatePayment
             if ($locked->client_id !== $client->getKey()) {
                 throw new OrderForbidden;
             }
-            if (! $this->gate->allows($locked)) {
+            $provider = $this->providers->active();
+            // Porte : commande, parties, service/mission et compte de démonstration autorisés. Pour Genius Pay (bac à sable) : configuration complète et conforme.
+            if (! $this->gate->allows($locked) || ($provider->environment() === 'sandbox' && ! GeniusPayConfig::ready())) {
                 throw new PaymentNotAvailable;
             }
             if ($locked->state !== OrderState::AwaitingPayment || $locked->started_at !== null) {
@@ -66,16 +67,17 @@ final class InitiatePayment
                     'order_id' => $locked->getKey(),
                     'amount_xof' => $locked->agreement->price_xof,          // lu dans l'accord figé
                     'currency' => 'XOF',
-                    'provider' => $this->provider->name(),
-                    'is_simulated' => true,
-                    // Référence générée et ENREGISTRÉE avant tout appel au prestataire.
-                    'provider_reference' => 'SBX-'.strtoupper(Str::random(14)),
+                    'provider' => $provider->name(),
+                    'environment' => $provider->environment(),                 // conservé pour cette tentative : jamais réinterprété
+                    'is_simulated' => $provider->environment() !== 'live',      // un paiement de simulateur ou de bac à sable n'est JAMAIS de l'argent réel
+                    // Référence STABLE de la tentative, générée et ENREGISTRÉE avant tout appel au prestataire (aussi sa clé d'idempotence).
+                    'provider_reference' => ($provider->environment() === 'simulator' ? 'SBX-' : 'GP-').strtoupper(Str::random(14)),
                     'state' => PaymentState::Created,
                 ]);
             } catch (UniqueConstraintViolationException) {
                 throw new PaymentInProgress;       // rempart : index unique « une seule tentative ouverte par commande »
             }
-            $locked->events()->create(['type' => 'payment_started', 'actor_id' => $client->getKey(), 'note' => 'Paiement simulé démarré ('.$payment->provider_reference.').']);
+            $locked->events()->create(['type' => 'payment_started', 'actor_id' => $client->getKey(), 'note' => ($provider->environment() === 'sandbox' ? 'Paiement Genius Pay (bac à sable, aucun argent réel) démarré (' : 'Paiement simulé démarré (').$payment->provider_reference.').']);
 
             return $locked->getKey();
         });
@@ -85,15 +87,8 @@ final class InitiatePayment
             return [$payment, $replayed];
         }
 
-        // Appel au prestataire HORS de la transaction : `created -> pending` par mise à jour conditionnelle.
-        try {
-            $this->provider->createCheckout(new CheckoutRequest($payment->getKey(), $payment->provider_reference, $reference, $payment->amount_xof, $payment->currency));
-            DB::table('payments')->where('id', $payment->getKey())->where('state', PaymentState::Created->value)
-                ->update(['state' => PaymentState::Pending->value, 'pending_at' => now(), 'row_version' => DB::raw('row_version + 1'), 'updated_at' => now()]);
-        } catch (\Throwable $e) {
-            // Résultat inconnu : l'opération reste « créée » ; le rapprochement tranchera (RefreshPaymentStatus).
-            report($e);
-        }
+        // Appel au prestataire HORS de la transaction : `created -> pending`, ou échec définitif, ou résultat incertain (la tentative reste ouverte).
+        $this->recorder->run($payment);
 
         return [$payment->fresh(), false];
     }

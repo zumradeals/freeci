@@ -33,5 +33,8 @@ final readonly class PaymentPage
         public ?CarbonInterface $startedAt,
         public ?CarbonInterface $dueAt,
         public bool $isDemo,
+        public string $environment = 'simulator',          // simulator | sandbox | live : celui de la tentative, ou du prestataire actif si aucune tentative
+        public ?string $checkoutUrl = null,                // checkout hébergé de la tentative en attente (hôte contrôlé)
+        public bool $providerReady = true,                 // prestataire actif correctement configuré
     ) {}
 }

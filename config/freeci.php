@@ -36,6 +36,20 @@ return [
         'sandbox_enabled' => (bool) env('FREECI_PAYMENT_SANDBOX', false),
         // Secret HMAC des notifications simulées (vide = notifications refusées). Jamais dans le dépôt.
         'sandbox_webhook_secret' => env('FREECI_SANDBOX_WEBHOOK_SECRET'),
+        // Prestataire des NOUVELLES tentatives : « simulator » (défaut) ou « geniuspay_sandbox » (bac à sable Genius Pay). Le mode réel n'existe pas
+        // dans cette version : il exigera une autorisation explicite du porteur. Les tentatives existantes gardent leur prestataire et leur environnement.
+        'provider' => env('FREECI_PAYMENT_PROVIDER', 'simulator'),
+        // Genius Pay : clés et secret UNIQUEMENT côté serveur (.env, hors Git). URL HTTPS obligatoire.
+        'genius' => [
+            'base_url' => env('GENIUSPAY_BASE_URL', 'https://geniuspay.ci/api/v1/merchant'),
+            'api_key' => env('GENIUSPAY_API_KEY'),
+            'api_secret' => env('GENIUSPAY_API_SECRET'),
+            'webhook_secret' => env('GENIUSPAY_WEBHOOK_SECRET'),
+            // Les reprises documentées vont jusqu'à 24 h : fenêtre de fraîcheur de la signature = 25 h par défaut.
+            'webhook_tolerance' => (int) env('GENIUSPAY_WEBHOOK_TOLERANCE_SECONDS', 90000),
+            'checkout_hosts' => env('GENIUSPAY_CHECKOUT_HOSTS', 'geniuspay.ci'),
+            'timeout' => 15,
+        ],
     ],
 
     // Gabarits et bornes de la création de services et de profils : PARAMÈTRES PROVISOIRES (docs/04 §4.2 ; à valider), non des règles commerciales définitives.

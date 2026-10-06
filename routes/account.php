@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\ReauthController;
+use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SupportCaseController;
 use App\Http\Controllers\Admin\UserController;
@@ -43,6 +44,7 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     // Paiement SIMULÉ (réservé aux commandes et comptes de démonstration autorisés) : état lu en base, jamais déduit de l'URL.
     Route::get('/commandes/{reference}/paiement', [PaymentController::class, 'show'])->name('orders.payment');
     Route::post('/commandes/{reference}/paiement', [PaymentController::class, 'pay'])->middleware('throttle:10,1')->name('orders.payment.start');
+    Route::get('/commandes/{reference}/paiement/retour', [PaymentController::class, 'back'])->middleware('throttle:30,1')->name('orders.payment.return');
     Route::post('/commandes/{reference}/paiement/actualiser', [PaymentController::class, 'refresh'])->middleware('throttle:20,1')->name('orders.payment.refresh');
 
     // Pièces jointes privées du brief.
@@ -198,6 +200,9 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
             Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
             Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
+
+            Route::get('/paiements', [ReconciliationController::class, 'index'])->name('admin.payments');
+            Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
 
             Route::get('/journal', [AuditController::class, 'actions'])->name('admin.audit');
             Route::get('/journal/securite', [AuditController::class, 'security'])->name('admin.audit.security');

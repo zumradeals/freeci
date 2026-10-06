@@ -10,4 +10,8 @@ enum ProviderStatus: string
     case Failed = 'failed';
     case Indeterminate = 'indeterminate';
     case NotFound = 'not_found';
+    /** Remboursé CHEZ le prestataire : enregistré et signalé, jamais déduit ni exécuté par FreeCI. */
+    case Refunded = 'refunded';
+    /** Événement authentique mais sans effet sur l'état d'une tentative (type inconnu ou informatif). */
+    case Other = 'other';
 }
