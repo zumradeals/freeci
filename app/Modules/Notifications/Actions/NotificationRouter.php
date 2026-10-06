@@ -86,6 +86,8 @@ final class NotificationRouter
             match ($e->type) {
                 'approved' => $go('moderation_decision', "Votre mission « {$t} » est publiée"),
                 'changes_requested' => $go('moderation_decision', "Correction demandée sur votre mission « {$t} »"),
+                'suspended' => $go('moderation_decision', "Votre mission « {$t} » est suspendue par la modération"),
+                'reinstated' => $go('moderation_decision', "Votre mission « {$t} » est remise en ligne par la modération"),
                 'expired' => $go('mission_ended', "Votre mission « {$t} » a expiré sans proposition retenue"),
                 'reservation_ended' => $go('mission_ended', "Mission « {$t} » : sélection terminée, à rouvrir ou fermer"),
                 'proposal_submitted' => $go('proposal_received', "Nouvelle proposition sur « {$t} »", 'client.missions.proposals'),

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Messaging\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Models\Service;
@@ -32,6 +33,10 @@ final class Conversations
         if ($existing !== null) {
             return [$existing, false];
         }
+        AccountStanding::assertCanStartNew($user);
+        if (AccountStanding::suspended($owner)) {
+            throw new MessagingConflict('Ce vendeur ne peut pas ouvrir de nouvelle conversation pour le moment.');
+        }
         if (ConversationRules::blockedBetween($user->getKey(), $owner)) {
             throw new MessagingConflict('Vous ne pouvez pas ouvrir de nouvelle conversation avec ce vendeur.');
         }
@@ -50,6 +55,7 @@ final class Conversations
         if ($existing !== null) {
             return [$existing, false];
         }
+        AccountStanding::assertCanStartNew($user);
         if (ConversationRules::blockedBetween($p->mission->client_id, $p->freelancer_id)) {
             throw new MessagingConflict('Vous ne pouvez pas ouvrir de nouvelle conversation avec ce contact.');
         }

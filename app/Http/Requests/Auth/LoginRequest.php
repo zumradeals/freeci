@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Modules\Accounts\Security\SecurityLog;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -31,6 +33,7 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt(['email' => mb_strtolower($this->string('email')->toString()), 'password' => $this->string('password')->toString()], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey(), 300);
+            SecurityLog::record('login_failed', DB::table('users')->where('email', mb_strtolower($this->string('email')->toString()))->value('id'));      // ni mot de passe ni adresse saisie
 
             throw ValidationException::withMessages(['email' => __('auth.failed')]);
         }
@@ -45,6 +48,7 @@ class LoginRequest extends FormRequest
         }
 
         event(new Lockout($this));
+        SecurityLog::record('login_locked', DB::table('users')->where('email', mb_strtolower($this->string('email')->toString()))->value('id'));
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([

@@ -83,7 +83,7 @@ class AdminGrant extends Command
         if ($password !== null) {
             $this->warn('Mot de passe généré (affiché UNE seule fois, à ranger dans un gestionnaire de mots de passe) : '.$password);
         }
-        $this->line('Accès : https://… /connexion puis /admin (l\'espace d\'administration reste « bientôt » : aucune fonction d\'administration n\'existe encore).');
+        $this->line('Activation : connectez-vous (/connexion) puis ouvrez /admin. Les fonctions restent FERMÉES tant que (1) l\'adresse n\'est pas vérifiée par courriel (SMTP requis, ou attestation console : freeci:admin:verify-email) et (2) la double authentification n\'est pas activée.');
 
         return self::SUCCESS;
     }

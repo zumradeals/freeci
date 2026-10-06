@@ -2,6 +2,7 @@
 
 namespace App\Modules\Messaging\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Messaging\Models\ContactBlock;
 use App\Modules\Messaging\Models\Conversation;
 use App\Modules\Orders\Enums\OrderState;
@@ -31,6 +32,10 @@ final class ConversationRules
     /** @return bool vrai si un nouvel échange est possible */
     public static function canSend(Conversation $c): bool
     {
-        return ! self::blockedBetween($c->client_id, $c->freelancer_id) || self::essential($c);
+        if (self::essential($c)) {
+            return true;         // commande active : les échanges indispensables restent possibles (blocage ou suspension)
+        }
+
+        return ! self::blockedBetween($c->client_id, $c->freelancer_id) && ! AccountStanding::suspended($c->client_id) && ! AccountStanding::suspended($c->freelancer_id);
     }
 }

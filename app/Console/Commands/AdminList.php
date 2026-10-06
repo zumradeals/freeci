@@ -18,6 +18,7 @@ class AdminList extends Command
             $g->revoked_at ? 'révoquée '.$g->revoked_at->format('Y-m-d') : ($g->expires_at && $g->expires_at->isPast() ? 'expirée' : 'ACTIVE'), $g->granted_by,
         ])->all();
         $this->table(['Compte', 'Accordée', 'Expire', 'État', 'Par'], $rows);
+        $this->line('Prérequis d\'accès (adresse vérifiée, double authentification) : freeci:admin:status <courriel>.');
 
         return self::SUCCESS;
     }

@@ -8,8 +8,14 @@ namespace App\Modules\Notifications\Support;
  */
 final class MailStatus
 {
+    /** Un pilote réel est-il configuré (indépendamment de l'option des notifications) ? */
+    public static function configured(): bool
+    {
+        return ! in_array((string) config('mail.default'), ['log', 'array', ''], true);
+    }
+
     public static function deliverable(): bool
     {
-        return (bool) config('freeci.notifications.emails') && ! in_array((string) config('mail.default'), ['log', 'array', ''], true);
+        return (bool) config('freeci.notifications.emails') && self::configured();
     }
 }

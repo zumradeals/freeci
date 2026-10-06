@@ -17,6 +17,7 @@ final class MissionPresenter
             $m->status === 'selection_ended' => ['Sélection terminée', 'warning', 'warn', 'La commande a été annulée ou a expiré avant paiement. La mission n’est pas rouverte automatiquement : rouvrez-la ou fermez-la.'],
             $m->status === 'reserved' => ['Réservée', 'info', 'clock', 'Une proposition est retenue ; la mission sera attribuée à la confirmation du paiement.'],
             $m->status === 'awarded' => ['Attribuée', 'success', 'check-circle', 'Le paiement est confirmé : la commande suit son cours.'],
+            $m->status === 'suspended' => ['Suspendue', 'error', 'error', 'Retirée par la modération : elle n’est plus visible ni ouverte aux propositions. Vos commandes en cours ne sont pas affectées.'],
             $m->status === 'closed' => ['Fermée', 'neutral', 'minus-circle', null],
             $m->status === 'cancelled' => ['Annulée', 'neutral', 'minus-circle', null],
             $m->status === 'expired' => ['Expirée', 'neutral', 'minus-circle', 'Aucune proposition n’a été retenue avant la fin de la période de sélection.'],

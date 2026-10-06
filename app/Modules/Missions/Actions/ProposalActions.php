@@ -2,6 +2,7 @@
 
 namespace App\Modules\Missions\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Support\PrivateContact;
 use App\Modules\Missions\Exceptions\MissionConflict;
@@ -22,6 +23,7 @@ final class ProposalActions
     /** @param array<string, mixed> $input */
     public function submit(User $freelancer, string $missionId, array $input, int $expectedNumber): ProposalVersion
     {
+        AccountStanding::assertCanStartNew($freelancer);
         $v = $this->normalize($input);
         $this->validate($v);
 

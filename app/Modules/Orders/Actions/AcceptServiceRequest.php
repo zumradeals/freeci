@@ -2,6 +2,7 @@
 
 namespace App\Modules\Orders\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Models\Order;
@@ -12,6 +13,8 @@ final class AcceptServiceRequest extends ChangesOrder
     /** @return array{0: Order, 1: bool} */
     public function __invoke(User $freelancer, string $reference, int $expectedVersion, string $operationKey): array
     {
+        AccountStanding::assertCanStartNew($freelancer);          // accepter = créer un nouvel engagement ; refuser reste possible
+
         return $this->transition(
             $freelancer, $reference, 'orders.accept', $operationKey, $expectedVersion,
             fn (Order $o) => $o->freelancer_id === $freelancer->getKey(),

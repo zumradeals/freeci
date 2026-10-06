@@ -13,6 +13,7 @@ use App\Shared\Money;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Découverte : missions OUVERTES (version publiée uniquement, date limite non dépassée). Projection publique à liste de champs explicite :
@@ -24,6 +25,7 @@ final class PublicMissions
     {
         $q = $q === null ? null : trim($q);
         $query = Mission::query()->where('missions.status', 'open')
+            ->whereNotExists(fn ($w) => $w->select(DB::raw(1))->from('users')->whereColumn('users.id', 'missions.client_id')->whereNotNull('users.suspended_at'))
             ->join('mission_versions as v', 'v.id', '=', 'missions.published_version_id')->join('categories as c', 'c.id', '=', 'v.category_id')
             ->where('v.application_deadline', '>', now())
             ->when($categorySlug, fn ($w) => $w->where('c.slug', $categorySlug))

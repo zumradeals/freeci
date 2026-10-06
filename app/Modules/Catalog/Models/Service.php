@@ -70,7 +70,9 @@ class Service extends Model
     {
         return $query->where('services.status', ServiceStatus::Published->value)
             ->whereNotNull('services.published_at')
-            ->where('services.published_at', '<=', now());
+            ->where('services.published_at', '<=', now())
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('freelance_profiles')->join('users', 'users.id', '=', 'freelance_profiles.user_id')
+                ->whereColumn('freelance_profiles.id', 'services.freelance_profile_id')->whereNotNull('users.suspended_at'));      // vendeur suspendu : plus de nouvelles demandes
     }
 
     public function category(): BelongsTo

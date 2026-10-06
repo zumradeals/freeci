@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Exceptions\ServiceForbidden;
@@ -125,6 +126,8 @@ final class ServiceAuthoring
 
     public function submit(User $owner, string $serviceId, int $revisionNo): ServiceVersion
     {
+        AccountStanding::assertCanStartNew($owner);
+
         return DB::transaction(function () use ($owner, $serviceId, $revisionNo) {
             $service = $this->owned($owner, $serviceId, lock: true);
             $this->ensureVersions($service);

@@ -10,11 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\Finder\Finder;
+use Tests\Support\AdminFixtures;
 use Tests\TestCase;
 
 class AdministratorTest extends TestCase
 {
-    use RefreshDatabase;
+    use AdminFixtures, RefreshDatabase;
 
     private const EMAIL = 'chef@example.test';
 
@@ -79,33 +80,37 @@ class AdministratorTest extends TestCase
         $this->actingAs($client)->get('/admin')->assertNotFound();
         $this->actingAs($client)->get('/espace')->assertDontSee('Administration');
 
-        $admin = User::factory()->create();
-        app(GrantAdministrator::class)($admin, 'test');
-        $r = $this->actingAs($admin)->get('/admin');
-        $r->assertOk()->assertSee('Bientôt disponible');
+        // habilitation seule : l'administration reste fermée (activation requise), jamais ouverte silencieusement
+        $bare = User::factory()->create();
+        app(GrantAdministrator::class)($bare, 'test');
+        $this->actingAs($bare)->get('/admin')->assertRedirect(route('admin.activation'));
+
+        $admin = $this->readyAdmin();
+        $r = $this->asAdmin($admin)->get('/admin');
+        $r->assertOk()->assertSee('Tableau de bord');
         $this->assertStringContainsString('no-store', $r->headers->get('Cache-Control'));
         $this->actingAs($admin)->get('/espace')->assertSee('Administration');
     }
 
     public function test_revoked_and_expired_grants_stop_working(): void
     {
-        $admin = User::factory()->create(['email' => self::EMAIL]);
-        app(GrantAdministrator::class)($admin, 'test', now()->addDay());
-        $this->actingAs($admin)->get('/admin')->assertOk();
+        $admin = $this->readyAdmin(['email' => self::EMAIL]);
+        StaffGrant::query()->update(['expires_at' => now()->addDay()]);
+        $this->asAdmin($admin)->get('/admin')->assertOk();
 
         StaffGrant::query()->update(['expires_at' => now()->subMinute()]);
-        $this->actingAs($admin->fresh())->get('/admin')->assertNotFound();
+        $this->asAdmin($admin->fresh())->get('/admin')->assertNotFound();
 
         StaffGrant::query()->update(['expires_at' => null]);
-        $this->actingAs($admin->fresh())->get('/admin')->assertOk();
+        $this->asAdmin($admin->fresh())->get('/admin')->assertOk();
 
         $this->assertSame(0, Artisan::call('freeci:admin:revoke', ['email' => self::EMAIL]));
-        $this->actingAs($admin->fresh())->get('/admin')->assertNotFound();
+        $this->asAdmin($admin->fresh())->get('/admin')->assertNotFound();
         $this->assertTrue($admin->hasRole(AccountRole::CLIENT), 'les rôles client et freelance sont conservés');
 
         // une nouvelle habilitation reste possible après révocation (index unique partiel)
         app(GrantAdministrator::class)($admin->fresh(), 'retour');
-        $this->actingAs($admin->fresh())->get('/admin')->assertOk();
+        $this->asAdmin($admin->fresh())->get('/admin')->assertOk();
     }
 
     public function test_listing_shows_state_without_secrets(): void

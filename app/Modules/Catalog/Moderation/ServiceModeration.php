@@ -22,6 +22,17 @@ final class ServiceModeration
 {
     private const LABEL = 'modération (console)';
 
+    private string $label = self::LABEL;
+
+    /** Même règles, canal différent (historique : « modération (web) » ou « modération (console) »). */
+    public function via(string $label): static
+    {
+        $c = clone $this;
+        $c->label = $label;
+
+        return $c;
+    }
+
     public function approve(User $moderator, string $versionId): Service
     {
         return DB::transaction(function () use ($moderator, $versionId) {
@@ -47,7 +58,7 @@ final class ServiceModeration
                 $service->accepts_requests = true;
             }
             $service->save();
-            ServiceHistory::log($service->getKey(), $v->getKey(), 'approved', $moderator, self::LABEL, null, ['number' => $v->number]);
+            ServiceHistory::log($service->getKey(), $v->getKey(), 'approved', $moderator, $this->label, null, ['number' => $v->number]);
 
             return $service;
         });
@@ -63,7 +74,7 @@ final class ServiceModeration
             if ($service->status === ServiceStatus::InReview) {
                 $service->forceFill(['status' => ServiceStatus::Draft->value])->save();       // jamais publié : retour en rédaction ; une version publiée reste en ligne
             }
-            ServiceHistory::log($service->getKey(), $v->getKey(), 'changes_requested', $moderator, self::LABEL, $reason, ['number' => $v->number]);
+            ServiceHistory::log($service->getKey(), $v->getKey(), 'changes_requested', $moderator, $this->label, $reason, ['number' => $v->number]);
 
             return $service;
         });
@@ -82,7 +93,7 @@ final class ServiceModeration
                 throw new ServiceStateConflict('Seul un service en ligne peut être suspendu.');
             }
             $service->forceFill(['status' => ServiceStatus::Suspended->value])->save();
-            ServiceHistory::log($service->getKey(), null, 'suspended', $moderator, self::LABEL, $reason);
+            ServiceHistory::log($service->getKey(), null, 'suspended', $moderator, $this->label, $reason);
 
             return $service;
         });
@@ -98,7 +109,7 @@ final class ServiceModeration
                 throw new ServiceStateConflict('Seul un service suspendu par la modération peut être remis en ligne ici.');
             }
             $service->forceFill(['status' => ServiceStatus::Published->value])->save();
-            ServiceHistory::log($service->getKey(), null, 'reinstated', $moderator, self::LABEL);
+            ServiceHistory::log($service->getKey(), null, 'reinstated', $moderator, $this->label);
 
             return $service;
         });

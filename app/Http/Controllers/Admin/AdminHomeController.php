@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Modules\Admin\Queries\AdminDashboard;
 use Illuminate\View\View;
 
 class AdminHomeController extends Controller
 {
-    /** Coquille d'administration : aucune fonction pour l'instant (modération, support, paramètres : lots ultérieurs). */
-    public function __invoke(Request $request): View
+    public function __invoke(AdminDashboard $dashboard): View
     {
-        return view('admin.home', ['user' => $request->user()]);
+        return view('admin.home', ['d' => $dashboard()]);
     }
 }

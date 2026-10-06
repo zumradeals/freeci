@@ -4,6 +4,7 @@ namespace App\Modules\Accounts\Actions;
 
 use App\Modules\Accounts\Models\StaffGrant;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Accounts\Security\SecurityLog;
 use Illuminate\Support\Facades\Log;
 
 final class RevokeAdministrator
@@ -13,6 +14,7 @@ final class RevokeAdministrator
     {
         $n = $user->staffGrants()->active()->where('capability', StaffGrant::ADMINISTRATOR)
             ->update(['revoked_at' => now(), 'revoked_reason' => $reason]);
+        SecurityLog::record('admin_revoked', $user->id, ['by' => 'console', 'reason' => $reason]);
         Log::info('Habilitation administrateur révoquée', ['user_id' => $user->id, 'count' => $n]);
 
         return $n;

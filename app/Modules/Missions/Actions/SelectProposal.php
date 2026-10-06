@@ -2,6 +2,7 @@
 
 namespace App\Modules\Missions\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\SandboxGate;
 use App\Modules\Messaging\Actions\Conversations;
@@ -33,6 +34,7 @@ final class SelectProposal
      */
     public function __invoke(User $client, string $missionId, string $proposalVersionId, int $expectedMissionVersion, array $answers, ?string $notes, bool $conditionsAccepted, string $operationKey): array
     {
+        AccountStanding::assertCanStartNew($client);
         $mission = Mission::query()->whereKey($missionId)->where('client_id', $client->getKey())->with('publishedVersion')->first() ?? throw new MissionForbidden;
         $brief = $this->brief($mission, $answers, $notes, $conditionsAccepted);
 
@@ -81,6 +83,9 @@ final class SelectProposal
         $p = $pv === null ? null : Proposal::query()->whereKey($pv->proposal_id)->where('mission_id', $m->getKey())->lockForUpdate()->first();   // 2) proposition
         if ($pv === null || $p === null) {
             throw new MissionForbidden;
+        }
+        if (AccountStanding::suspended($p->freelancer_id ?? '')) {
+            throw new MissionConflict('Ce candidat ne peut pas recevoir de nouvelle commande pour le moment. Choisissez une autre proposition.');
         }
         if ($m->status !== 'open') {
             throw new MissionConflict($m->status === 'reserved' ? 'Une proposition est déjà retenue pour cette mission : un seul choix est possible.' : 'Cette mission n’accepte plus de sélection dans son état actuel.');

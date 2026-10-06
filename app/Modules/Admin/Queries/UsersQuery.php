@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Modules\Admin\Queries;
+
+use App\Shared\Dates;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Comptes : seulement les informations nécessaires à leur gestion (identité du compte, rôles, état, volumes). Jamais de mot de passe,
+ * de secret MFA, de message, de brief, de fichier ni de détail de commande.
+ */
+final class UsersQuery
+{
+    private const FINAL = ['cancelled', 'expired', 'closed'];
+
+    /** @param array{q?: ?string, status?: ?string, role?: ?string} $f */
+    public function search(array $f, int $perPage): LengthAwarePaginator
+    {
+        $like = isset($f['q']) && trim($f['q']) !== '' ? '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], mb_substr(trim($f['q']), 0, 80)).'%' : null;
+        $q = DB::table('users')->orderBy('name')->orderBy('id')
+            ->when($like, fn ($w) => $w->where(fn ($x) => $x->where('name', 'ilike', $like)->orWhere('email', 'ilike', $like)))
+            ->when(($f['status'] ?? null) === 'suspended', fn ($w) => $w->whereNotNull('suspended_at'))
+            ->when(($f['status'] ?? null) === 'unverified', fn ($w) => $w->whereNull('email_verified_at'))
+            ->when(($f['status'] ?? null) === 'active', fn ($w) => $w->whereNull('suspended_at'))
+            ->when(in_array($f['role'] ?? null, ['client', 'freelance'], true), fn ($w) => $w->whereExists(fn ($x) => $x->select(DB::raw(1))->from('account_roles')->whereColumn('account_roles.user_id', 'users.id')->where('account_roles.role', $f['role'])))
+            ->when(($f['role'] ?? null) === 'admin', fn ($w) => $w->whereExists(fn ($x) => $x->select(DB::raw(1))->from('staff_grants')->whereColumn('staff_grants.user_id', 'users.id')->whereNull('revoked_at')->where(fn ($y) => $y->whereNull('expires_at')->orWhere('expires_at', '>', now()))));
+
+        return $q->paginate($perPage, ['id', 'name', 'email', 'email_verified_at', 'suspended_at', 'created_at', 'is_demo'])->withQueryString()->through(fn ($u) => [
+            'id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'verified' => $u->email_verified_at !== null, 'suspended' => $u->suspended_at !== null,
+            'since' => Dates::format(Carbon::parse($u->created_at)), 'demo' => (bool) $u->is_demo,
+        ]);
+    }
+
+    /** @return array<string, mixed>|null */
+    public function detail(string $id): ?array
+    {
+        $u = DB::table('users')->where('id', $id)->first();
+        if ($u === null) {
+            return null;
+        }
+        $orders = fn (string $col) => DB::table('orders')->where($col, $id);
+        $history = DB::table('account_restrictions')->join('users as a', 'a.id', '=', 'account_restrictions.actor_id')->where('account_restrictions.user_id', $id)->orderByDesc('account_restrictions.id')
+            ->get(['account_restrictions.action', 'account_restrictions.reason', 'account_restrictions.created_at', 'a.name as actor'])
+            ->map(fn ($h) => ['action' => $h->action === 'suspended' ? 'Suspendu' : 'Réactivé', 'reason' => $h->reason, 'actor' => $h->actor, 'when' => Dates::format(Carbon::parse($h->created_at))])->all();
+        $admin = DB::table('staff_grants')->where('user_id', $id)->where('capability', 'administrator')->whereNull('revoked_at')->where(fn ($y) => $y->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
+
+        return [
+            'id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'verifiedAt' => $u->email_verified_at === null ? null : Dates::format(Carbon::parse($u->email_verified_at)),
+            'suspended' => $u->suspended_at !== null, 'suspendedAt' => $u->suspended_at === null ? null : Dates::format(Carbon::parse($u->suspended_at)),
+            'since' => Dates::format(Carbon::parse($u->created_at)), 'demo' => (bool) $u->is_demo, 'admin' => $admin, 'mfa' => $u->two_factor_confirmed_at !== null,
+            'roles' => DB::table('account_roles')->where('user_id', $id)->pluck('role')->all(),
+            'ordersAsClient' => [$orders('client_id')->count(), $orders('client_id')->whereNotIn('state', self::FINAL)->count()],
+            'ordersAsFreelancer' => [$orders('freelancer_id')->count(), $orders('freelancer_id')->whereNotIn('state', self::FINAL)->count()],
+            'services' => DB::table('services')->join('freelance_profiles as p', 'p.id', '=', 'services.freelance_profile_id')->where('p.user_id', $id)->count(),
+            'missions' => DB::table('missions')->where('client_id', $id)->count(),
+            'history' => $history,
+        ];
+    }
+}

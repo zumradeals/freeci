@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_last_step'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -31,6 +31,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
+            'suspended_at' => 'datetime',
             'password' => 'hashed',
             'is_demo' => 'boolean',
             'sandbox_payments' => 'boolean',
@@ -56,6 +58,22 @@ class User extends Authenticatable
     public function isAdministrator(): bool
     {
         return $this->staffGrants()->active()->where('capability', StaffGrant::ADMINISTRATOR)->exists();
+    }
+
+    public function emailVerified(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
+    /** Double authentification activée = secret confirmé par un code valide (un secret seulement proposé ne compte pas). */
+    public function hasTwoFactor(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
     }
 
     public function freelanceProfile(): HasOne

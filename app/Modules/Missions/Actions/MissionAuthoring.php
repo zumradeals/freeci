@@ -2,6 +2,7 @@
 
 namespace App\Modules\Missions\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Support\PrivateContact;
@@ -84,6 +85,8 @@ final class MissionAuthoring
 
     public function submit(User $client, string $missionId, int $revisionNo): MissionVersion
     {
+        AccountStanding::assertCanStartNew($client);
+
         return DB::transaction(function () use ($client, $missionId, $revisionNo) {
             $m = $this->owned($client, $missionId, lock: true);
             $v = $this->working($m) ?? throw new MissionConflict('Aucune version à soumettre.');
@@ -165,6 +168,7 @@ final class MissionAuthoring
     /** Réouverture EXPLICITE après la fin d'une sélection (commande annulée ou expirée avant paiement). Jamais automatique. */
     public function reopen(User $client, string $missionId): void
     {
+        AccountStanding::assertCanStartNew($client);
         DB::transaction(function () use ($client, $missionId) {
             $m = $this->owned($client, $missionId, lock: true);
             if ($m->status !== 'selection_ended') {

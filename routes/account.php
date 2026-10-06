@@ -1,9 +1,17 @@
 <?php
 
 use App\Http\Controllers\Account\DashboardController;
+use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
+use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\MfaController;
+use App\Http\Controllers\Admin\ModerationController;
+use App\Http\Controllers\Admin\ReauthController;
+use App\Http\Controllers\Admin\SecurityController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\MessageController;
@@ -121,7 +129,42 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     });
 });
 
-// Coquille d'administration, séparée de l'espace client : habilitation « administrateur » en vigueur exigée.
+// Vérification de l'adresse par courriel (lien signé, valable pour l'utilisateur connecté qu'il désigne).
+Route::middleware(['auth', 'no-store'])->group(function () {
+    Route::get('/espace/verification-adresse/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
+});
+
+// Administration, séparée des espaces client et freelance. « administrator » : habilitation en vigueur revérifiée à chaque requête (404 sinon).
+// Activation (adresse vérifiée + double authentification) et défi de session accessibles avant « admin-ready » ; tout le reste l'exige.
 Route::middleware(['auth', 'no-store', 'administrator'])->prefix('admin')->group(function () {
-    Route::get('/', AdminHomeController::class)->name('admin.home');
+    Route::get('/activation', [ActivationController::class, 'show'])->name('admin.activation');
+    Route::post('/activation/courriel', [ActivationController::class, 'sendEmail'])->middleware('throttle:3,10')->name('admin.activation.email');
+    Route::post('/activation/mfa', [ActivationController::class, 'begin'])->middleware('throttle:10,10')->name('admin.activation.begin');
+    Route::post('/activation/mfa/valider', [ActivationController::class, 'confirm'])->middleware('throttle:10,10')->name('admin.activation.enable');
+    Route::get('/verification', [MfaController::class, 'show'])->name('admin.mfa');
+    Route::post('/verification', [MfaController::class, 'verify'])->middleware('throttle:15,5')->name('admin.mfa.verify');
+
+    Route::middleware('admin-ready')->group(function () {
+        Route::get('/', AdminHomeController::class)->name('admin.home');
+        Route::get('/confirmation', [ReauthController::class, 'show'])->name('admin.reauth');
+        Route::post('/confirmation', [ReauthController::class, 'confirm'])->middleware('throttle:15,5')->name('admin.reauth.confirm');
+
+        Route::get('/moderation', [ModerationController::class, 'index'])->name('admin.moderation');
+        Route::get('/moderation/services/{version}', [ModerationController::class, 'service'])->name('admin.moderation.service');
+        Route::get('/moderation/missions/{version}', [ModerationController::class, 'mission'])->name('admin.moderation.mission');
+        Route::get('/moderation/en-ligne/service/{id}', [ModerationController::class, 'liveService'])->name('admin.moderation.live.service');
+        Route::get('/moderation/en-ligne/mission/{id}', [ModerationController::class, 'liveMission'])->name('admin.moderation.live.mission');
+        Route::post('/moderation/{kind}/{version}/{decision}', [ModerationController::class, 'decide'])->whereIn('decision', ['approuver', 'refuser'])->middleware('throttle:30,1')->name('admin.moderation.decide');
+        Route::post('/moderation/en-ligne/{kind}/{id}/{action}', [ModerationController::class, 'toggle'])->whereIn('action', ['suspendre', 'remettre'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.moderation.toggle');
+
+        Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
+        Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
+        Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
+
+        Route::get('/journal', [AuditController::class, 'actions'])->name('admin.audit');
+        Route::get('/journal/securite', [AuditController::class, 'security'])->name('admin.audit.security');
+
+        Route::get('/securite', [SecurityController::class, 'show'])->name('admin.security');
+        Route::post('/securite/codes', [SecurityController::class, 'regenerate'])->middleware(['recent-auth', 'throttle:5,10'])->name('admin.security.codes');
+    });
 });

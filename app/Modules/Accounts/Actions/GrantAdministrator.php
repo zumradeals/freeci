@@ -5,6 +5,7 @@ namespace App\Modules\Accounts\Actions;
 use App\Modules\Accounts\Models\AccountRole;
 use App\Modules\Accounts\Models\StaffGrant;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Accounts\Security\SecurityLog;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,7 @@ final class GrantAdministrator
                     'expires_at' => $expiresAt,
                 ]);
 
+            SecurityLog::record('admin_granted', $user->id, ['by' => $by, 'reason' => $reason]);
             Log::info('Habilitation administrateur accordée', ['user_id' => $user->id, 'grant_id' => $grant->id, 'by' => $by]);
 
             return $grant;

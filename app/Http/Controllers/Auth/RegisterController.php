@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Accounts\Actions\RegisterUser;
+use App\Modules\Accounts\Security\EmailVerification;
+use App\Modules\Notifications\Support\MailStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +30,9 @@ class RegisterController extends Controller
 
         $user = $register($data['name'], $data['email'], $data['password']);
         event(new Registered($user));
+        if (MailStatus::configured()) {
+            app(EmailVerification::class)->send($user);          // sans courrier réel : rien n'est envoyé, l'adresse reste non vérifiée
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

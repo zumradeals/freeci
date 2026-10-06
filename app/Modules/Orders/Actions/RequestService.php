@@ -2,6 +2,7 @@
 
 namespace App\Modules\Orders\Actions;
 
+use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\AccountRole;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Enums\ServiceStatus;
@@ -39,6 +40,8 @@ final class RequestService
         if (! $client->hasRole(AccountRole::CLIENT)) {
             throw new OrderForbidden;
         }
+
+        AccountStanding::assertCanStartNew($client);
 
         $service = Service::query()->with(['category', 'freelanceProfile'])->where('slug', $serviceSlug)->first();
         if ($service === null) {

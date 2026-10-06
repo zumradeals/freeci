@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Modules\Accounts\Security\AdminAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,7 @@ class LoginController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        app(AdminAccess::class)->forget($request->session());         // la double authentification se franchit à CHAQUE nouvelle session
 
         // `intended` ne contient que l'URL que le visiteur a demandée sur ce site : jamais de destination externe.
         return redirect()->intended(route('account.dashboard'));

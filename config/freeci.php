@@ -62,6 +62,8 @@ return [
         // Sans processus de file dédié, le planificateur peut vider la file chaque minute (cron « schedule:run » requis).
         'queue_via_scheduler' => (bool) env('FREECI_QUEUE_VIA_SCHEDULER', false),
     ],
+    // Administration : accès soumis à une adresse vérifiée, à la double authentification, et à une confirmation récente pour les actes sensibles.
+    'admin' => ['mfa_session_minutes' => 480, 'reauth_minutes' => 10, 'mfa_attempts' => 5, 'mfa_lock_minutes' => 15, 'page_size' => 25, 'issuer' => 'FreeCI'],
     'messaging' => ['body_max' => 4000, 'per_10_minutes' => 30, 'page_size' => 20],
 
     'files' => [

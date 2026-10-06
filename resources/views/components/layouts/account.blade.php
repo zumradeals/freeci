@@ -25,7 +25,7 @@
     @else<a href="{{ route('freelance.activate') }}"><x-fc.icon name="briefcase" />Activer l’espace freelance</a>@endif
   </nav>
   @if(auth()->user()->isAdministrator())
-  <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration <x-fc.soon /></a></nav>
+  <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration</a></nav>
   @endif
   <nav class="side-nav side-bottom" aria-label="Compte et aide">
     <a href="{{ route('coming-soon', 'compte') }}"><x-fc.icon name="user" />Compte <x-fc.soon /></a>
@@ -35,6 +35,7 @@
 </div></aside>
 <main id="contenu" class="main"><div class="main-inner">
 @if(session('status'))<div class="notice tone-success" role="status"><x-fc.icon name="check-circle" /><p>{{ session('status') }}</p></div>@endif
+@if(auth()->user()->isSuspended())<div class="notice tone-warning" role="status"><x-fc.icon name="warn" /><p><strong>Votre compte est suspendu.</strong> Vous ne pouvez pas démarrer de nouvelle activité (demande, mission, proposition, nouvelle conversation). Vos commandes en cours se poursuivent normalement.</p></div>@endif
 @if(session('error'))<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ session('error') }}</p></div>@endif
 {{ $slot }}
 </div></main>
