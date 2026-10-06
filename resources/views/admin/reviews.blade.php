@@ -1,5 +1,5 @@
 <x-layouts.admin title="Avis">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Modération des avis</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Modération des avis</h1><p class="lead">Masquer ou rétablir un avis ou une réponse avec un motif ; jamais de réécriture.</p></div></div></header>
   <div class="notice tone-info"><x-fc.icon name="info" /><p><strong>Vous modérez, vous ne réécrivez pas.</strong> Masquer ou rétablir un avis ou une réponse exige une catégorie (pour un masquage) et un motif ; la note et le commentaire ne sont jamais modifiés, l’historique est conservé et les moyennes se recalculent seules. <strong>Une note négative, seule, n’est pas un motif de retrait.</strong> Aucun avis ne peut être créé par l’administration.</p></div>
   <nav class="tabs" aria-label="Filtre" style="margin:16px 0">
     <a href="{{ route('admin.reviews', ['filtre' => 'reported']) }}" @if($filter === 'reported') aria-current="page" @endif>Signalés ({{ $counts['reported'] }})</a>

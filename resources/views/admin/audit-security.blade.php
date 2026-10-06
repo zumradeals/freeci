@@ -1,5 +1,5 @@
 <x-layouts.admin title="Événements de sécurité">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Journal d’audit</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Journal d’audit</h1><p class="lead">Les événements de sécurité des comptes.</p></div></div></header>
   <nav class="tabs" aria-label="Journaux" style="margin-bottom:16px"><a href="{{ route('admin.audit') }}">Actions administratives</a><a href="{{ route('admin.audit.security') }}" aria-current="page">Événements de sécurité</a></nav>
   <form method="get" class="filters card" style="margin-bottom:16px" role="search">
     <div class="field"><label for="f-type">Événement</label><select class="select" id="f-type" name="type"><option value="">Tous</option>@foreach($types as $k => $l)<option value="{{ $k }}" @selected(($f['type'] ?? '') === $k)>{{ $l }}</option>@endforeach</select></div>

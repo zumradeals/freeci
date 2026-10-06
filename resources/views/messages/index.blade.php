@@ -1,5 +1,5 @@
 <x-layouts.account title="Messages" :space="$space">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}</p><h1 class="t-h1">Messages</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}</p><h1 class="t-h1">Messages</h1><p class="lead">Vos conversations avec les clients et les freelances.</p></div></div></header>
   <p class="note-line"><x-fc.icon name="lock" :size="16" /><span>Conversations privées entre deux personnes. <strong>Un message ou une pièce jointe n’est jamais une livraison, une modification de l’accord, l’acceptation d’un report ni une validation</strong> : ces actions se font depuis la commande.</span></p>
   @if(count($conversations))
     <div class="order-list">@foreach($conversations as $c)

@@ -1,5 +1,5 @@
 <x-layouts.admin title="Ma sécurité">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Ma sécurité</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Ma sécurité</h1><p class="lead">Votre double authentification, vos codes de récupération et votre confirmation d’identité.</p></div></div></header>
   <div class="stack-lg" style="max-width:44em">
     <section class="card stack"><h2 class="t-h3">Accès administration</h2>
       <p>Adresse vérifiée : <strong>{{ $user->emailVerified() ? 'oui' : 'non' }}</strong> · Double authentification : <strong>{{ $user->hasTwoFactor() ? 'activée' : 'inactive' }}</strong> · Codes de récupération restants : <strong>{{ $remaining }}</strong></p>

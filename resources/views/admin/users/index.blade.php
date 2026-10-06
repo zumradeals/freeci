@@ -1,5 +1,5 @@
 <x-layouts.admin title="Utilisateurs">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Utilisateurs</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Utilisateurs</h1><p class="lead">Comptes inscrits, état de vérification et suspensions.</p></div></div></header>
   <form method="get" class="filters card" style="margin-bottom:16px" role="search">
     <div class="field"><label for="f-q">Nom ou adresse e-mail</label><input class="input" id="f-q" name="q" value="{{ $f['q'] }}" maxlength="80"></div>
     <div class="field"><label for="f-statut">État</label><select class="select" id="f-statut" name="statut"><option value="">Tous</option><option value="active" @selected($f['status'] === 'active')>Actifs</option><option value="suspended" @selected($f['status'] === 'suspended')>Suspendus</option><option value="unverified" @selected($f['status'] === 'unverified')>Adresse non vérifiée</option></select></div>

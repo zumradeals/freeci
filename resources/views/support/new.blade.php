@@ -1,5 +1,5 @@
 <x-layouts.account title="Contacter le support">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow"><a href="{{ route('support.index') }}">← Assistance</a></p><h1 class="t-h1">Contacter le support</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow"><a href="{{ route('support.index') }}">← Assistance</a></p><h1 class="t-h1">Contacter le support</h1><p class="lead">Décrivez votre demande : elle est suivie avec une référence.</p></div></div></header>
   <form method="post" action="{{ route('support.store') }}" class="card stack" style="max-width:46em">@csrf
     <input type="hidden" name="operation_key" value="{{ $key }}">
     <div class="field"><label for="f-category">Sujet</label><select class="select" id="f-category" name="category" required>@foreach($categories as $k => $l)<option value="{{ $k }}" @selected(old('category', $order !== '' ? 'order' : '') === $k)>{{ $l }}</option>@endforeach</select></div>

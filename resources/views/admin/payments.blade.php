@@ -1,5 +1,5 @@
 <x-layouts.admin title="Paiements à vérifier">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Paiements à vérifier</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Paiements à vérifier</h1><p class="lead">Paiements incohérents ou tardifs à examiner ; aucun renvoi automatique.</p></div></div></header>
   <div class="notice tone-warning"><x-fc.icon name="warn" /><p><strong>Rapprochement, pas d’exécution.</strong> Ces dossiers signalent un paiement incohérent, tardif ou à traiter. Marquer un dossier « examiné » le trace seulement : rien n’est remboursé, versé, relancé ni démarré. Les paiements du mode test (sandbox) et ceux de l’ancien simulateur ne représentent aucun argent réel.</p></div>
   <nav class="tabs" aria-label="Filtre" style="margin:16px 0"><a href="{{ route('admin.payments') }}" @if($status === 'open') aria-current="page" @endif>À examiner ({{ $open }})</a><a href="{{ route('admin.payments', ['statut' => 'resolved']) }}" @if($status === 'resolved') aria-current="page" @endif>Examinés</a></nav>
   @if($page->count())

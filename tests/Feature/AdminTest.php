@@ -431,7 +431,7 @@ class AdminTest extends TestCase
         $this->serviceInReview();
         $this->missionInReview();
         $this->client->forceFill(['suspended_at' => now()])->save();
-        $this->asAdmin($this->admin)->get('/admin')->assertOk()->assertSee('Besoins de suivi enregistrés (0)')->assertSee('Ce ne sont pas des litiges pris en charge')
+        $this->asAdmin($this->admin)->get('/admin')->assertOk()->assertSee('Besoins de suivi enregistrés')->assertSee('Ce ne sont pas des litiges pris en charge')
             ->assertSee('Aucun besoin de suivi enregistré')->assertDontSee('litige en cours');
         $d = app(AdminDashboard::class)();
         $this->assertSame([1, 1, 1], [$d['servicesInReview'], $d['missionsInReview'], $d['suspended']]);

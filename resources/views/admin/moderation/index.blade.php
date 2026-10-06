@@ -1,5 +1,5 @@
 <x-layouts.admin title="Modération">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Modération</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Modération</h1><p class="lead">Services et missions à examiner avant leur mise en ligne, et contenus en ligne.</p></div></div></header>
   <nav class="tabs" aria-label="Files de modération" style="margin-bottom:16px">
     <a href="{{ route('admin.moderation') }}" @if($tab === 'services') aria-current="page" @endif>Services à modérer ({{ $counts['services'] }})</a>
     <a href="{{ route('admin.moderation', ['onglet' => 'missions']) }}" @if($tab === 'missions') aria-current="page" @endif>Missions à modérer ({{ $counts['missions'] }})</a>

@@ -1,5 +1,5 @@
 <x-layouts.account title="Mes propositions" space="freelancer">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">Mes propositions</h1></div><a class="btn btn-secondary" href="{{ route('missions.index') }}">Missions ouvertes</a></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">Mes propositions</h1><p class="lead">Les propositions que vous avez envoyées et leur état.</p></div><a class="btn btn-secondary" href="{{ route('missions.index') }}">Missions ouvertes</a></div></header>
   @if(count($proposals))
     <div class="stack-lg">@foreach($proposals as $p)
       <article class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 class="t-h3"><a href="{{ route('missions.show', $p['missionSlug']) }}">{{ $p['missionTitle'] }}</a></h2><x-fc.money :amount="$p['price']" /></div>

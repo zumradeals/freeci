@@ -1,5 +1,5 @@
 <x-layouts.account title="Mes services" space="freelancer">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">Mes services</h1></div>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">Mes services</h1><p class="lead">Vos services, leur état de publication et les actions possibles.</p></div>
     <a class="btn btn-primary" href="{{ route('freelance.services.new') }}">Créer un service</a></div></header>
   @if(! ($profile?->published_at))<div class="notice tone-warning" role="note"><x-fc.icon name="warn" /><p><strong>Votre profil n’est pas publié.</strong> Il faut le publier avant de soumettre un service. <a href="{{ route('freelance.profile') }}">Compléter mon profil</a></p></div>@endif
   @if(count($services))

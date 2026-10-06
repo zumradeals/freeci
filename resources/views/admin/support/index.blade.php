@@ -1,5 +1,5 @@
 <x-layouts.admin title="Assistance">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Assistance</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Assistance</h1><p class="lead">Dossiers d’assistance, signalements et litiges à traiter.</p></div></div></header>
   <div class="kpis" style="margin-bottom:16px">
     <a class="kpi" href="{{ route('admin.support') }}"><span class="n">{{ $counts['open'] }}</span><span class="l">dossiers en cours</span></a>
     <a class="kpi" href="{{ route('admin.support', ['qui' => 'unassigned']) }}"><span class="n">{{ $counts['unassigned'] }}</span><span class="l">non affectés</span></a>

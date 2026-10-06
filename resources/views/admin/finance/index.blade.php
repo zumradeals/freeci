@@ -1,7 +1,7 @@
 @php($m = fn (int $n) => \App\Shared\Money::xof($n)->formatted().' FCFA')
 @php($uuid = fn () => (string) \Illuminate\Support\Str::uuid())
 <x-layouts.admin title="Finances">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Finances : remboursements et reversements</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Finances : remboursements et reversements</h1><p class="lead">Opérations préparées, confirmées et exécutées par un seul administrateur ; réel et test séparés.</p></div></div></header>
   <div class="notice tone-warning"><x-fc.icon name="warn" /><p><strong>Une décision ne rembourse ni ne verse rien.</strong> Parcours en quatre temps, par un seul administrateur : <em>préparer</em> l’opération (les fonds sont réservés), <em>relire le récapitulatif</em> (montant, bénéficiaire, environnement), <em>confirmer explicitement</em>, puis <em>exécuter ou enregistrer</em>. Rien n’est « effectué » avant un résultat établi. <strong>Genius Pay ne documente aucune API de reversement</strong> : un reversement n’est jamais exécuté par API ; il est enregistré manuellement avec référence externe et justificatif. Les remboursements partiels ne sont pas davantage exécutés par API (règles non établies).</p></div>
 
   <section class="card" aria-labelledby="h-tot" style="margin-top:16px"><h2 class="t-h2" id="h-tot">Totaux — réel et test séparés</h2>

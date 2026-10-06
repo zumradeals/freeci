@@ -1,5 +1,5 @@
 <x-layouts.admin title="Journal d’audit">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Journal d’audit</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Administration</p><h1 class="t-h1">Journal d’audit</h1><p class="lead">Les actions administratives, avec leur auteur, leur cible et leur résultat.</p></div></div></header>
   <nav class="tabs" aria-label="Journaux" style="margin-bottom:16px"><a href="{{ route('admin.audit') }}" aria-current="page">Actions administratives</a><a href="{{ route('admin.audit.security') }}">Événements de sécurité</a></nav>
   <form method="get" class="filters card" style="margin-bottom:16px" role="search">
     <div class="field"><label for="f-actor">Auteur (nom ou e-mail)</label><input class="input" id="f-actor" name="actor" value="{{ $f['actor'] ?? '' }}" maxlength="80"></div>

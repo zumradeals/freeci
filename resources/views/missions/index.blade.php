@@ -1,5 +1,5 @@
 <x-layouts.account title="Mes missions" space="client">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace client</p><h1 class="t-h1">Mes missions</h1></div><a class="btn btn-primary" href="{{ route('client.missions.new') }}">Publier une mission</a></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace client</p><h1 class="t-h1">Mes missions</h1><p class="lead">Vos missions publiées ou en préparation et les propositions reçues.</p></div><a class="btn btn-primary" href="{{ route('client.missions.new') }}">Publier une mission</a></div></header>
   @if(count($missions))
     <div class="stack-lg">@foreach($missions as $m)
       <article class="card" aria-labelledby="m-{{ $m['id'] }}">

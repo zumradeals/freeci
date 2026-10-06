@@ -1,5 +1,5 @@
 <x-layouts.account title="Mon compte" :space="$space">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace {{ $space === 'freelancer' ? 'freelance' : 'client' }}</p><h1 class="t-h1">Mon compte</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace {{ $space === 'freelancer' ? 'freelance' : 'client' }}</p><h1 class="t-h1">Mon compte</h1><p class="lead">Vos informations, votre sécurité, vos données et la fermeture du compte.</p></div></div></header>
   @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first() }}</p></div>@endif
 
   <div class="grid-2">

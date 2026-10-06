@@ -1,5 +1,5 @@
 <x-layouts.account title="Mes favoris" :space="$space">
-  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace {{ $space === 'freelancer' ? 'freelance' : 'client' }}</p><h1 class="t-h1">Mes favoris</h1></div></div></header>
+  <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace {{ $space === 'freelancer' ? 'freelance' : 'client' }}</p><h1 class="t-h1">Mes favoris</h1><p class="lead">Les services et freelances que vous avez enregistrés, visibles de vous seul.</p></div></div></header>
   <div class="notice tone-info"><x-fc.icon name="lock" /><p><strong>Vos favoris sont privés</strong> : personne d’autre ne les voit et ils n’influencent aucun classement.</p></div>
   @forelse($items as $i)
     <section class="card" style="margin-top:12px">

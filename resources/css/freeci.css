@@ -1018,3 +1018,58 @@ a.kpi:hover { border-color: var(--marine-800); }
 @media (min-width: 1024px) { .side-sticky { max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; } }
 @media (min-width: 1024px) { .info-nav { margin-left: -12px; } }
 .grid-2 > .card { display: grid; gap: 12px; align-content: start; }
+
+/* ========== Lot 15 — système de page issu de « Mes revenus » (page de référence) ========== */
+/* Anatomie : en-tête (rubrique, titre, phrase d'usage) → cartes à titre interne (titre + précision à droite) → tuiles de chiffres → mise en page 2/3 + 1/3 → liste de lignes séparées. */
+.page-head .lead, .page-head > .muted { color: var(--ink-600); font-size: 1rem; line-height: 1.5; max-width: 52rem; margin-top: 4px; }
+.page-body { display: grid; gap: 20px; min-width: 0; }
+.page-body > .page-head { margin: 0; }
+.panel { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.card-head > h2, .card-head > h3 { margin: 0; }
+.card-head .meta-r { color: var(--ink-600); font-size: .875rem; }
+
+/* Tuiles de chiffres */
+.metrics { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); margin: 0; }
+.metric { display: block; padding: 14px; border-radius: var(--r-sm); background: var(--canvas); min-width: 0; text-decoration: none; color: var(--ink-900); }
+.metric dt, .metric .metric-label { font-size: .875rem; color: var(--ink-600); }
+.metric dd, .metric .metric-value { display: block; margin: 8px 0 0; font-size: clamp(1.125rem, 1.5vw, 1.5rem); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.2; }
+.metric .metric-hint, .metric dd.metric-hint { display: block; font-size: .8125rem; font-weight: 400; color: var(--ink-600); margin-top: 4px; }
+a.metric:hover { background: var(--marine-100); }
+.metric-featured, a.metric-featured:hover { background: var(--marine-900); color: #fff; }
+.metric-featured dt, .metric-featured .metric-label, .metric-featured .metric-hint { color: #fff; }
+.metrics-dashed .metric { background: transparent; border: 1px dashed var(--line-strong); }
+@media (max-width: 599px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .metric { padding: 12px; } }
+
+/* Principal + latéral */
+.split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 1200px) { .split { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); } }
+.split > .stack-col { display: grid; gap: 20px; min-width: 0; }
+.guide ol { padding-left: 22px; display: grid; gap: 18px; }
+.guide li::marker { color: var(--accent-700); font-weight: 700; }
+.guide li p { margin-top: 4px; }
+
+/* Formulaire en grille */
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.span-all { grid-column: 1 / -1; }
+.main .form-grid .field { max-width: none; min-width: 0; }
+@media (max-width: 599px) { .form-grid { grid-template-columns: minmax(0, 1fr); } .form-grid .btn { width: 100%; } }
+
+/* Lignes séparées dans une carte (commandes, dossiers, notifications…) */
+.record { padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 12px; overflow-wrap: anywhere; }
+.record:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+.record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.record-head > div { min-width: 0; }
+.record-link { display: inline-block; padding-block: 6px; font-weight: 600; }
+.record-amounts { display: flex; flex-wrap: wrap; gap: 16px 40px; margin: 0; }
+.record-amounts dt { color: var(--ink-600); font-size: .875rem; }
+.record-amounts dd { margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.note-list { padding-left: 20px; }
+.empty-note { margin-top: 4px; }
+/* Listes existantes (tâches, commandes, dossiers) rendues dans une carte : mêmes lignes séparées, sans cartes imbriquées */
+.card .tasks, .card .order-list { gap: 0; }
+.card .tasks .task, .card .order-list .order-card, .card .order-list .task { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; padding-inline: 0; box-shadow: none; }
+.card .tasks .task:first-child, .card .order-list .order-card:first-child { border-top: 0; padding-top: 4px; }
+.card .order-list .order-card:hover { background: var(--canvas); border-color: var(--line); box-shadow: none; }
+.card .order-list { grid-template-columns: minmax(0, 1fr) !important; }
+.metric-featured dd, .metric-featured .metric-value, .metric-featured dd.metric-hint, .metric-featured .metric-hint { color: #fff; }
