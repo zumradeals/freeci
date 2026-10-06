@@ -2,33 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
-/** Fonctions hors du lot en cours : annoncées honnêtement, sans formulaire ni faux effet. */
+/**
+ * Anciennes adresses « bientôt » : toutes les fonctions annoncées existent désormais. L'adresse est conservée (anciens liens, favoris du navigateur)
+ * et renvoie vers la vraie page ; un identifiant inconnu reste une 404.
+ */
 class ComingSoonController extends Controller
 {
-    public const FEATURES = [
-        'missions' => ['Missions', 'Publier une mission et comparer des propositions.'],
-        'freelances' => ['Freelances', 'Parcourir les profils des freelances.'],
-        'publier-une-mission' => ['Publier une mission', 'Décrire un besoin et recevoir des propositions chiffrées.'],
-        'creer-un-profil' => ['Créer un profil freelance', 'Présenter vos compétences et publier vos prestations.'],
-        'commandes' => ['Commandes', 'Suivre vos commandes, de la demande à la validation.'],
-        'messages' => ['Messages', 'Échanger avec un freelance ou un client.'],
-        'paiements' => ['Paiements', 'Consulter votre situation financière.'],
-        'favoris' => ['Favoris', 'Retrouver les services que vous avez enregistrés.'],
-        'compte' => ['Compte', 'Gérer vos informations personnelles.'],
-        'aide' => ['Aide', 'Centre d’aide et contact du support.'],
-        'conditions' => ['Conditions d’utilisation', 'Texte juridique à rédiger.'],
-        'confidentialite' => ['Confidentialité', 'Texte juridique à rédiger.'],
-        'mentions-legales' => ['Mentions légales', 'Mentions de l’opérateur à fournir.'],
+    private const TARGETS = [
+        'missions' => ['missions.index'], 'freelances' => ['freelances.index'], 'publier-une-mission' => ['client.missions.new'], 'creer-un-profil' => ['freelance.activate'],
+        'commandes' => ['orders.index'], 'messages' => ['messages.index'], 'paiements' => ['client.finances'], 'favoris' => ['favorites.index'], 'compte' => ['account.settings'],
+        'aide' => ['info', ['page' => 'aide']], 'conditions' => ['info', ['page' => 'conditions']], 'confidentialite' => ['info', ['page' => 'confidentialite']],
+        'mentions-legales' => ['info', ['page' => 'mentions-legales']],
     ];
 
-    public function __invoke(string $feature): View
+    public function __invoke(string $feature): RedirectResponse
     {
-        abort_unless(isset(self::FEATURES[$feature]), 404);
+        abort_unless(isset(self::TARGETS[$feature]), 404);
 
-        [$title, $text] = self::FEATURES[$feature];
-
-        return view('pages.coming-soon', ['title' => $title, 'text' => $text]);
+        return redirect()->route(self::TARGETS[$feature][0], self::TARGETS[$feature][1] ?? [], 301);
     }
 }

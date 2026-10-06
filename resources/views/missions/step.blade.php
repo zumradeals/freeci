@@ -5,7 +5,7 @@
 @endphp
 <x-layouts.account :title="$titles[$kind]" space="client">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('client.missions.show', $mission->getKey()) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour à la mission</a><a class="hide-m" href="{{ route('client.missions') }}">Mes missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $titles[$kind] }}</span></nav>
-  <section class="card" style="max-width:680px" aria-labelledby="c-title"><h1 class="t-h1" id="c-title">{{ $titles[$kind] }}</h1><p style="margin-top:8px"><strong>{{ $name }}</strong></p>
+  <section class="card form-card" aria-labelledby="c-title"><h1 class="t-h1" id="c-title">{{ $titles[$kind] }}</h1><p style="margin-top:8px"><strong>{{ $name }}</strong></p>
     <div class="notice tone-info" style="margin-top:16px"><x-fc.icon name="info" /><div><p><strong>Ce qui va se passer</strong></p><ul class="stack-sm" style="padding-left:18px;list-style:disc;margin-top:6px">
       @switch($kind)
         @case('submit')<li>La version {{ $working->number }} est transmise à la modération et <strong>n’est plus modifiable</strong> pendant le contrôle (vous pouvez retirer la soumission).</li><li>@if($live)La version publiée (v{{ $live->number }}) reste en ligne ; <strong>les propositions déjà reçues devront être reconfirmées</strong> par leurs auteurs avant de pouvoir être retenues.@else La mission reste <strong>invisible du public</strong> jusqu’à l’approbation.@endif</li>@break

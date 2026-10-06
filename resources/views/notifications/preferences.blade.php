@@ -9,7 +9,7 @@
         <label class="check"><input type="checkbox" name="pref[{{ $o['key'] }}][email]" value="1" @checked($o['email'])> <span>Par courriel (invitation à consulter l’application, sans contenu)</span></label></fieldset>@endforeach
       <button class="btn btn-primary" type="submit" data-once-label="Enregistrement…">Enregistrer</button></section>
   </form>
-  <section class="card" style="max-width:720px;margin-top:16px" aria-labelledby="h-ess"><h2 class="t-h2 card-title" id="h-ess">Notifications indispensables</h2>
+  <section class="card form-card" style="margin-top:16px" aria-labelledby="h-ess"><h2 class="t-h2 card-title" id="h-ess">Notifications indispensables</h2>
     <p class="muted">Liées à votre compte et à vos commandes : toujours actives dans l’application, et par courriel quand l’envoi est configuré. Elles ne se désactivent pas.</p>
     <ul class="stack-sm">@foreach($essential as $e)<li><strong>{{ $e['label'] }}</strong><br><span class="muted small">{{ $e['description'] }}</span></li>@endforeach</ul></section>
 </x-layouts.account>

@@ -1,5 +1,5 @@
 <x-layouts.account title="Nouveau message" :space="$space">
-  <section class="card" style="max-width:680px" aria-labelledby="h-st"><h1 class="t-h1" id="h-st">Poser une question</h1><p class="muted" style="margin-top:6px">{{ $context }}</p>
+  <section class="card form-card" aria-labelledby="h-st"><h1 class="t-h1" id="h-st">Poser une question</h1><p class="muted" style="margin-top:6px">{{ $context }}</p>
     <div class="notice tone-info" style="margin-top:12px"><x-fc.icon name="lock" /><p>Conversation <strong>privée</strong> entre vous et votre interlocuteur. Elle n’engage à rien : seule une demande, une proposition retenue ou une action de la commande a un effet.</p></div>
     @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first() }} Votre saisie est conservée.</p></div>@endif
     <form method="post" action="{{ $action }}" enctype="multipart/form-data" data-once style="display:grid;gap:12px;margin-top:12px" novalidate>@csrf

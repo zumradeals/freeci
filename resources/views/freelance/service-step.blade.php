@@ -5,7 +5,7 @@
 @endphp
 <x-layouts.account :title="$titles[$kind]" space="freelancer">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('freelance.services') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Mes services</a><a class="hide-m" href="{{ route('freelance.services') }}">Mes services</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $titles[$kind] }}</span></nav>
-  <section class="card" style="max-width:680px" aria-labelledby="c-title"><h1 class="t-h1" id="c-title">{{ $titles[$kind] }}</h1><p style="margin-top:8px"><strong>{{ $name }}</strong></p>
+  <section class="card form-card" aria-labelledby="c-title"><h1 class="t-h1" id="c-title">{{ $titles[$kind] }}</h1><p style="margin-top:8px"><strong>{{ $name }}</strong></p>
     @if($kind === 'submit' && $problems)
       <div class="notice tone-warning" role="alert" style="margin-top:16px"><x-fc.icon name="warn" /><div><p><strong>Le service n’est pas encore prêt :</strong></p><ul style="padding-left:18px;list-style:disc;margin-top:6px">@foreach($problems as $p)<li>{{ $p }}</li>@endforeach</ul></div></div>
       <div style="margin-top:16px" class="row"><a class="btn btn-primary" href="{{ route('freelance.services.edit', $service->getKey()) }}">Revenir au brouillon</a></div>

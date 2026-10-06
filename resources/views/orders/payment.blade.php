@@ -4,7 +4,7 @@
   <h1 class="t-h1">Payer votre commande</h1>
 
   @if(! $p->paymentsOpen && $p->paymentState === null)
-    <section class="card empty" style="max-width:640px"><span class="ico-lg"><x-fc.icon name="lock" :size="26" /></span>
+    <section class="card empty form-card"><span class="ico-lg"><x-fc.icon name="lock" :size="26" /></span>
       <h2 class="t-h2">Le paiement n’est pas ouvert pour cette commande</h2>
       <p class="muted" style="max-width:36em">{{ $p->unavailableMessage }}</p>
       @if($p->orderEnvironment === 'test')<p class="muted small" style="max-width:36em">Cette commande est une commande de <strong>test</strong> : elle ne peut jamais être payée en argent réel.</p>@elseif($p->orderEnvironment === 'legacy')<p class="muted small" style="max-width:36em">Cette commande est antérieure à l’ouverture des paiements : elle n’est pas payable.</p>@endif

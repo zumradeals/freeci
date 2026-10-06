@@ -1,7 +1,7 @@
 <x-layouts.account :title="$activation ? 'Activer l’espace freelance' : 'Profil freelance'" :space="$space">
   <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $activation ? 'Espace client' : 'Espace freelance' }}</p><h1 class="t-h1">{{ $activation ? 'Activer l’espace freelance' : 'Votre profil' }}</h1></div></div></header>
   <div class="cols"><div class="stack-lg">
-  <div class="card" style="max-width:680px">
+  <div class="card form-card">
     <p class="muted">{{ $activation ? 'Activez l’espace freelance pour recevoir des demandes de prestation. Trois informations suffisent ; vous complèterez le reste ensuite.' : 'Les informations de cette section sont publiques une fois votre profil publié.' }}</p>
     @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Vos saisies sont conservées.</p></div>@endif
     <form method="post" action="{{ route('freelance.profile.save') }}" class="stack" style="display:grid;gap:16px;margin-top:16px" data-once>
@@ -21,11 +21,11 @@
   </div>
 
   @unless($activation)
-  <section class="card" style="max-width:680px" aria-labelledby="h-priv"><h2 class="t-h2 card-title" id="h-priv">Données privées</h2>
+  <section class="card form-card" aria-labelledby="h-priv"><h2 class="t-h2 card-title" id="h-priv">Données privées</h2>
     <dl class="defs"><div><dt>Adresse e-mail du compte</dt><dd>{{ $user->email }}<small>Jamais affichée sur votre profil ni sur vos services. Elle ne sert qu’à votre connexion et aux messages de FreeCI.</small></dd></div></dl>
     <p class="note-line"><x-fc.icon name="lock" :size="16" /><span>Aucun badge de vérification n’existe encore : ni vous ni personne ne peut s’en attribuer un depuis cette page.</span></p></section>
 
-  <section class="card" style="max-width:680px" aria-labelledby="h-pub"><div class="row" style="justify-content:space-between"><h2 class="t-h2" id="h-pub">Publication du profil</h2>
+  <section class="card form-card" aria-labelledby="h-pub"><div class="row" style="justify-content:space-between"><h2 class="t-h2" id="h-pub">Publication du profil</h2>
       @if($profile['published'] ?? false)<span class="badge tone-success"><x-fc.icon name="check-circle" :size="16" />Profil public</span>@else<span class="badge tone-neutral"><x-fc.icon name="minus-circle" :size="16" />Non publié</span>@endif</div>
     @if($errors->has('profile'))<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first('profile') }}</p></div>@endif
     @if($profile['published'] ?? false)

@@ -82,7 +82,7 @@ class AuthenticationTest extends TestCase
 
         $user = User::factory()->create();
         $r = $this->actingAs($user)->get('/espace');
-        $r->assertOk()->assertSee('Rien à faire pour l’instant.');
+        $r->assertOk()->assertSee('Par où commencer ?');
         $this->assertStringContainsString('no-store', $r->headers->get('Cache-Control'));
         $this->assertStringContainsString('private', $r->headers->get('Cache-Control'));
     }

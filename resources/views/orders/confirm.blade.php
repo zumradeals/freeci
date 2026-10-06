@@ -1,6 +1,6 @@
 <x-layouts.account :title="$title" :space="$space">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('orders.show', $d->reference) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour à la commande</a><a class="hide-m" href="{{ route('orders.show', $d->reference) }}">Commande {{ $d->reference }}</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $title }}</span></nav>
-  <section class="card" style="max-width:640px" aria-labelledby="c-title">
+  <section class="card form-card" aria-labelledby="c-title">
     <h1 class="t-h1" id="c-title">{{ $title }}</h1>
     <p style="margin-top:8px"><strong>{{ $d->title }}</strong><br><span class="muted">{{ $d->reference }} · {{ $d->otherPartyLabel }} : {{ $d->otherPartyName }}</span></p>
     <div class="notice tone-info" style="margin-top:16px"><x-fc.icon name="info" /><p><strong>Ce qui va se passer.</strong> {{ $consequences }}</p></div>

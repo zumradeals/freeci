@@ -8,13 +8,7 @@
       @endguest
       <nav aria-label="Navigation principale"><div class="nav-list"><x-fc.menu-links :drawer="true" /></div></nav>
       @auth
-        <div><p class="nav-title">Mon espace</p>
-          <nav aria-label="Mon espace"><div class="nav-list"><x-fc.space-nav :space="$space ?? 'client'" :drawer="true" />
-            <a href="{{ route('account.settings') }}"><x-fc.icon name="user" />Compte</a>
-            <a href="{{ route('info', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
-          </div></nav>
-          <form method="post" action="{{ route('logout') }}" style="margin-top:12px">@csrf<button class="btn btn-secondary btn-block" type="submit">Se déconnecter</button></form>
-        </div>
+        <div class="drawer-space"><p class="nav-title">Mon espace</p><x-fc.sidebar :space="$space ?? 'client'" :drawer="true" /></div>
       @endauth
     </div>
   </div>

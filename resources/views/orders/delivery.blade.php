@@ -10,14 +10,14 @@
   @if(session('reasons'))<div class="notice tone-warning" role="alert"><x-fc.icon name="warn" /><ul style="padding-left:18px;list-style:disc">@foreach(session('reasons') as $r)<li>{{ $r }}</li>@endforeach</ul></div>@endif
 
   <div class="cols"><div class="stack-lg">
-    <section class="card" aria-labelledby="h-msg" style="max-width:680px"><h2 class="t-h2 card-title" id="h-msg">Message de livraison</h2>
+    <section class="card form-card" aria-labelledby="h-msg"><h2 class="t-h2 card-title" id="h-msg">Message de livraison</h2>
       <form method="post" action="{{ route('orders.delivery.message', $d->reference) }}" data-once style="display:grid;gap:12px">@csrf
         <div class="field"><label for="message">Message au client <span class="req">(obligatoire)</span></label>
           <textarea class="textarea" id="message" name="message" rows="6" maxlength="{{ \App\Modules\Orders\Actions\DeliveryDraft::MESSAGE_MAX }}">{{ old('message', $draft['message']) }}</textarea>
           <p class="hint">Décrivez ce qui est livré, les formats et ce que le client doit vérifier. Enregistrez le brouillon avant de soumettre.</p>@error('message')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
         <div><button class="btn btn-secondary" type="submit" data-once-label="Enregistrement…">Enregistrer le brouillon</button></div></form></section>
 
-    <section class="card" aria-labelledby="h-files" style="max-width:680px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 class="t-h2" id="h-files">Fichiers livrés</h2>@if($draft['requiresFiles'])<span class="badge tone-warning"><x-fc.icon name="warn" :size="16" />Au moins un fichier contrôlé requis</span>@endif</div>
+    <section class="card form-card" aria-labelledby="h-files"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 class="t-h2" id="h-files">Fichiers livrés</h2>@if($draft['requiresFiles'])<span class="badge tone-warning"><x-fc.icon name="warn" :size="16" />Au moins un fichier contrôlé requis</span>@endif</div>
       <p class="note-line"><x-fc.icon name="shield" :size="16" /><span><strong>Contrôle de sécurité avant examen.</strong> Un fichier n’est livrable qu’une fois contrôlé. Ce contrôle ne dit rien de la qualité de votre travail.</span></p>
       @if(count($draft['files']))
         <div class="files" style="margin-top:12px">@foreach($draft['files'] as $f)
@@ -36,7 +36,7 @@
       @endif
     </section>
 
-    <section class="card" aria-labelledby="h-sub" style="max-width:680px"><h2 class="t-h2 card-title" id="h-sub">Soumettre au client</h2>
+    <section class="card form-card" aria-labelledby="h-sub"><h2 class="t-h2 card-title" id="h-sub">Soumettre au client</h2>
       @if($draft['canSubmit'])
         <p>La livraison est prête : message rédigé{{ count($draft['files']) ? ' et fichiers contrôlés' : '' }}.</p>
         <div style="margin-top:12px"><a class="btn btn-primary btn-lg" href="{{ route('orders.delivery.confirm', $d->reference) }}">Soumettre la livraison</a></div>

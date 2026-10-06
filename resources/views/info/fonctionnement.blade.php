@@ -1,8 +1,5 @@
-<x-layouts.public :title="$title" :robots="$approved ? null : 'noindex, nofollow'">
-<div class="container" style="padding-block:32px;max-width:760px">
-  <h1 class="t-h1">{{ $title }}</h1>
-  <x-fc.draft-banner :approved="$approved" />
-  <div class="stack-sm" style="margin-top:16px">
+<x-layouts.info :title="$title" :slug="$slug" :approved="$approved">
+  <div class="prose">
     <p>FreeCI met en relation des clients et des freelances indépendants en Côte d’Ivoire. Chaque freelance reste indépendant : FreeCI est un espace de mise en relation et de suivi, pas l’employeur des freelances.</p>
     <h2 class="t-h2">Le parcours d’une commande</h2>
     <ol>
@@ -19,4 +16,4 @@
     <h2 class="t-h2">Paiement</h2>
     <p>@unless(\App\Integrations\Payments\PaymentMode::isLive())Le service est actuellement en <strong>mode test</strong> : aucun argent réel n’est utilisé. @endunless Les modalités de paiement réel, les frais éventuels et les garanties offertes ne sont <strong>pas encore arrêtés</strong> et seront publiés avant l’ouverture aux paiements réels.</p>
   </div>
-</div></x-layouts.public>
+</x-layouts.info>

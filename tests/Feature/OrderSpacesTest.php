@@ -25,8 +25,8 @@ class OrderSpacesTest extends TestCase
 
     public function test_dashboards_have_honest_empty_states(): void
     {
-        $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee('Rien à faire pour l’instant.')->assertSee('Aucune commande pour l’instant.')->assertSee('Activer l’espace freelance');
-        $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Aucune demande à traiter.')->assertSee('Aucune commande en attente du client.');
+        $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee('Par où commencer ?')->assertSee('Choisir un service')->assertSee('Activer l’espace freelance')->assertDontSee('Autres informations');
+        $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Aucune demande à traiter.')->assertSee('Vos services');
         $this->actingAs($this->client)->get('/espace/commandes')->assertSee('Aucune commande pour l’instant.');
     }
 
@@ -84,7 +84,7 @@ class OrderSpacesTest extends TestCase
         $this->actingAs($user)->post('/freelance/profil', ['display_name' => 'Awa Test', 'headline' => 'Traductrice', 'city' => 'Abidjan'])->assertRedirect(route('freelance.dashboard'));
         $this->assertTrue($user->fresh()->hasRole('freelance'));
         $this->assertSame('Traductrice', $user->fresh()->freelanceProfile->headline);
-        $this->actingAs($user)->get('/freelance')->assertOk()->assertSee('Aucun service à votre nom');
+        $this->actingAs($user)->get('/freelance')->assertOk()->assertSee('Créer un service');
         $this->actingAs($user)->get('/freelance/activer')->assertRedirect(route('freelance.dashboard'));
 
         $this->actingAs($user)->post('/freelance/profil', ['display_name' => 'Awa Test', 'headline' => 'Traductrice FR-EN']);

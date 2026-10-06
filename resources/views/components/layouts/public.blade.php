@@ -34,7 +34,9 @@
         <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
         <p class="muted" style="max-width:32em">Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.</p>
       </div>
-      <div><h2>FreeCI</h2><ul>
+      <div><h2>Découvrir</h2><ul>
+        <li><a href="{{ route('services.index') }}">Services</a></li><li><a href="{{ route('missions.index') }}">Missions</a></li><li><a href="{{ route('freelances.index') }}">Freelances</a></li></ul></div>
+      <div><h2>Aide</h2><ul>
         <li><a href="{{ route('info', 'fonctionnement') }}">Comment ça marche</a></li>
         <li><a href="{{ route('info', 'aide') }}">Centre d’aide</a></li><li><a href="{{ route('info', 'contact') }}">Contact</a></li></ul></div>
       <div><h2>Informations</h2><ul>

@@ -7,7 +7,7 @@
 <body class="">
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 @include('partials.sprite')
-@include('partials.mode-bar')
+@include('partials.mode-bar', ['wide' => true])
 <header class="site-header header-app">
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
@@ -17,22 +17,7 @@
   </div>
 </header>
 <div class="app">
-<aside class="sidebar" aria-label="{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}"><div class="side-sticky">
-  <nav class="side-nav" aria-label="{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}"><x-fc.space-nav :space="$space" /></nav>
-  <nav class="side-nav" aria-label="Changer d’espace">
-    @if($space === 'freelancer')<a href="{{ route('account.dashboard') }}"><x-fc.icon name="user" />Espace client</a>
-    @elseif(auth()->user()->hasRole('freelance'))<a href="{{ route('freelance.dashboard') }}"><x-fc.icon name="briefcase" />Espace freelance</a>
-    @else<a href="{{ route('freelance.activate') }}"><x-fc.icon name="briefcase" />Activer l’espace freelance</a>@endif
-  </nav>
-  @if(auth()->user()->isStaff())
-  <nav class="side-nav" aria-label="Administration"><a href="{{ route('admin.home') }}"><x-fc.icon name="shield" />Administration</a></nav>
-  @endif
-  <nav class="side-nav side-bottom" aria-label="Compte et aide">
-    <a href="{{ route('account.settings') }}"><x-fc.icon name="user" />Compte</a>
-    <a href="{{ route('info', 'aide') }}"><x-fc.icon name="info" />Aide <x-fc.soon /></a>
-    <form method="post" action="{{ route('logout') }}">@csrf<button class="side-logout" type="submit"><x-fc.icon name="lock" />Se déconnecter</button></form>
-  </nav>
-</div></aside>
+<aside class="sidebar" aria-label="{{ $space === 'freelancer' ? 'Espace freelance' : 'Espace client' }}"><div class="side-sticky"><x-fc.sidebar :space="$space" /></div></aside>
 <main id="contenu" class="main"><div class="main-inner">
 @if(session('status'))<div class="notice tone-success" role="status"><x-fc.icon name="check-circle" /><p>{{ session('status') }}</p></div>@endif
 @if(auth()->user()->isSuspended())<div class="notice tone-warning" role="status"><x-fc.icon name="warn" /><p><strong>Votre compte est suspendu.</strong> Vous ne pouvez pas démarrer de nouvelle activité (demande, mission, proposition, nouvelle conversation). Vos commandes en cours se poursuivent normalement.</p></div>@endif
@@ -41,8 +26,8 @@
 </div></main>
 </div>
 <footer class="site-footer slim"><div class="container">
-  <p>FreeCI · démonstration (données fictives)</p>
-  <ul><li><a href="{{ route('info', 'aide') }}">Aide</a></li><li><a href="{{ route('info', 'conditions') }}">Conditions</a></li><li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li></ul>
+  <p>FreeCI @unless(\App\Integrations\Payments\PaymentMode::isLive())· mode test : aucun argent réel @endunless</p>
+  <ul><li><a href="{{ route('info', 'aide') }}">Aide</a></li><li><a href="{{ route('info', 'contact') }}">Contact</a></li><li><a href="{{ route('info', 'conditions') }}">Conditions</a></li><li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li><li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul>
 </div></footer>
 @include('partials.drawer', ['space' => $space])
 @livewireScripts

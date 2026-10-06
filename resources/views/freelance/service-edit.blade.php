@@ -73,6 +73,6 @@
     @endif
   </form>
 
-  @if(count($history))<section class="card" style="max-width:720px;margin-top:24px" aria-labelledby="h-hist"><h2 class="t-h2 card-title" id="h-hist">Historique</h2>
+  @if(count($history))<section class="card form-card" style="margin-top:24px" aria-labelledby="h-hist"><h2 class="t-h2 card-title" id="h-hist">Historique</h2>
     <ol class="timeline">@foreach($history as $h)<li><span class="pt" aria-hidden="true"></span><div><p class="tt">{{ ['created' => 'Brouillon créé', 'submitted' => 'Soumis à modération', 'submission_withdrawn' => 'Soumission retirée', 'approved' => 'Approuvé et publié', 'changes_requested' => 'Correction demandée par la modération', 'revision_started' => 'Nouvelle version démarrée', 'withdrawn_by_owner' => 'Retiré du catalogue par vous', 'restored_by_owner' => 'Remis en ligne par vous', 'suspended' => 'Suspendu par la modération', 'reinstated' => 'Remis en ligne par la modération'][$h['type']] ?? $h['type'] }}</p><p class="when">{{ $h['when'] }}@if($h['by']) · {{ $h['by'] }}@endif</p>@if($h['note'])<p class="why">« {{ $h['note'] }} »</p>@endif</div></li>@endforeach</ol></section>@endif
 </x-layouts.account>

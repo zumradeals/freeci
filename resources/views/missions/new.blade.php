@@ -1,6 +1,6 @@
 <x-layouts.account title="Publier une mission" space="client">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('client.missions') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Mes missions</a><a class="hide-m" href="{{ route('client.missions') }}">Mes missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Nouvelle mission</span></nav>
-  <section class="card" style="max-width:640px" aria-labelledby="h-new"><h1 class="t-h1" id="h-new">Publier une mission</h1>
+  <section class="card form-card" aria-labelledby="h-new"><h1 class="t-h1" id="h-new">Publier une mission</h1>
     <p class="muted" style="margin-top:6px">Deux informations pour commencer. Le reste se complète dans le brouillon, invisible du public jusqu’à son approbation.</p>
     @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Vos saisies sont conservées.</p></div>@endif
     <form method="post" action="{{ route('client.missions.store') }}" data-once style="display:grid;gap:16px;margin-top:16px" novalidate>@csrf
