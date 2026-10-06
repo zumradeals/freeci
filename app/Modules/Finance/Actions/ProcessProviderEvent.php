@@ -200,6 +200,9 @@ final class ProcessProviderEvent
 
             return 'rejected';
         }
+        if ($v->feeXof !== null) {
+            DB::table('payments')->where('id', $payment->getKey())->update(['provider_fee_xof' => $v->feeXof]);       // information : répartition des frais non décidée
+        }
 
         return match (($this->confirm)($payment->getKey())) {
             'applied' => 'applied',
@@ -211,6 +214,11 @@ final class ProcessProviderEvent
     /** Remboursement effectué CHEZ le prestataire : enregistré et signalé pour traitement ; aucun remboursement n'est exécuté ni déduit par FreeCI. */
     private function refunded(Payment $payment, Order $order): string
     {
+        // Une opération de remboursement API ouverte pour ce paiement : l'événement n'est pas cru sur parole, le paiement est relu chez le prestataire (lot 11).
+        $op = DB::table('financial_operations')->where('payment_id', $payment->getKey())->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])->value('id');
+        if ($op !== null && app(FinancialOperations::class)->reconcile($op) === 'confirmed') {
+            return 'applied';
+        }
         $this->flag($order, $payment, 'refunded_by_provider');
 
         return 'reconciliation';

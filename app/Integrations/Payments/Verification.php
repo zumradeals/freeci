@@ -11,5 +11,6 @@ final readonly class Verification
         public ?string $orderReference = null,
         public ?string $transactionReference = null,
         public ?string $environment = null,                // environnement déduit de la clé utilisée côté serveur, ou fourni par le prestataire
+        public ?int $feeXof = null,                        // frais du prestataire (champ `fees` de la lecture d'un paiement), information seulement
     ) {}
 }

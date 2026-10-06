@@ -18,6 +18,12 @@ interface PaymentProvider
     /** Interroge le prestataire sur une référence : seule source de vérité de la confirmation. */
     public function verify(string $reference): Verification;
 
+    /**
+     * Remboursement TOTAL d'un paiement complété (`POST /payments/{reference}/refund`). N'est jamais rejoué à l'aveugle : un résultat incertain
+     * conduit à une lecture du paiement (`verify`) puis à une décision explicite. Aucun remboursement partiel n'est envoyé (règles non établies).
+     */
+    public function refund(string $paymentReference, int $expectedAmountXof, ?string $reason = null): RefundResult;
+
     /** @throws InvalidProviderEvent signature absente ou invalide, corps illisible, horodatage hors tolérance */
     public function parseEvent(string $rawBody, array $headers): ProviderEvent;
 }

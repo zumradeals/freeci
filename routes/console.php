@@ -21,3 +21,5 @@ Schedule::command('freeci:payments:reconcile')->everyFiveMinutes()->withoutOverl
 if (config('freeci.notifications.queue_via_scheduler')) {
     Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=5')->everyMinute()->withoutOverlapping();
 }
+// Remboursements Genius Pay envoyés par API : lecture du paiement chez le prestataire, jamais de renvoi (lot 11).
+Schedule::command('freeci:finance:reconcile')->everyFiveMinutes()->withoutOverlapping();

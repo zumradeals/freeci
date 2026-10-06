@@ -50,6 +50,10 @@ final class NotificationRouter
                 'extension_declined' => $to($free, 'extension_decided', 'Report d’échéance refusé'),
                 'validated' => $to($free, 'order_validated', 'Livraison validée : commande clôturée'),
                 'disagreement_reported' => $to($free, 'disagreement_reported', 'Le client signale un désaccord'),
+                'refund_confirmed' => $to($client, 'finance_update', 'Remboursement confirmé'),
+                'refund_failed' => $to($client, 'finance_update', 'Remboursement non abouti : aucun montant versé'),
+                'payout_confirmed' => $to($free, 'finance_update', 'Reversement confirmé'),
+                'payout_failed' => $to($free, 'finance_update', 'Reversement non abouti : aucun montant versé'),
                 'review_overdue' => $this->both($to, $client, $free, 'review_overdue', 'Délai d’examen dépassé : rien n’est validé automatiquement'),
                 default => null,
             };

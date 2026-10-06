@@ -5,6 +5,7 @@ namespace App\Modules\Support\Queries;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Support\Support\CaseRules;
 use App\Shared\Dates;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ final class StaffQueue
             'open' => (clone $live)->count(),
             'mine' => (clone $live)->where('assignee_id', $staff->getKey())->count(),
             'unassigned' => (clone $live)->whereNull('assignee_id')->count(),
-            'toProcess' => DB::table('support_decisions')->where('financial_status', 'to_process')->count(),
+            'toProcess' => $this->financialTodo()->count(),
             'followUps' => DB::table('order_follow_ups')->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('support_cases')->where('support_cases.origin', 'follow_up')->whereRaw('support_cases.origin_ref = order_follow_ups.id::text'))->count(),
         ];
     }
@@ -57,11 +58,21 @@ final class StaffQueue
             ->map(fn ($r) => ['id' => $r->id, 'order' => $r->reference, 'kind' => $kinds[$r->kind] ?? $r->kind, 'when' => Dates::format(Carbon::parse($r->recorded_at)), 'case' => $r->case_reference])->all();
     }
 
-    /** Décisions dont la suite financière reste « à traiter » : rien n'a été remboursé ni versé par FreeCI à ce stade. */
+    /**
+     * Décisions dont la suite financière reste « à traiter ». Le statut de la décision (ajout seul) n'est jamais modifié : une décision est « traitée » quand
+     * une opération financière CONFIRMÉE lui est rattachée (remboursement) ou quand le reversement de la commande est confirmé (reversement à autoriser).
+     */
+    private function financialTodo(): Builder
+    {
+        return DB::table('support_decisions as d')->join('support_cases as c', 'c.id', '=', 'd.case_id')->where('d.financial_status', 'to_process')
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('financial_operations as f')->whereRaw('f.support_decision_id = d.id')->where('f.state', 'confirmed'))
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('financial_operations as f')->whereRaw('f.order_id = c.order_id')->where('f.kind', 'payout')->where('f.state', 'confirmed')->whereRaw("d.financial_need = 'release'"));
+    }
+
+    /** Décisions « à traiter financièrement » (voir `financialTodo`). Rien n'est remboursé ni versé par une décision : seules les opérations du module financier le font. */
     public function toProcess(): array
     {
-        return DB::table('support_decisions as d')->join('support_cases as c', 'c.id', '=', 'd.case_id')->leftJoin('orders as o', 'o.id', '=', 'c.order_id')
-            ->where('d.financial_status', 'to_process')->orderBy('d.created_at')
+        return $this->financialTodo()->leftJoin('orders as o', 'o.id', '=', 'c.order_id')->orderBy('d.created_at')
             ->get(['c.reference', 'o.reference as order', 'd.financial_need', 'd.financial_note', 'd.created_at', 'c.id as case_id'])
             ->map(fn ($r) => ['reference' => $r->reference, 'order' => $r->order, 'need' => CaseRules::FINANCIAL[$r->financial_need], 'note' => $r->financial_note, 'when' => Dates::format(Carbon::parse($r->created_at)),
                 'hold' => DB::table('payout_holds')->where('case_id', $r->case_id)->whereNull('released_at')->exists()])->all();

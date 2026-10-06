@@ -464,7 +464,7 @@ class SupportTest extends TestCase
         $this->assertTrue(PayoutHolds::isHeld($q->id), 'suite financière à traiter : le blocage interne reste');
         $this->assertSame('cancelled', $q->fresh()->state->value);
         $this->actingAs($this->client)->get("/espace/assistance/{$ref3}")->assertSee('À traiter financièrement')->assertSee('aucune opération financière n’a été exécutée');
-        $this->asAdmin($this->support)->get('/admin/assistance?onglet=financier')->assertOk()->assertSee($ref3)->assertSee('Rien n’a été remboursé ni versé')->assertSee('Actif');
+        $this->asAdmin($this->support)->get('/admin/assistance?onglet=financier')->assertOk()->assertSee($ref3)->assertSee('Une décision ne rembourse ni ne verse rien')->assertSee('Actif');
         $this->assertSame(0, DB::table('payments')->where('state', 'refunded')->count());
         // les décisions et leurs motifs sont journalisés
         $this->assertSame(3, DB::table('admin_actions')->where('action', 'case.decide')->where('result', 'done')->count());

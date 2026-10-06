@@ -155,6 +155,7 @@ final class RequestService
             'brief_requires_files' => $locked->brief_requires_files,   // exigence figée : le service pourra changer, pas l'accord
             'response_hours' => $responseHours,
             'payment_hours' => $paymentHours,
+            'commission_bp' => (int) config('freeci.finance.commission_bp'), 'commission_policy' => (string) config('freeci.finance.commission_policy'),    // conditions financières FIGÉES à l'accord
             'conditions_version' => config('freeci.orders.conditions_version'),
             'conditions_accepted_at' => $now,
         ]);

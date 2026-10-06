@@ -4,6 +4,7 @@ use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\ReauthController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ClientMissionController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\FinanceSpaceController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\MessageController;
@@ -31,6 +33,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/espace', DashboardController::class)->name('account.dashboard');
     Route::get('/espace/commandes', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/espace/finances', [FinanceSpaceController::class, 'client'])->name('client.finances');
 
     // Demande de prestation (client) — la reprise après connexion revient ici (URL « intended » interne).
     Route::get('/services/{slug}/demande', [OrderRequestController::class, 'create'])->name('services.request');
@@ -116,6 +119,8 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::middleware('freelance')->prefix('freelance')->group(function () {
         Route::get('/', [FreelanceController::class, 'dashboard'])->name('freelance.dashboard');
         Route::get('/commandes', [FreelanceController::class, 'orders'])->name('freelance.orders');
+        Route::get('/revenus', [FinanceSpaceController::class, 'freelancer'])->name('freelance.earnings');
+        Route::post('/revenus/destination', [FinanceSpaceController::class, 'declareBeneficiary'])->middleware('throttle:10,10')->name('freelance.earnings.beneficiary');
         Route::get('/services', [ServiceManagementController::class, 'index'])->name('freelance.services');
         Route::get('/services/nouveau', [ServiceManagementController::class, 'create'])->name('freelance.services.new');
         Route::post('/services', [ServiceManagementController::class, 'store'])->middleware('throttle:20,1')->name('freelance.services.store');
@@ -203,6 +208,16 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
 
             Route::get('/paiements', [ReconciliationController::class, 'index'])->name('admin.payments');
             Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
+
+            // Finances : remboursements, commissions, reversements. Lecture : administrateurs ; écriture : confirmation récente d'identité à chaque action.
+            Route::get('/finances', [FinanceController::class, 'index'])->name('admin.finance');
+            Route::get('/finances/operations/{reference}', [FinanceController::class, 'show'])->name('admin.finance.show');
+            Route::middleware(['recent-auth', 'throttle:20,1'])->group(function () {
+                Route::post('/finances/decisions/{decision}/rembourser', [FinanceController::class, 'requestRefund'])->whereNumber('decision')->name('admin.finance.refund');
+                Route::post('/finances/commandes/{reference}/reverser', [FinanceController::class, 'requestPayout'])->name('admin.finance.payout');
+                Route::post('/finances/operations/{reference}/{action}', [FinanceController::class, 'act'])->whereIn('action', ['approuver', 'refuser', 'annuler', 'executer-api', 'enregistrer', 'marquer-echec', 'reprendre'])->name('admin.finance.act');
+                Route::post('/finances/destinations/{id}/{action}', [FinanceController::class, 'beneficiary'])->whereIn('action', ['verifier', 'desactiver'])->name('admin.finance.beneficiary');
+            });
 
             Route::get('/journal', [AuditController::class, 'actions'])->name('admin.audit');
             Route::get('/journal/securite', [AuditController::class, 'security'])->name('admin.audit.security');

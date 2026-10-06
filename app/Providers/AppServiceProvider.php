@@ -8,11 +8,11 @@ use App\Integrations\FileScan\UnavailableScanner;
 use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\PaymentProvider;
 use App\Modules\Catalog\Models\ServiceEvent;
+use App\Modules\Finance\Support\FinancialPayoutExecution;
 use App\Modules\Missions\Models\MissionEvent;
 use App\Modules\Notifications\Actions\NotificationRouter;
 use App\Modules\Orders\Models\OrderEvent;
 use App\Modules\Support\Contracts\PayoutExecution;
-use App\Modules\Support\Support\NoPayoutExecution;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Une seule passerelle : Genius Pay, dans l'environnement du mode configuré (sandbox | live).
         $this->app->bind(PaymentProvider::class, fn () => app(PaymentGateways::class)->active());
-        // Aucun module de reversement n'existe : aucun reversement n'est exécuté. Le futur module financier remplace cette liaison.
-        $this->app->bind(PayoutExecution::class, NoPayoutExecution::class);
+        // Un reversement n'est « exécuté » que s'il est confirmé ou en cours chez un prestataire (lot 11).
+        $this->app->bind(PayoutExecution::class, FinancialPayoutExecution::class);
         $this->app->bind(FileScanner::class, fn () => config('freeci.files.scanner') === 'clamav'
             ? new ClamAvScanner((string) config('freeci.files.clamscan_binary'))
             : new UnavailableScanner);

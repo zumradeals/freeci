@@ -66,7 +66,7 @@ final class RefreshPaymentStatus
             ProviderStatus::Succeeded => $this->confirmIfConsistent($payment, $order, $v),
             ProviderStatus::Failed => $this->setState($payment, PaymentState::Failed, 'provider_declined'),
             ProviderStatus::Indeterminate => $this->setState($payment, PaymentState::Unknown),
-            ProviderStatus::Refunded => $this->flag($order, $payment, 'refunded_by_provider', $v),
+            ProviderStatus::Refunded => $this->refundedAtProvider($payment, $order, $v),
             // Référence inconnue du prestataire après 2 minutes : l'appel de création n'a jamais abouti → tentative échouée.
             ProviderStatus::NotFound => $payment->created_at->lt(now()->subMinutes(2)) ? $this->setState($payment, PaymentState::Failed, 'checkout_incomplete') : null,
             ProviderStatus::Pending, ProviderStatus::Other => null,
@@ -75,10 +75,23 @@ final class RefreshPaymentStatus
         return $payment->fresh();
     }
 
+    /** Paiement « remboursé » chez le prestataire : rapproché d'une opération de remboursement API ouverte, sinon signalé (remboursement hors FreeCI). */
+    private function refundedAtProvider(Payment $payment, Order $order, Verification $v): void
+    {
+        $op = DB::table('financial_operations')->where('payment_id', $payment->getKey())->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])->value('id');
+        if ($op !== null && app(FinancialOperations::class)->reconcile($op) === 'confirmed') {
+            return;
+        }
+        $this->flag($order, $payment, 'refunded_by_provider', $v);
+    }
+
     private function confirmIfConsistent(Payment $payment, Order $order, Verification $v): void
     {
         $reason = $this->verifier->inconsistency($payment, $order, $v);
         if ($reason === null) {
+            if ($v->feeXof !== null) {
+                DB::table('payments')->where('id', $payment->getKey())->update(['provider_fee_xof' => $v->feeXof]);
+            }
             ($this->confirm)($payment->getKey());
 
             return;

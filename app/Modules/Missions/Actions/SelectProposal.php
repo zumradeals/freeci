@@ -134,6 +134,7 @@ final class SelectProposal
             'deliverables' => $pv->deliverables, 'exclusions' => [], 'client_inputs' => $live->client_inputs,
             'delivery_requires_files' => $pv->delivery_mode === 'files', 'delivery_mode' => $pv->delivery_mode, 'brief_requires_files' => $live->brief_requires_files,
             'response_hours' => (int) config('freeci.orders.response_hours'), 'payment_hours' => $paymentHours,
+            'commission_bp' => (int) config('freeci.finance.commission_bp'), 'commission_policy' => (string) config('freeci.finance.commission_policy'),    // conditions financières FIGÉES à l'accord
             'conditions_version' => config('freeci.orders.conditions_version'), 'conditions_accepted_at' => $now,
         ]);
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);

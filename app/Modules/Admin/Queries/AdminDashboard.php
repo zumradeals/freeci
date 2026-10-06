@@ -32,6 +32,8 @@ final class AdminDashboard
             'ordersByEnv' => DB::table('orders')->selectRaw('environment, count(*) c')->groupBy('environment')->pluck('c', 'environment')->all(),
             'confirmedLiveXof' => (int) DB::table('payments')->where('state', 'confirmed')->where('environment', 'live')->sum('amount_xof'),
             'confirmedTestXof' => (int) DB::table('payments')->where('state', 'confirmed')->where('environment', '<>', 'live')->sum('amount_xof'),
+            'financeToApprove' => DB::table('financial_operations')->where('state', 'requested')->count(),
+            'financeToVerify' => DB::table('financial_operations')->where('state', 'to_verify')->count(),
             'cases' => app(StaffQueue::class)->counts(auth()->user()),
             'recent' => (new AuditLog)->recent(6),
         ];

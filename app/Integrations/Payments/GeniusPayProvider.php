@@ -96,7 +96,53 @@ class GeniusPayProvider implements PaymentProvider
         return new Verification(
             $status, isset($d['amount']) ? $this->xof($d['amount']) : null, isset($d['currency']) && is_string($d['currency']) ? strtoupper($d['currency']) : null,
             null, $d['reference'], is_string($d['environment'] ?? null) ? $d['environment'] : $this->environment(),   // à défaut : l'environnement de la clé utilisée
+            isset($d['fees']) ? $this->xof($d['fees']) : null,
         );
+    }
+
+    /**
+     * Remboursement TOTAL (aucun `amount` envoyé). Documenté : « Seules les transactions `completed` peuvent être remboursées (409 REFUND_NOT_ALLOWED sinon).
+     * L'appel est idempotent : rejouer un remboursement déjà effectué retourne le même résultat. » Les remboursements partiels successifs ne sont pas décrits : aucun n'est émis.
+     * Refus définitifs : 401/403 (clés), 400/422 (validation), 404 (transaction inconnue). Tout le reste est INCERTAIN, y compris 409 (déjà remboursé ? non remboursable ?).
+     */
+    public function refund(string $paymentReference, int $expectedAmountXof, ?string $reason = null): RefundResult
+    {
+        $body = array_filter(['reason' => $reason === null ? null : mb_substr($reason, 0, 200)], fn ($v) => $v !== null);
+        try {
+            $r = $this->send(fn (PendingRequest $h) => $h->post('/payments/'.rawurlencode($paymentReference).'/refund', $body === [] ? new \stdClass : $body), creating: true);   // opération qui ÉCRIT chez le prestataire : live seulement si autorisé
+        } catch (ProviderRejected $e) {
+            return RefundResult::notSent($e->getMessage());
+        } catch (Throwable) {
+            return RefundResult::uncertain('transport');
+        }
+        $status = $r->status();
+        if (in_array($status, [401, 403], true)) {
+            return RefundResult::rejected('provider_auth');
+        }
+        if (in_array($status, [400, 422], true)) {
+            return RefundResult::rejected('provider_validation');
+        }
+        if ($status === 404) {
+            return RefundResult::rejected('transaction_not_found');
+        }
+        if ($status === 409) {
+            return RefundResult::uncertain('refund_not_allowed');
+        }
+        $d = $r->json('data');
+        if (! in_array($status, [200, 201], true) || $r->json('success') !== true || ! is_array($d)) {
+            return RefundResult::uncertain($status >= 500 || $status === 429 ? 'provider_unavailable' : 'unreadable_response');
+        }
+        $env = $d['environment'] ?? null;
+        $ok = ($d['reference'] ?? null) === $paymentReference && ($d['status'] ?? null) === 'refunded'
+            && isset($d['amount_refunded']) && $this->xof($d['amount_refunded']) === $expectedAmountXof
+            && (! isset($d['currency']) || strtoupper((string) $d['currency']) === 'XOF')
+            && ($env === null || $env === $this->environment());
+        if (! $ok) {
+            return RefundResult::uncertain('response_inconsistent');          // le prestataire a peut-être agi autrement que demandé : jamais « effectué »
+        }
+        $ref = $d['refund_reference'] ?? null;
+
+        return RefundResult::confirmed(is_string($ref) && $ref !== '' && strlen($ref) <= 80 ? $ref : null, $expectedAmountXof);
     }
 
     /** Identifiant du compte marchand lié aux clés de cet environnement (source fiable côté serveur), mis en cache une heure. */

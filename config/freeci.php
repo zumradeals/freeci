@@ -31,6 +31,19 @@ return [
     //  - l'ENVIRONNEMENT des NOUVELLES commandes et des NOUVEAUX paiements : « sandbox » (défaut, commandes de TEST) ou « live » (argent réel) ;
     //  - l'AUTORISATION de créer de nouveaux paiements (faux par défaut). La désactiver n'interrompt jamais le suivi des tentatives existantes.
     // Chaque commande et chaque tentative conservent leur environnement : changer ces réglages ne convertit rien d'engagé.
+    // Lot 11 — conditions financières. TOUTES ces valeurs sont des PROPOSITIONS DE TRAVAIL (docs/01 « valeurs commerciales à confirmer »), jamais des décisions
+    // commerciales approuvées. Le taux est FIGÉ dans chaque accord à sa création : modifier cette valeur n'affecte aucune commande existante.
+    'finance' => [
+        'commission_bp' => (int) env('FREECI_COMMISSION_BP', 1000),                      // points de base : 1 000 = 10 % (proposition, non validée)
+        'commission_policy' => env('FREECI_COMMISSION_POLICY', 'proposition-non-validee'),   // étiquette conservée dans l'accord
+        // Double validation : au-delà de ce montant (FCFA, inclus), DEUX approbateurs distincts sont exigés. 0 = toujours deux ; vide = jamais (non recommandé).
+        // Seuil NON VALIDÉ par le porteur (architecture §14) : valeur provisoire, configurable.
+        'dual_approval_threshold_xof' => env('FREECI_FINANCE_DUAL_APPROVAL_XOF', 100000) === '' || env('FREECI_FINANCE_DUAL_APPROVAL_XOF', 100000) === null ? null : (int) env('FREECI_FINANCE_DUAL_APPROVAL_XOF', 100000),
+        // Aucune API de reversement n'est documentée par Genius Pay : constante, pas une option. Les remboursements PARTIELS par API ne sont pas exécutés non plus
+        // (règles des remboursements successifs et idempotence par montant non établies par la documentation).
+        'refund_api_total_only' => true,
+    ],
+
     'payments' => [
         'mode' => env('FREECI_PAYMENT_MODE', 'sandbox'),
         'enabled' => (bool) env('FREECI_PAYMENTS_ENABLED', false),

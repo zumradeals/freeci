@@ -9,6 +9,8 @@ use App\Modules\Files\Enums\FileState;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\LedgerBatch;
 use App\Modules\Finance\PaymentGate;
+use App\Modules\Finance\Queries\ClientFinance;
+use App\Modules\Finance\Support\FinanceLabels;
 use App\Modules\Messaging\Queries\Inbox;
 use App\Modules\Orders\Actions\BriefStatus;
 use App\Modules\Orders\Actions\ExpireOverdueOrders;
@@ -152,7 +154,7 @@ final class GetOrderDossier
                 'label' => $payment->state->label(), 'tone' => $payment->state->tone()[0], 'icon' => $payment->state->tone()[1],
                 'state' => $payment->state->value, 'reference' => $payment->reference, 'at' => $payment->created_at,
             ],
-            paymentOpen: $paymentOpen, canPay: $canPay, confirmedXof: $confirmedXof,
+            paymentOpen: $paymentOpen, canPay: $canPay, confirmedXof: $confirmedXof, finance: $this->financeFor($order, $isFreelancer),
             files: $files, uploadsEnabled: $uploadsEnabled, canUpload: $canUpload,
             briefRequiresFiles: (bool) $a->brief_requires_files,
             uploadLimits: $this->uploadLimits(),
@@ -170,5 +172,18 @@ final class GetOrderDossier
         $mb = (int) config('freeci.files.max_mb', 10);
 
         return "PDF, images (JPG, PNG, WebP) ou plan DWG — {$mb} Mo maximum par fichier.";
+    }
+
+    /** @return array<string, mixed> remboursements (les deux parties) ; reversement (freelance seulement), états établis uniquement */
+    private function financeFor(Order $order, bool $isFreelancer): array
+    {
+        $f = app(ClientFinance::class)->forOrder($order->getKey());
+        $payout = null;
+        if ($isFreelancer) {
+            $p = DB::table('financial_operations')->where('order_id', $order->getKey())->where('kind', 'payout')->whereIn('state', ['requested', 'approved', 'in_progress', 'to_verify', 'confirmed'])->first(['state', 'amount_xof', 'reference']);
+            $payout = $p === null ? null : ['label' => FinanceLabels::PARTY_STATES[$p->state], 'amount' => (int) $p->amount_xof, 'reference' => $p->reference, 'state' => $p->state];
+        }
+
+        return ['refunds' => $f['refunds'], 'refunded' => $f['refunded'], 'refund_open' => $f['refund_open'], 'payout' => $payout];
     }
 }

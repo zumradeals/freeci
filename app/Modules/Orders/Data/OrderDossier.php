@@ -58,6 +58,7 @@ final readonly class OrderDossier
         public ?array $payment = null,
         public bool $paymentOpen = false,             // une tentative est en cours ou incertaine : « Payer » absent
         public bool $canPay = false,                  // simulateur autorisé pour cette commande, client, état et tentative OK
+        public array $finance = [],                   // remboursements (états) et reversement (vue du freelance) : lecture du module financier
         public int $confirmedXof = 0,                 // montant encaissé (simulé), lu dans le registre
         /** @var list<array{id:string,name:string,size:string,label:string,tone:string,icon:string,url:?string,canRemove:bool,note:?string}> */
         public array $files = [],
