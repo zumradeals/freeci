@@ -55,6 +55,13 @@
 .side-logout:hover { background: var(--surface-2); }
 
 /* Service editor: shared visual language, fluid workspace, four short steps. */
+.svc-page .gallery .stage { position:relative; display:block; height:clamp(240px,50vh,460px); padding-bottom:36px; }
+.svc-page .gallery .stage img { width:100%; height:100%; object-fit:contain; }
+.gallery-enlarge { position:absolute; bottom:0; left:0; right:0; padding:8px 12px; text-align:center; font-size:.875rem; color:var(--marine-700); background:var(--surface); }
+.svc-page .gallery .th img { width:100%; height:80px; object-fit:contain; }
+.service-description { white-space:pre-line; overflow-wrap:anywhere; }
+@media(max-width:600px) { .svc-page .gallery .stage { height:clamp(220px,45vh,340px); } }
+
 .service-editor { display:grid; gap:20px; min-width:0; }
 .service-editor [hidden] { display:none !important; }
 .editor-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start; }

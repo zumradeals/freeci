@@ -28,17 +28,17 @@ class OrderFileController extends Controller
         } catch (OrderForbidden) {
             abort(404);
         } catch (FilesDisabled $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect(route('orders.show', $reference).'#brief')->with('error', $e->getMessage());
         } catch (FileRejected $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect(route('orders.show', $reference).'#brief')->with('error', $e->getMessage());
         } catch (InvalidTransition) {
-            return back()->with('error', 'Le brief n’accepte plus de fichier : la commande a changé.');
+            return redirect(route('orders.show', $reference).'#brief')->with('error', 'Le brief n’accepte plus de fichier : la commande a changé.');
         }
 
         // Le contrôle s'exécute APRÈS la réponse (aucun worker requis) ; un échec laisse le fichier bloqué en quarantaine.
         app()->terminating(fn () => $scan($id));
 
-        return back()->with('status', 'Fichier reçu. Il sera téléchargeable après le contrôle de sécurité.');
+        return redirect(route('orders.show', $reference).'#brief')->with('status', 'Fichier reçu. Il sera téléchargeable après le contrôle de sécurité.');
     }
 
     public function destroy(Request $request, string $reference, string $file, RemoveBriefFile $remove): RedirectResponse
@@ -48,10 +48,10 @@ class OrderFileController extends Controller
         } catch (OrderForbidden|FileForbidden) {
             abort(404);
         } catch (InvalidTransition) {
-            return back()->with('error', 'Le travail a démarré : les fichiers du brief ne peuvent plus être retirés.');
+            return redirect(route('orders.show', $reference).'#brief')->with('error', 'Le travail a démarré : les fichiers du brief ne peuvent plus être retirés.');
         }
 
-        return back()->with('status', 'Fichier retiré.');
+        return redirect(route('orders.show', $reference).'#brief')->with('status', 'Fichier retiré.');
     }
 
     public function download(Request $request, string $reference, string $file, DownloadBriefFile $download): BinaryFileResponse

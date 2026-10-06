@@ -34,7 +34,8 @@
             <textarea class="textarea" id="notes" name="notes" rows="4" maxlength="3000">{{ old('notes', request()->input('notes')) }}</textarea>
             @error('notes')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror
           </div>
-          <p class="note-line"><x-fc.icon name="info" :size="16" /><span>Dans cette version, le brief est <strong>textuel</strong> : l’envoi de fichiers n’est pas encore disponible. Ne collez pas de coordonnées privées (téléphone, adresse e-mail).</span></p>
+          <p class="note-line"><x-fc.icon name="info" :size="16" /><span>Après l’envoi de cette demande, ouvrez <strong>« Joindre mes fichiers »</strong> dans votre dossier. Vous pouvez ajouter vos photos ou documents avant la réponse du freelance et avant le paiement. Ne collez pas de coordonnées privées (téléphone, adresse e-mail).</span></p>
+          @unless($uploadsEnabled)<p class="field-error" role="alert">Le dépôt de fichiers est actuellement indisponible. Si votre prestation nécessite des fichiers, contactez l’assistance avant de payer : un texte ne remplace pas un fichier obligatoire.</p>@endunless
         </div>
       </section>
 
@@ -42,7 +43,7 @@
         <ol class="empty-steps">
           <li><div><b>{{ $service->sellerName }} reçoit votre demande</b><span>Elle apparaît dans son espace freelance.</span></div></li>
           <li><div><b>Il accepte ou refuse sous {{ config('freeci.orders.response_hours') }} h</b><span>En cas de refus, le motif vous est communiqué. Sans réponse, la demande expire.</span></div></li>
-          <li><div><b>Après acceptation, la commande attend le paiement</b><span>Le paiement n’est pas encore ouvert dans cette version : <strong>aucun paiement n’est demandé ni possible</strong>.</span></div></li>
+          <li><div><b>Après acceptation, vous pouvez accéder au paiement lorsqu’il est disponible</b><span>Joignez auparavant les fichiers nécessaires depuis votre dossier. Le mode test ou réel est indiqué sur l’écran de paiement.</span></div></li>
           <li><div><b>Le travail commence après paiement confirmé et brief complet</b><span>Aucune échéance de réalisation ne court avant.</span></div></li>
         </ol>
         <div class="field" style="margin-top:16px">

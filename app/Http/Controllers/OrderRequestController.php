@@ -38,7 +38,7 @@ class OrderRequestController extends Controller
             return response()->view('errors.order', ['title' => 'Demandes fermées', 'message' => 'Ce service d’exemple n’accepte pas de demande.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
         }
 
-        return view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'changed' => (bool) $request->session()->get('service_changed')]);
+        return view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'uploadsEnabled' => app(\App\Integrations\FileScan\FileScanner::class)->isOperational(), 'changed' => (bool) $request->session()->get('service_changed')]);
     }
 
     public function store(Request $request, string $slug, RequestService $requestService, GetPublishedService $get): RedirectResponse|Response
@@ -75,7 +75,7 @@ class OrderRequestController extends Controller
             // 409 : on rend à nouveau le formulaire avec les conditions à jour, brouillon conservé (docs/04 §3.5).
             $service = $get($slug);
 
-            return response()->view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'changed' => true], 409);
+            return response()->view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'changed' => true, 'uploadsEnabled' => app(\App\Integrations\FileScan\FileScanner::class)->isOperational()], 409);
         }
 
         return redirect()->route('orders.show', $order->reference)->with('status', $replayed

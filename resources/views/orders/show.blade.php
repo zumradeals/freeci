@@ -11,6 +11,19 @@
 <x-layouts.account :title="'Commande '.$d->reference" :space="$space">
   <nav class="crumbs" aria-label="Fil d’Ariane" style="margin-bottom:-8px"><a class="back-m" href="{{ $back }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Vue d’ensemble</a><a class="hide-m" href="{{ $back }}">Vue d’ensemble</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Commande {{ $d->reference }}</span></nav>
 
+  @if(! $d->startedAt && in_array($d->stateValue, ['awaiting_acceptance', 'awaiting_payment', 'awaiting_brief'], true))
+    @if(! $isF)
+    <section class="card" aria-label="Fichiers du brief">
+      <h2 class="t-h2">{{ $d->briefRequiresFiles ? 'Joignez les fichiers nécessaires à votre prestation' : 'Photos et documents pour le freelance' }}</h2>
+      <p style="margin-top:8px">Vous pouvez les transmettre dès maintenant depuis l’onglet Brief, sans attendre le paiement.</p>
+      @unless($d->uploadsEnabled)<p class="field-error" role="alert" style="margin-top:8px">Le dépôt est indisponible : l’administration doit rétablir le contrôle de sécurité.@if($d->briefRequiresFiles) Un texte ne remplace pas le fichier obligatoire. @unless($d->payment && $d->payment['state'] === 'confirmed')Attendez son rétablissement avant de payer.@endunless @endif</p>@endunless
+      <a class="btn btn-secondary" style="margin-top:12px" href="#brief" data-goto-tab="brief" data-goto="h-files">{{ $d->uploadsEnabled ? 'Joindre mes fichiers' : 'Voir les pièces jointes' }}</a>
+    </section>
+    @elseif($d->briefRequiresFiles && ! $d->uploadsEnabled && ! $d->briefComplete)
+    <div class="notice tone-warning" role="note"><p>Le client ne peut actuellement pas joindre le fichier obligatoire : le contrôle de sécurité est indisponible. L’administration doit le rétablir pour permettre de compléter le brief.</p></div>
+    @endif
+  @endif
+
   <section class="card order-head" aria-labelledby="h-title">
     <div class="top"><span class="badge tone-{{ $d->tone }}"><x-fc.icon :name="$d->icon" :size="16" />{{ $d->stateLabel }}</span><span class="muted">Réf. <span class="num">{{ $d->reference }}</span></span><a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Messages @if($d->messageUnread > 0)<span class="count-badge" aria-label="{{ $d->messageUnread }} non lu{{ $d->messageUnread > 1 ? 's' : '' }}">{{ $d->messageUnread }}</span>@endif</a>@if($d->environment === 'test')<span class="tag-demo">Commande de test — aucun argent réel</span>@elseif($d->environment === 'legacy')<span class="tag-demo">Ancienne commande</span>@endif@if($d->isDemo)<span class="tag-demo">Démonstration</span>@endif</div>
     <h1 class="t-h1" id="h-title">{{ $d->title }}</h1>
@@ -170,7 +183,7 @@
           <ul class="checklist ok">@foreach($d->briefItems as $it)<li><x-fc.icon :name="trim($it['answer']) !== '' ? 'check-circle' : 'minus-circle'" /><span><b>{{ $it['label'] }}</b> — {!! nl2br(e($it['answer'])) !!}</span></li>@endforeach</ul>
           @if($d->briefNotes)<h3 class="t-h3" style="margin-top:16px">Précisions</h3><p>{!! nl2br(e($d->briefNotes)) !!}</p>@endif
           <p class="muted" style="margin-top:16px">Le travail démarre après paiement confirmé <em>et</em> brief complet. Compléter le brief ne modifie <strong>jamais</strong> le prix, le périmètre ni le délai de l’accord : un changement de périmètre passe par une nouvelle demande.</p></section>
-        <section class="card" aria-labelledby="h-files" style="margin-top:16px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 class="t-h2" id="h-files">Pièces jointes</h2>@if($d->briefRequiresFiles)<span class="badge tone-warning"><x-fc.icon name="warn" :size="16" />Au moins un fichier contrôlé requis</span>@endif</div>
+        <section class="card" aria-labelledby="h-files" style="margin-top:16px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 class="t-h2" id="h-files" tabindex="-1">Pièces jointes</h2>@if($d->briefRequiresFiles)<span class="badge tone-warning"><x-fc.icon name="warn" :size="16" />Au moins un fichier contrôlé requis</span>@endif</div>
           <p class="note-line"><x-fc.icon name="shield" :size="16" /><span><strong>Fichiers privés.</strong> Seules les deux parties y accèdent, et seulement après un contrôle de sécurité réussi. Ce contrôle vérifie le format et l’absence de contenu dangereux ; il ne dit rien de la qualité du contenu.</span></p>
           @if(count($d->files))
             <div class="files" style="margin-top:12px">@foreach($d->files as $f)
@@ -182,9 +195,10 @@
           @if($d->canUpload)
             <form method="post" action="{{ route('orders.files.store', $d->reference) }}" enctype="multipart/form-data" data-once style="display:grid;gap:12px;margin-top:16px">@csrf
               <div class="field"><label for="brief-file">Ajouter un fichier</label><p class="hint" id="brief-file-h">{{ $d->uploadLimits }}</p><input class="input" id="brief-file" type="file" name="file" required aria-describedby="brief-file-h"></div>
+              @error('file')<p class="field-error" role="alert">{{ $message }}</p>@enderror
               <div><button class="btn btn-secondary" type="submit" data-once-label="Envoi…">Envoyer le fichier</button></div></form>
           @elseif(! $isF && ! $d->uploadsEnabled && ! $d->startedAt && in_array($d->stateValue, ['awaiting_acceptance', 'awaiting_payment', 'awaiting_brief'], true))
-            <p class="note-line" style="margin-top:12px"><x-fc.icon name="info" :size="16" /><span>Le dépôt de fichiers est <strong>désactivé</strong> sur cette installation : aucun service de contrôle de sécurité n’est disponible. Décrivez votre besoin dans le texte du brief.</span></p>
+            <p class="note-line" style="margin-top:12px"><x-fc.icon name="warn" :size="16" /><span>Le dépôt de fichiers est <strong>temporairement indisponible</strong> : le contrôle de sécurité doit être rétabli par l’administration. @if($d->briefRequiresFiles)<strong>Un texte ne remplace pas le fichier obligatoire. Le travail reste en attente.</strong>@endif Contactez l’assistance en indiquant la référence {{ $d->reference }}.</span></p>
           @endif
         </section>
       </div>

@@ -25,9 +25,9 @@
         @include('catalog._cta', ['service' => $service, 'id' => 'buy-cta'])
       </section>
 
-      <figure class="gallery" @if(count($service->images) > 1) data-gallery @endif>
+      <figure class="gallery" data-gallery>
         @if(count($service->images))
-        <div class="stage"><img src="{{ $service->images[0]['src'] }}" alt="{{ $service->images[0]['alt'] }}" width="640" height="427"></div>
+        <a class="stage" data-gallery-full href="{{ $service->images[0]['src'] }}" target="_blank" rel="noopener" aria-label="Agrandir l’image dans un nouvel onglet"><img src="{{ $service->images[0]['src'] }}" alt="{{ $service->images[0]['alt'] }}" width="640" height="427"><span class="gallery-enlarge">Agrandir l’image ↗</span></a>
         @if(count($service->images) > 1)
         <div class="thumbs" role="group" aria-label="Choisir une image">
           @foreach($service->images as $k => $img)
@@ -43,7 +43,7 @@
         <section aria-labelledby="s0"><h2 class="t-h2" id="s0">En bref</h2><p>{{ $service->summary }}</p></section>
         <section aria-labelledby="s1"><h2 class="t-h2" id="s1">Ce que vous recevez</h2>
           <ul class="checklist ok">@foreach($service->deliverables as $d)<li><x-fc.icon name="check-circle" /><span>{{ $d }}</span></li>@endforeach</ul></section>
-        <section aria-labelledby="s2"><h2 class="t-h2" id="s2">Périmètre inclus</h2><p>{{ $service->scope }}</p></section>
+        <section aria-labelledby="s2"><h2 class="t-h2" id="s2">Périmètre inclus</h2><p class="service-description">{{ $service->scope }}</p></section>
         <section aria-label="Précisions">
           <details class="fold" data-open-desktop><summary><span>Ce qui n’est pas inclus <span class="muted" style="font-weight:500">({{ count($service->exclusions) }})</span></span><x-fc.icon name="chev-down" class="chev" /></summary><div class="fold-body"><ul class="checklist no">@foreach($service->exclusions as $d)<li><x-fc.icon name="minus-circle" /><span>{{ $d }}</span></li>@endforeach</ul></div></details>
           <details class="fold" data-open-desktop><summary><span>Ce que vous devez fournir <span class="muted" style="font-weight:500">({{ count($service->clientInputs) }})</span></span><x-fc.icon name="chev-down" class="chev" /></summary><div class="fold-body"><ul class="checklist need">@foreach($service->clientInputs as $d)<li><x-fc.icon name="clipboard" /><span>{{ $d }}</span></li>@endforeach</ul></div></details>

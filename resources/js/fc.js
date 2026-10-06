@@ -82,6 +82,8 @@
         b.setAttribute("aria-pressed", "true");
         main.src = b.getAttribute("data-src");
         main.alt = b.getAttribute("data-alt");
+        var full = g.querySelector("[data-gallery-full]");
+        if (full) full.href = b.getAttribute("data-src");
         if (cap) cap.textContent = b.getAttribute("data-cap");
       });
     });
