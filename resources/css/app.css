@@ -89,3 +89,15 @@
 }
 
 /* Revenus : synthèse compacte, mêmes champs et jetons que les autres espaces. */
+
+/* Mission : éditeur guidé utilisant les cartes et la grille partagées. */
+.mission-editor { min-width: 0; }
+.mission-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mission-preview { min-width: 0; overflow-wrap: anywhere; }
+.mission-summary { white-space: pre-line; }
+.mission-help { border-top: 1px solid var(--line); padding-top: 16px; }
+.main .mission-editor .field { max-width: none; min-width: 0; }
+.mission-editor .row-gap { flex-wrap: wrap; }
+@media (min-width: 1200px) { .mission-preview { position: sticky; top: 24px; } }
+@media (max-width: 599px) { .mission-steps { grid-template-columns: minmax(0, 1fr); } .mission-editor .row-gap .btn { width: 100%; } }
+.mission-editor .panel { margin-top: 0; }

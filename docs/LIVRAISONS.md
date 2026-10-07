@@ -35,3 +35,7 @@ Pour chaque livraison : **SHA à déployer**, **nouvelles variables d'environnem
 | **23 — harmonisation des pages restantes** | 34 pages (administration, messagerie, commandes, assistance, litiges, notifications, missions…) enveloppées dans la structure de la page de référence (`page-body`, espacement unique) ; marges en ligne retirées des blocs de premier niveau ; vérifié : 297 tests, 0 débordement horizontal à 360 et 1440 px sur 50 pages | aucune | aucune |
 | **24 — détail de commande et pages d'édition** | Détail de commande, édition de service et de mission dans la structure de référence ; styles en ligne remplacés par des classes (`mt-*`, `fields`, `form-stack`, accents de carte) ; le test de fumée couvre désormais aussi les pages d'édition d'un brouillon de service et de mission (le service d'exemple n'est pas éditable) | aucune | aucune |
 | **25 — parcours navigateur** | `tests/e2e/run.sh` + `browser-smoke.mjs` : pages publiques à trois largeurs, inscription refusée, clavier, connexion, espace client, menu mobile ; base jetable, aucun secret versionné ; `docs/29` | aucune | aucune |
+
+### Harmonisation de l’éditeur de mission
+
+Formulaire large en trois étapes, résumé de saisie et libellés simplifiés ; règles métier inchangées. Aucune variable ni migration supplémentaire. Voir `docs/30-editeur-mission.md`.
