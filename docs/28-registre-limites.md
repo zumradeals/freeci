@@ -122,7 +122,7 @@
 |---|---|---|---|---|---|
 | Q1 | Structure des pages alignée sur la page « Mes revenus » (détail de commande, édition de service et de mission inclus) | P3 | Levé (lot 24) | — | — |
 | Q2 | Accessibilité : contrôle automatique (0 anomalie) ; clavier, lecteur d'écran, agrandissement du texte et vrais téléphones non essayés | P2 | Ouvert | Vous + moi | Essai manuel guidé |
-| Q3 | Pas de tests visuels ni de tests de bout en bout dans un navigateur (partiel : `ProductionLikeSmokeTest` balaie toutes les pages avec le cache en base, avant/après enregistrement des paramètres, sans erreur 5xx) | P2 | Partiel | Moi | Ajouter quelques parcours navigateur |
+| Q3 | Parcours navigateur automatisé en place (`tests/e2e/run.sh`, voir `docs/29`) ; manquent l'achat complet dans le navigateur, d'autres navigateurs et une exécution automatique à chaque modification | P3 | Partiel | Moi | Étendre si besoin |
 | Q4 | Pas de test de charge ni de mesure de performance | P2 | Ouvert | Moi | Après diagnostic du 504 |
 | Q5 | Textes d'aide et de fonctionnement : projets de départ, à relire par vous | P3 | Ouvert | Vous | Pages légales |
 | Q6 | Montée de version des dépendances : relecture des notes avant toute mise à jour | — | Décidé | — | — |
