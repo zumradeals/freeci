@@ -18,7 +18,7 @@
         $isAdmin ? $a('admin.reviews', 'Avis', 'flag', 'admin.reviews*') : null,
         $isAdmin ? $a('admin.users', 'Utilisateurs', 'user', 'admin.users*') : null,
       ]),
-      'Assistance' => [$a('admin.support', 'Dossiers', 'message', 'admin.support*', [], $sq['unassigned'] > 0 ? (string) $sq['unassigned'] : null)],
+      'Support' => [$a('admin.support', 'Dossiers', 'message', 'admin.support*', [], $sq['unassigned'] > 0 ? (string) $sq['unassigned'] : null)],
       'Finances' => $isAdmin ? [$a('admin.finance', 'Opérations', 'card', 'admin.finance*'), $a('admin.payments', 'Rapprochements', 'clipboard', 'admin.payments*')] : [],
       'Configuration' => $isAdmin ? [$a('admin.settings', 'Paramètres', 'grid', 'admin.settings*'), $a('admin.legal', 'Pages légales', 'clipboard', 'admin.legal*')] : [],
       'Exploitation' => array_filter([

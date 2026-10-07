@@ -1074,3 +1074,13 @@ a.metric:hover { background: var(--marine-100); }
 .card .order-list { grid-template-columns: minmax(0, 1fr) !important; }
 .metric-featured dd, .metric-featured .metric-value, .metric-featured dd.metric-hint, .metric-featured .metric-hint { color: #fff; }
 .check .muted { font-weight: 400; }
+/* Pastilles de navigation sur fond clair (rubriques d'une page) : texte sombre lisible */
+.main .chips .chip { color: var(--ink-900); border: 1px solid var(--line-strong); background: var(--surface); }
+.main .chips .chip:hover { background: var(--marine-50); }
+/* Anciennes tuiles « kpi » : même rendu que les tuiles de chiffres de la page de référence (carte blanche, tuiles sur fond de page) */
+.kpis { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); }
+@media (min-width: 768px) { .kpis { padding: 24px; } }
+.kpi { background: var(--canvas); border: 0; border-radius: var(--r-sm); padding: 14px; }
+.kpi .l { font-size: .875rem; }
+.kpi .n { font-size: clamp(1.25rem, 1.6vw, 1.625rem); color: var(--ink-900); }
+a.kpi:hover { background: var(--marine-100); }
