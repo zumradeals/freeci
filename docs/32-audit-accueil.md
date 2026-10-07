@@ -40,3 +40,6 @@ Vous répondez point par point (par exemple « A1 : bloc de suivi dans le hero, 
 | A8 | Traité | Page publique d'une mission : structure de référence (`page-head`, `page-body`), marges en ligne retirées. |
 
 Fichier inutilisé supprimé : `resources/views/welcome.blade.php` (page d'accueil du modèle Laravel, jamais servie).
+
+## 6. Mise en œuvre de la maquette (lot 34)
+La maquette `docs/maquettes/accueil-moderne.html`, validée par le porteur, est maintenant la vraie page d'accueil : carte de suivi d'une commande d'exemple dans l'en-tête, trois garanties tirées des règles du produit, catégorie à la une (si choisie), toutes les catégories (même vides, nombre affiché seulement s'il y a des services), huit services récents, « Deux façons de commencer » (service ou mission), « Comment ça marche » (quatre étapes, à toutes les largeurs), bande freelance, pied de page. Les textes, boutons, bandeau d'annonce et menus restent modifiables dans l'administration. Police : Inter déjà hébergée par le site (aucune police externe ajoutée, pour la confidentialité et la sécurité). Vérifié à 360, 768, 1024 et 1440 px : aucun débordement.

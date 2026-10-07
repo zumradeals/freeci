@@ -1118,3 +1118,45 @@ a.kpi:hover { background: var(--marine-100); }
 .featured-cat .ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-sm); background: var(--marine-100); color: var(--marine-700); flex: none; }
 .featured-cat > div { flex: 1 1 14rem; min-width: 0; }
 .featured-cat .eyebrow { margin: 0; }
+
+/* Lot 34 : accueil selon la maquette validée (carte de suivi, garanties, deux façons de commencer) */
+.hv-hero .container { align-items: center; }
+.hv-tracker { background: var(--surface); color: var(--ink-900); border-radius: 20px; padding: 22px; box-shadow: 0 26px 60px rgb(0 0 0 / .38); display: grid; gap: 16px; }
+.hv-tracker header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.hv-tracker .ref { font-size: .8125rem; color: var(--ink-600); }
+.hv-tracker h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 700; margin-top: 2px; }
+.hv-pill { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--success-50); color: var(--success-700); white-space: nowrap; }
+.hv-steps { list-style: none; margin: 0; padding: 0; display: grid; }
+.hv-steps li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; position: relative; padding-bottom: 14px; }
+.hv-steps li:last-child { padding-bottom: 0; }
+.hv-steps li::before { content: ""; position: absolute; left: 14px; top: 30px; bottom: 0; width: 2px; background: var(--line); }
+.hv-steps li:last-child::before { display: none; }
+.hv-steps .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: .8125rem; font-weight: 700; background: var(--surface-2); color: var(--ink-600); border: 2px solid var(--line); }
+.hv-steps .done .dot { background: var(--success-700); color: #fff; border-color: var(--success-700); }
+.hv-steps .now .dot { background: var(--accent-500); color: #1a0c00; border-color: var(--accent-500); }
+.hv-steps b { display: block; font-size: .9375rem; }
+.hv-steps span:not(.dot) { font-size: .875rem; color: var(--ink-600); }
+.hv-tracker footer { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--ink-600); }
+.hv-tracker footer strong { font-size: 1.25rem; font-weight: 700; color: var(--ink-900); font-variant-numeric: tabular-nums; }
+.hv-tracker footer small { font-size: .8125rem; font-weight: 600; }
+
+.hv-trust { padding-block: 32px 4px; }
+.hv-trust ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 768px) { .hv-trust ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; } }
+.hv-trust li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: start; }
+.hv-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--marine-100); color: var(--marine-700); }
+.hv-trust b { display: block; font-size: 1.0625rem; line-height: 1.3; }
+.hv-trust span:not(.hv-ico) { color: var(--ink-600); font-size: .9375rem; }
+
+.hv-ways { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 768px) { .hv-ways { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; } }
+.hv-way { border-radius: 20px; padding: 28px; display: grid; gap: 12px; align-content: start; background: var(--surface); border: 1px solid var(--line); }
+.hv-way h3 { font-size: 1.5rem; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+.hv-way p { color: var(--ink-600); max-width: 30rem; }
+.hv-way ul { margin: 4px 0 8px; padding: 0; list-style: none; display: grid; gap: 6px; font-size: .9375rem; }
+.hv-way li::before { content: "→ "; font-weight: 700; }
+.hv-way .btn { justify-self: start; margin-top: 6px; }
+.hv-way-dark { background: var(--marine-900); color: #fff; border-color: var(--marine-900); }
+.hv-way-dark p { color: var(--on-marine-2); }
+.btn-accent { background: var(--accent-500); color: #1a0c00; border-color: var(--accent-500); }
+.btn-accent:hover { background: #ff7a2e; color: #1a0c00; }
