@@ -55,7 +55,7 @@
     </div>
 
     <section class="card panel" aria-labelledby="orders-title">
-      <h2 class="t-h2" id="orders-title">Détail par commande</h2>
+      <h2 class="t-h2" id="orders-title">Détail par commande</h2><p class="muted small">Les totaux couvrent tout votre historique. Le détail est affiché par pages de 20 commandes.</p>
       @forelse($d['rows'] as $r)
         <article class="record">
           <div class="record-head"><div><a class="record-link" href="{{ route('orders.show', $r['reference']) }}">{{ $r['title'] }}</a><p class="muted small">{{ $r['reference'] }} @if($r['bucket'] === 'test')<span class="tag-demo">Test — aucun argent réel</span>@endif</p></div><span class="badge">{{ $r['cat'] === 'unknown' ? 'Montant à vérifier' : $cats[$r['cat']] }}</span></div>
@@ -68,6 +68,7 @@
           @endif
         </article>
       @empty<p class="muted empty-note">Aucune commande payée pour l’instant. Retrouvez ici le détail de vos gains dès votre première commande payée.</p>@endforelse
+      @include('partials.finance-pagination', ['pagination' => $d['pagination']])
     </section>
   </div>
 </x-layouts.account>

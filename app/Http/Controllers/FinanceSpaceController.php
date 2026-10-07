@@ -14,12 +14,12 @@ class FinanceSpaceController extends Controller
 {
     public function client(Request $request, ClientFinance $q): View
     {
-        return view('account.finances', ['rows' => $q->orders($request->user()), 'space' => 'client']);
+        return view('account.finances', $q->overview($request->user(), max(1, $request->integer('page', 1))) + ['space' => 'client']);
     }
 
     public function freelancer(Request $request, FreelancerEarnings $q): View
     {
-        return view('freelance.earnings', ['d' => $q->overview($request->user()), 'space' => 'freelancer']);
+        return view('freelance.earnings', ['d' => $q->overview($request->user(), max(1, $request->integer('page', 1))), 'space' => 'freelancer']);
     }
 
     public function declareBeneficiary(Request $request, Beneficiaries $b): RedirectResponse

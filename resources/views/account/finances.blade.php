@@ -1,8 +1,8 @@
 @php($m = fn (int $n) => \App\Shared\Money::xof($n)->formatted().' FCFA')
 <x-layouts.account title="Paiements et remboursements" space="client">
   <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace client</p><h1 class="t-h1">Paiements et remboursements</h1><p class="lead">Ce que vous avez payé et les remboursements confirmés, commande par commande.</p></div></div></header>
-  @php($sum = fn (string $env, string $k) => collect($rows)->filter(fn ($r) => ($env === 'test') === ($r['environment'] === 'test'))->sum($k))
-  @php($hasTest = collect($rows)->contains(fn ($r) => $r['environment'] === 'test'))
+  @php($sum = fn (string $env, string $k) => $totals[$env][$k])
+  @php($hasTest = $totals['test']['paid'] > 0)
   <div class="page-body">
     <section class="card panel" aria-labelledby="h-real"><div class="card-head"><h2 class="t-h2" id="h-real">Paiements réels</h2><span class="meta-r">Commandes réelles uniquement</span></div>
       <dl class="metrics">
@@ -22,15 +22,17 @@
       <p class="muted small">Ces montants servent à tester le parcours : ils ne représentent aucun argent réel.</p></section>
     @endif
     <section class="card panel" aria-labelledby="h-orders"><h2 class="t-h2" id="h-orders">Détail par commande</h2>
+<p class="muted small">Les totaux couvrent tout votre historique. Le détail est affiché par pages de 20 commandes.</p>
       @forelse($rows as $r)
         <article class="record">
-          <div class="record-head"><div><a class="record-link" href="{{ route('orders.show', $r['reference']) }}">{{ $r['title'] }}</a><p class="muted small">{{ $r['reference'] }} @if($r['environment'] === 'test')<span class="tag-demo">Test — aucun argent réel</span>@endif</p></div></div>
+          <div class="record-head"><div><a class="record-link" href="{{ route('orders.show', $r['reference']) }}">{{ $r['title'] }}</a><p class="muted small">{{ $r['reference'] }} @if($r['environment'] === 'test')<span class="tag-demo">Test — aucun argent réel</span>@elseif($r['environment'] === 'legacy')<span class="tag-demo">Ancienne commande — hors totaux réels</span>@endif</p></div></div>
           <dl class="record-amounts"><div><dt>Payé</dt><dd>{{ $m($r['paid']) }}</dd></div><div><dt>Remboursé (confirmé)</dt><dd>{{ $m($r['refunded']) }}</dd></div>@if($r['refund_open'] > 0)<div><dt>Remboursement en cours</dt><dd>{{ $m($r['refund_open']) }}</dd></div>@endif</dl>
           @foreach($r['refunds'] as $x)<p class="small"><span class="badge tone-{{ $x['tone'] }}">{{ $x['label'] }}</span> {{ $m($x['amount']) }} · {{ $x['reference'] }} <span class="muted">{{ $x['when'] }}</span></p>@endforeach
         </article>
       @empty
         <p class="muted empty-note">Aucun paiement confirmé pour l’instant. Le détail de vos paiements apparaîtra ici dès la première commande payée.</p>
       @endforelse
+      @include('partials.finance-pagination', ['pagination' => $pagination])
     </section>
   </div>
 </x-layouts.account>

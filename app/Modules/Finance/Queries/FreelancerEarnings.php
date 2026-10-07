@@ -7,6 +7,7 @@ use App\Modules\Finance\Support\FinanceLabels;
 use App\Modules\Finance\Support\OrderFunds;
 use App\Modules\Finance\Support\PayoutEligibility;
 use App\Shared\Dates;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -20,15 +21,18 @@ final class FreelancerEarnings
     private const BLOCKING = ['dispute_open', 'hold', 'reconciliation_open', 'refund_open'];
 
     /** @return array<string, mixed> */
-    public function overview(User $freelancer): array
+    public function overview(User $freelancer, int $page = 1): array
     {
         $orders = DB::table('orders as o')->join('order_agreements as a', 'a.order_id', '=', 'o.id')->where('o.freelancer_id', $freelancer->getKey())
             ->whereExists(fn ($q) => $q->select(DB::raw(1))->from('payments as p')->whereRaw('p.order_id = o.id')->where('p.state', 'confirmed'))
-            ->orderByDesc('o.updated_at')->limit(100)->get(['o.*', 'a.service_title']);
+            ->select(['o.*', 'a.service_title'])->orderByDesc('o.updated_at')->orderByDesc('o.id')->lazy(100);
 
         $zero = fn () => ['upcoming' => 0, 'blocked' => 0, 'available' => 0, 'processing' => 0, 'paid' => 0];
         $totals = ['real' => $zero(), 'test' => $zero()];
         $rows = [];
+        $page = max(1, $page);
+        $perPage = 20;
+        $count = 0;
         foreach ($orders as $o) {
             $e = PayoutEligibility::evaluate($o);
             $f = OrderFunds::summary($o->id);
@@ -59,6 +63,11 @@ final class FreelancerEarnings
             if ($cat !== 'unknown' && $amount !== null) {
                 $totals[$bucket][$cat] += (int) $amount;
             }
+            // Totals cover the full history; keep only this page's detail in memory.
+            $index = $count++;
+            if ($index < ($page - 1) * $perPage || $index >= $page * $perPage) {
+                continue;
+            }
             $rows[] = [
                 'reference' => $o->reference, 'title' => $o->service_title, 'bucket' => $bucket, 'cat' => $cat, 'paid' => $f['paid'], 'refunded' => $f['refunded'], 'commission' => $f['commission'], 'bp' => $f['commission_bp'],
                 'due' => $amount, 'state' => $f['payout_state'], 'state_label' => $f['payout_state'] === null ? null : FinanceLabels::PARTY_STATES[$f['payout_state']],
@@ -68,6 +77,6 @@ final class FreelancerEarnings
         }
         $b = DB::table('payout_beneficiaries')->where('user_id', $freelancer->getKey())->whereIn('status', ['pending', 'verified'])->first(['method', 'holder_name', 'status']);
 
-        return ['totals' => $totals, 'rows' => $rows, 'beneficiary' => $b === null ? null : ['method' => $b->method, 'holder' => $b->holder_name, 'status' => $b->status]];
+        return ['totals' => $totals, 'rows' => $rows, 'pagination' => new LengthAwarePaginator($rows, $count, $perPage, $page, ['path' => LengthAwarePaginator::resolveCurrentPath()]), 'beneficiary' => $b === null ? null : ['method' => $b->method, 'holder' => $b->holder_name, 'status' => $b->status]];
     }
 }

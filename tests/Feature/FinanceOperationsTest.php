@@ -620,6 +620,35 @@ class FinanceOperationsTest extends TestCase
         $this->assertTrue($page->isOk());
     }
 
+    public function test_financial_totals_include_more_than_100_orders_and_do_not_depend_on_the_page(): void
+    {
+        for ($i = 0; $i < 101; $i++) {
+            $this->paid();
+        }
+        $expectedPaid = 101 * 35000;
+        $expectedDue = 101 * 31500;
+        $earnings = app(\App\Modules\Finance\Queries\FreelancerEarnings::class);
+        $clientFinance = app(\App\Modules\Finance\Queries\ClientFinance::class);
+        foreach ([1, 6] as $page) {
+            $d = $earnings->overview($this->freelancer, $page);
+            $this->assertSame($expectedDue, $d['totals']['test']['upcoming']);
+            $this->assertSame(0, array_sum($d['totals']['real']));
+            $this->assertSame(101, $d['pagination']->total());
+            $this->assertCount($page === 1 ? 20 : 1, $d['rows']);
+            $c = $clientFinance->overview($this->client, $page);
+            $this->assertSame($expectedPaid, $c['totals']['test']['paid']);
+            $this->assertSame(0, $c['totals']['real']['paid']);
+            $this->assertSame(101, $c['pagination']->total());
+            $this->assertCount($page === 1 ? 20 : 1, $c['rows']);
+        }
+        $first = $earnings->overview($this->freelancer, 1)['rows'];
+        $last = $earnings->overview($this->freelancer, 6)['rows'];
+        $this->assertSame([], array_intersect(array_column($first, 'reference'), array_column($last, 'reference')));
+        $other = User::factory()->create();
+        $this->assertSame(0, array_sum($earnings->overview($other)['totals']['test']));
+        $this->assertSame(0, $clientFinance->overview($other)['totals']['test']['paid']);
+    }
+
     // ---------------------------------------------------------------- accès et interfaces
 
     public function test_finance_screens_are_reserved_to_administrators_with_recent_identity_confirmation(): void

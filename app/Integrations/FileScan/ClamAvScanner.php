@@ -3,6 +3,7 @@
 namespace App\Integrations\FileScan;
 
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\Process\Exception\ExceptionInterface;
 use Symfony\Component\Process\Process;
 
 /**
@@ -24,10 +25,24 @@ class ClamAvScanner implements FileScanner
             if (! is_file($this->binary) || ! is_executable($this->binary)) {
                 return false;
             }
-            $p = new Process([$this->binary, '--version'], timeout: 10);
-            $p->run();
+            // Scan harmless content: --version alone does not prove the daemon can scan.
+            $probe = tempnam(sys_get_temp_dir(), 'freeci-scan-');
+            if ($probe === false) {
+                return false;
+            }
+            try {
+                if (file_put_contents($probe, "FreeCI scanner readiness check\n") === false) {
+                    return false;
+                }
+                $p = new Process([$this->binary, '--no-summary', '--stream', $probe], timeout: 10);
+                $p->run();
 
-            return $p->isSuccessful();
+                return $p->isSuccessful();
+            } catch (ExceptionInterface) {
+                return false;
+            } finally {
+                @unlink($probe);
+            }
         });
     }
 
@@ -38,7 +53,11 @@ class ClamAvScanner implements FileScanner
         }
         // --stream : le contenu est envoyé au démon par la socket (pas de droits de lecture à accorder à clamd).
         $p = new Process([$this->binary, '--no-summary', '--stream', $absolutePath], timeout: 60);
-        $p->run();
+        try {
+            $p->run();
+        } catch (ExceptionInterface) {
+            return ScanResult::Unavailable;
+        }
 
         return match ($p->getExitCode()) {
             0 => ScanResult::Clean,

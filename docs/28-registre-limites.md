@@ -146,3 +146,11 @@ Ces idées viennent des lignes ci-dessus. **Ce sont des propositions, pas des d�
 2. **Recette financière** (F1 à F4).
 3. **Vérifications du serveur** (E2 à E9) : un contrôle de quelques minutes chacun.
 4. **Mon travail** (statut « Ouvert », Qui = Moi) : Q2, Q3, Q4, puis Q1 et les améliorations P3 selon vos priorités.
+
+## Revue de consolidation — 7 octobre 2026
+
+- Totaux de revenus et de paiements limités à 100 commandes : corrigés dans le code (historique complet, détail paginé), tests de régression ajoutés mais pas exécutés sur PostgreSQL dans cet environnement. Voir `docs/31-consolidation-moteur.md`.
+- Disponibilité ClamAV : sonde d’analyse réelle et timeouts traités comme indisponibilité ; contrôle VPS restant nécessaire.
+- E8 (504) reste **ouvert**. Aucune cause certaine identifiée.
+- Performance : la lecture par lots borne la mémoire ; les requêtes par commande restent à mesurer et à regrouper avant une forte montée en charge.
+- Les suites correction/litige/remboursement restent à réexécuter dans un environnement PostgreSQL isolé ; le point 2 de la feuille de route n’est pas déclaré terminé.
