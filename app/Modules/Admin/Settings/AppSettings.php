@@ -69,6 +69,12 @@ final class AppSettings
         return self::$defaults[$key] ?? config(SettingDefinitions::all()[$key]['path'] ?? 'freeci.'.$key);
     }
 
+    /** Texte administrable : la valeur saisie, ou à défaut le texte de départ (un champ vidé ne laisse jamais un courriel ou une page sans texte). */
+    public static function text(string $key): string
+    {
+        return (string) (config(SettingDefinitions::all()[$key]['path'] ?? 'freeci.'.$key) ?: self::default($key));
+    }
+
     public static function forget(): void
     {
         Cache::forget(self::CACHE_KEY);

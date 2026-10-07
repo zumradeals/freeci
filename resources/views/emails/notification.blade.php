@@ -1,10 +1,10 @@
-Bonjour,
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.greeting') }}
 
 {{ $title }}
 
-Pour consulter les détails, connectez-vous à votre espace FreeCI :
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.notification_intro') }}
 {{ $url }}
 
-Ce courriel ne contient volontairement ni message privé ni pièce jointe. Vous réglez vos notifications facultatives depuis votre espace.
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.notification_note') }}
 
-FreeCI
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.signature') }}

@@ -1,9 +1,11 @@
-Bonjour,
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.greeting') }}
 
-Pour confirmer votre adresse e-mail sur FreeCI, ouvrez ce lien (valable 60 minutes) :
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.verify_intro') }}
 
 {{ $url }}
 
-Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : rien ne sera modifié.
+Ce lien est valable 60 minutes.
 
-FreeCI
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.verify_ignore') }}
+
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.signature') }}

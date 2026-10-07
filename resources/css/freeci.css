@@ -1107,3 +1107,14 @@ a.kpi:hover { background: var(--marine-100); }
 @media (min-width: 1024px) { .only-narrow { display: none; } .section-compact { padding-block: 32px; } }
 .container-narrow { max-width: 860px; }
 .public-page { padding-block: 24px; }
+
+/* Lot 32 : bandeau d'annonce et catégorie à la une (accueil) */
+.announce { background: var(--marine-100); color: var(--marine-900); border-bottom: 1px solid var(--line); }
+.announce .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; padding-block: 10px; }
+.announce p { margin: 0; font-weight: 600; }
+.announce .btn { min-height: 36px; padding-block: 4px; }
+.section-featured { padding-block: 24px 0; }
+.featured-cat { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent-500); border-radius: var(--r-md); }
+.featured-cat .ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-sm); background: var(--marine-100); color: var(--marine-700); flex: none; }
+.featured-cat > div { flex: 1 1 14rem; min-width: 0; }
+.featured-cat .eyebrow { margin: 0; }

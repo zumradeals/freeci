@@ -19,7 +19,7 @@ class Category extends Model
 
     protected $guarded = [];
 
-    protected $casts = ['archived_at' => 'datetime'];
+    protected $casts = ['archived_at' => 'datetime', 'featured_at' => 'datetime'];
 
     /** Catégories proposées : les archivées restent attachées à leur historique mais ne sont plus offertes. */
     public function scopeActive($query)

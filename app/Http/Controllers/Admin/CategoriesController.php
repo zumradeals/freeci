@@ -36,6 +36,16 @@ class CategoriesController extends Controller
         return $this->attempt(fn () => $categories->move($request->user(), $id, $direction), 'Ordre modifié.');
     }
 
+    public function feature(Request $request, ManageCategories $categories, string $id): RedirectResponse
+    {
+        return $this->attempt(fn () => $categories->feature($request->user(), $id), 'Catégorie mise en avant sur l’accueil.');
+    }
+
+    public function unfeature(Request $request, ManageCategories $categories, string $id): RedirectResponse
+    {
+        return $this->attempt(fn () => $categories->unfeature($request->user(), $id), 'Mise en avant retirée.');
+    }
+
     public function archive(Request $request, ManageCategories $categories, string $id): RedirectResponse
     {
         $d = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']]);

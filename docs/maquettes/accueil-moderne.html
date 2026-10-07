@@ -1,0 +1,344 @@
+<title>Maquette accueil FreeCI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Concept : une vitrine claire où le suivi d'une commande (accord, paiement, livraison, validation) est le fil conducteur ; bleu marine profond, orange du logo en accent unique. */
+:root {
+  --bg: #f4f7fb; --surface: #ffffff; --surface-2: #eaf0f7; --ink: #0c1f36; --ink-2: #43566e; --line: #d5dfeb;
+  --marine: #0f2d4f; --marine-2: #17406c; --on-marine: #ffffff; --on-marine-2: #b9cbe0;
+  --accent: #e8590c; --accent-ink: #ffffff; --accent-soft: #fde8da; --ok: #1a7f4b; --ok-soft: #dff3e8;
+  --note-bg: #fff6e0; --note-ink: #6b4a00; --note-line: #e9cf8a;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #08121f; --surface: #0f1d2f; --surface-2: #14263c; --ink: #eaf1f9; --ink-2: #a9bbd0; --line: #243a55;
+  --marine: #0b2240; --marine-2: #123560; --on-marine: #ffffff; --on-marine-2: #a9c0dc;
+  --accent: #ff8a3d; --accent-ink: #1a0c00; --accent-soft: #3a2111; --ok: #5fd18f; --ok-soft: #12301f;
+  --note-bg: #2b2310; --note-ink: #f0d58a; --note-line: #5b4a1c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #08121f; --surface: #0f1d2f; --surface-2: #14263c; --ink: #eaf1f9; --ink-2: #a9bbd0; --line: #243a55;
+  --marine: #0b2240; --marine-2: #123560; --on-marine: #ffffff; --on-marine-2: #a9c0dc;
+  --accent: #ff8a3d; --accent-ink: #1a0c00; --accent-soft: #3a2111; --ok: #5fd18f; --ok-soft: #12301f;
+  --note-bg: #2b2310; --note-ink: #f0d58a; --note-line: #5b4a1c; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-body); padding-inline: 0; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.wrap { width: 100%; max-width: 74rem; margin-inline: auto; padding-inline: 16px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 12px; font: 600 1rem var(--font-body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; }
+.btn-accent { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { border-color: var(--on-marine-2); color: var(--on-marine); background: transparent; }
+.btn-line { border-color: var(--line); background: var(--surface); color: var(--ink); }
+.btn-marine { background: var(--marine); color: var(--on-marine); }
+
+/* Bandeau de présentation de la maquette */
+.proto { background: var(--note-bg); color: var(--note-ink); border-bottom: 1px solid var(--note-line); font-size: .875rem; }
+.proto .wrap { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; padding-block: 10px; }
+.proto b { font-weight: 700; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; font-weight: 600; letter-spacing: .02em; padding: 3px 9px; border: 1.5px dashed var(--note-line); border-radius: 999px; color: var(--note-ink); background: var(--note-bg); }
+.sec-tag { margin-bottom: 14px; }
+
+/* En-tête */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 12px 28px; padding-block: 12px; flex-wrap: wrap; }
+.logo { display: flex; align-items: center; gap: 10px; font: 800 1.45rem var(--font-display); text-decoration: none; letter-spacing: -.03em; }
+.logo i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--marine); color: var(--on-marine); font-style: normal; font-size: 1.05rem; position: relative; }
+.logo i::after { content: ""; position: absolute; right: 6px; bottom: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.logo b { color: var(--accent); font-weight: 800; }
+.nav { display: flex; gap: 6px 22px; flex-wrap: wrap; font-weight: 600; color: var(--ink-2); }
+.nav a { text-decoration: none; padding: 8px 0; }
+.nav a:hover { color: var(--ink); }
+.top .push { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.top .push a.txt { font-weight: 600; text-decoration: none; padding: 8px 4px; }
+
+/* Annonce */
+.announce { background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--line); }
+.announce .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; padding-block: 10px; text-align: center; font-weight: 600; }
+.announce a { color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* Hero */
+.hero { background: var(--marine); color: var(--on-marine); position: relative; overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60rem 28rem at 85% -10%, var(--marine-2), transparent 60%), repeating-linear-gradient(90deg, transparent 0 63px, rgba(255,255,255,.04) 63px 64px); pointer-events: none; }
+.hero .wrap { position: relative; display: grid; gap: 40px; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; padding-block: 56px 64px; }
+.eyebrow { font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.hero h1 { font-size: clamp(2.3rem, 5vw, 3.9rem); font-weight: 800; margin-block: 12px 14px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .lede { color: var(--on-marine-2); font-size: 1.125rem; max-width: 34rem; }
+.search { margin-top: 26px; display: grid; gap: 10px; }
+.search label { font-weight: 600; font-size: .9375rem; }
+.sbox { display: flex; gap: 8px; flex-wrap: wrap; background: var(--surface); border-radius: 16px; padding: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.28); }
+.sbox input { flex: 1 1 14rem; min-width: 0; border: 0; background: transparent; color: var(--ink); font: 500 1.0625rem var(--font-body); padding: 0 12px; min-height: 48px; }
+.sbox input::placeholder { color: var(--ink-2); }
+.sbox input:focus-visible { outline: none; }
+.sbox:focus-within { outline: 3px solid var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; align-items: center; font-size: .9375rem; color: var(--on-marine-2); }
+.chips a { text-decoration: none; padding: 5px 13px; border: 1.5px solid rgba(255,255,255,.28); border-radius: 999px; color: var(--on-marine); font-weight: 500; }
+.chips a:hover { border-color: var(--on-marine); }
+.alt { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 22px; font-weight: 600; }
+
+/* Carte de suivi dans le hero */
+.tracker { background: var(--surface); color: var(--ink); border-radius: 20px; padding: 22px; box-shadow: 0 26px 60px rgba(0,0,0,.38); display: grid; gap: 16px; }
+.tracker header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.tracker .ref { font-size: .8125rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.tracker h2 { font-size: 1.2rem; margin-top: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); white-space: nowrap; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.steps li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; position: relative; padding-bottom: 14px; }
+.steps li:last-child { padding-bottom: 0; }
+.steps li::before { content: ""; position: absolute; left: 14px; top: 28px; bottom: 0; width: 2px; background: var(--line); }
+.steps li:last-child::before { display: none; }
+.steps .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: .8125rem; font-weight: 700; background: var(--surface-2); color: var(--ink-2); border: 2px solid var(--line); }
+.steps .done .dot { background: var(--ok); color: #fff; border-color: var(--ok); }
+.steps .now .dot { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.steps b { display: block; font-size: .9375rem; }
+.steps span { font-size: .875rem; color: var(--ink-2); }
+.tracker footer { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--ink-2); }
+.tracker footer strong { font: 700 1.25rem var(--font-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Garanties */
+.trust { padding-block: 34px 8px; }
+.trust ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.trust li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: start; }
+.ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); color: var(--marine-2); }
+:root[data-theme="dark"] .ico { color: var(--on-marine-2); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ico { color: var(--on-marine-2); } }
+.trust b { display: block; font-family: var(--font-display); font-size: 1.05rem; }
+.trust span { color: var(--ink-2); font-size: .9375rem; }
+
+section.block { padding-block: 52px 8px; }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 24px; margin-bottom: 22px; }
+.head h2 { font-size: clamp(1.6rem, 3vw, 2.15rem); }
+.head p { color: var(--ink-2); margin-top: 6px; max-width: 40rem; }
+.more { font-weight: 700; color: var(--marine-2); text-underline-offset: 4px; }
+:root[data-theme="dark"] .more { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .more { color: var(--accent); } }
+
+/* À la une */
+.featured { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px 24px; }
+.featured .ico { background: var(--accent-soft); color: var(--accent); width: 56px; height: 56px; }
+.featured > div { flex: 1 1 16rem; min-width: 0; }
+.featured h2 { font-size: 1.5rem; margin-top: 2px; }
+.featured p { color: var(--ink-2); }
+
+/* Catégories */
+.cats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.cats a { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-decoration: none; min-height: 76px; }
+.cats a:hover { border-color: var(--marine-2); }
+.cats b { display: block; font-size: 1rem; line-height: 1.25; }
+.cats small { color: var(--ink-2); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+
+/* Cartes de service */
+.grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+.thumb { aspect-ratio: 4 / 3; position: relative; display: grid; place-items: center; overflow: hidden; }
+.thumb svg { width: 56%; height: auto; opacity: .92; }
+.t1 { background: linear-gradient(135deg, #12365e, #1f5a96); color: #cfe3fb; }
+.t2 { background: linear-gradient(135deg, #fde8da, #f7c9a8); color: #a2410a; }
+.t3 { background: linear-gradient(135deg, #dfeaf7, #bcd4ee); color: #17406c; }
+.t4 { background: linear-gradient(135deg, #e2f3ea, #b9e0cb); color: #14633a; }
+.fav { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-2); }
+.card .body { padding: 14px 16px 16px; display: grid; gap: 8px; flex: 1; align-content: start; }
+.card .cat { font-size: .8125rem; font-weight: 700; color: var(--ink-2); }
+.card h3 { font-size: 1.0625rem; line-height: 1.28; font-weight: 700; letter-spacing: -.01em; }
+.who { display: flex; align-items: center; gap: 8px; font-size: .875rem; color: var(--ink-2); }
+.av { width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-size: .6875rem; font-weight: 700; color: var(--ink); }
+.foot { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
+.foot span { color: var(--ink-2); font-size: .875rem; }
+.foot b { font: 700 1.125rem var(--font-display); font-variant-numeric: tabular-nums; }
+.foot small { font-weight: 600; color: var(--ink-2); }
+
+/* Deux façons de commencer */
+.ways { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.way { border-radius: 20px; padding: 28px; display: grid; gap: 12px; align-content: start; }
+.way h3 { font-size: 1.5rem; }
+.way p { color: inherit; opacity: .86; max-width: 30rem; }
+.way ul { margin: 4px 0 8px; padding: 0; list-style: none; display: grid; gap: 6px; font-size: .9375rem; }
+.way li::before { content: "→ "; font-weight: 700; }
+.way.a { background: var(--surface); border: 1px solid var(--line); }
+.way.b { background: var(--marine); color: var(--on-marine); }
+.way .btn { justify-self: start; margin-top: 6px; }
+
+/* Étapes */
+.how { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; counter-reset: s; }
+.how li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 6px; align-content: start; }
+.how li::before { content: counter(s); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--marine); color: var(--on-marine); font-weight: 700; margin-bottom: 4px; }
+.how b { font-family: var(--font-display); font-size: 1.1rem; }
+.how span { color: var(--ink-2); font-size: .9375rem; }
+
+/* Bande freelance */
+.band { margin-top: 56px; background: var(--marine); color: var(--on-marine); }
+.band .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 32px; padding-block: 38px; }
+.band h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.band p { color: var(--on-marine-2); margin-top: 6px; }
+
+footer.site { background: var(--surface); border-top: 1px solid var(--line); }
+footer.site .wrap { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 28px; padding-block: 36px; }
+footer.site p.tag-line { color: var(--ink-2); max-width: 28rem; margin-top: 12px; font-size: .9375rem; }
+footer.site h4 { margin: 0 0 10px; font: 700 .8125rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+footer.site ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+footer.site a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+
+.legend { margin-block: 48px; display: grid; gap: 10px; }
+.legend h2 { font-size: 1.4rem; }
+.legend ul { margin: 0; padding-left: 1.1rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 52rem; }
+
+@media (max-width: 1000px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 40px 48px; }
+  .grid, .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .how { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  footer.site .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .trust ul, .ways { grid-template-columns: minmax(0, 1fr); }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .card { flex-direction: row; }
+  .thumb { width: 108px; aspect-ratio: 4 / 3; flex: none; margin: 14px 0 0 14px; border-radius: 10px; align-self: flex-start; }
+  .thumb .fav { display: none; }
+  .card .body { padding: 14px; }
+  .who { display: none; }
+  .foot { border-top: 0; padding-top: 4px; }
+  .cats { grid-template-columns: minmax(0, 1fr); }
+  .how { grid-template-columns: minmax(0, 1fr); }
+  .tracker { padding: 18px; }
+  .top .push { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) { .cats a, .btn { transition: border-color .15s, transform .15s; } .btn:hover { transform: translateY(-1px); } }
+</style>
+
+<div class="proto"><div class="wrap">
+  <b>Maquette de l'accueil, proposition à valider.</b>
+  <span>Les services, prix et nombres sont des exemples fictifs. Les étiquettes en pointillés indiquent ce que l'administration pourra modifier.</span>
+</div></div>
+
+<header class="top"><div class="wrap">
+  <a class="logo" href="#"><i>F</i><span>Free<b>CI</b></span></a>
+  <nav class="nav" aria-label="Navigation principale"><a href="#">Services</a><a href="#">Missions</a><a href="#">Freelances</a><a href="#">Comment ça marche</a><a href="#">Devenir freelance</a></nav>
+  <div class="push"><a class="txt" href="#">Connexion</a><a class="btn btn-marine" href="#">Créer un compte</a></div>
+</div></header>
+
+<div class="announce"><div class="wrap">
+  <span>Nouveau : la messagerie privée entre clients et freelances est ouverte.</span><a href="#">Voir comment ça marche</a>
+  <span class="tag">Bandeau d'annonce · Paramètres › Accueil et vitrine</span>
+</div></div>
+
+<section class="hero" aria-labelledby="h1"><div class="wrap">
+  <div>
+    <p class="eyebrow">Des compétences en Côte d'Ivoire</p>
+    <h1 id="h1">Un freelance pour votre prochain <em>projet</em>.</h1>
+    <p class="lede">Comparez des prestations à prix et délai annoncés, ou décrivez votre besoin et recevez des propositions.</p>
+    <form class="search" role="search" onsubmit="return false">
+      <label for="q">Que recherchez-vous ?</label>
+      <div class="sbox">
+        <input id="q" type="search" placeholder="Un plan, un logo, un site web" autocomplete="off">
+        <button class="btn btn-accent" type="submit">Rechercher</button>
+      </div>
+    </form>
+    <div class="chips" role="group" aria-label="Recherches fréquentes"><span>Recherches fréquentes :</span><a href="#">Plan AutoCAD</a><a href="#">Logo</a><a href="#">Site web</a><a href="#">Traduction</a></div>
+    <div class="alt"><span>Un besoin précis ?</span><a class="btn btn-ghost" href="#">Publier une mission</a></div>
+    <p class="tag sec-tag" style="margin-top:20px">Titre, sous-titre, exemple et recherches fréquentes · Paramètres › Accueil et vitrine</p>
+  </div>
+
+  <aside class="tracker" aria-label="Exemple de suivi d'une commande">
+    <header><div><p class="ref">Exemple · Commande FC-2610-00123</p><h2>Plans en DWG</h2></div><span class="pill">Livraison à examiner</span></header>
+    <ol class="steps">
+      <li class="done"><span class="dot">✓</span><div><b>Accord</b><span>Prix, délai et corrections figés.</span></div></li>
+      <li class="done"><span class="dot">✓</span><div><b>Paiement et brief</b><span>Paiement confirmé, brief complet.</span></div></li>
+      <li class="now"><span class="dot">3</span><div><b>Livraison</b><span>Vous examinez, puis validez ou demandez une correction.</span></div></li>
+      <li><span class="dot">4</span><div><b>Validation et avis</b><span>Rien n'est validé à votre place.</span></div></li>
+    </ol>
+    <footer><span>Montant convenu</span><strong>35 000 FCFA</strong></footer>
+  </aside>
+</div></section>
+
+<section class="trust" aria-label="Nos garanties"><div class="wrap">
+  <p class="tag sec-tag">Garanties : proposition fondée sur les règles du produit, à valider</p>
+  <ul>
+    <li><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><div><b>Prix et délai figés</b><span>Ce qui est convenu à l'accord ne change plus.</span></div></li>
+    <li><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><div><b>Le travail démarre une fois le paiement confirmé</b><span>Le freelance commence quand le paiement est confirmé et le brief complet.</span></div></li>
+    <li><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></span><div><b>Rien n'est validé à votre place</b><span>Vous examinez chaque livraison, puis vous validez.</span></div></li>
+  </ul>
+</div></section>
+
+<section class="block" aria-labelledby="hf"><div class="wrap">
+  <div class="featured">
+    <span class="ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6M8 11h.01M12 11h.01M16 11h.01"/></svg></span>
+    <div><p class="eyebrow">À la une</p><h2 id="hf">BTP et Architecture</h2><p>12 services publiés, des plans aux maquettes 3D.</p></div>
+    <a class="btn btn-accent" href="#">Voir cette catégorie</a>
+    <span class="tag">Catégorie à la une · Catégories</span>
+  </div>
+</div></section>
+
+<section class="block" aria-labelledby="hc"><div class="wrap">
+  <div class="head"><div><h2 id="hc">Parcourir par besoin</h2><p>Seules les catégories qui ont des services publiés s'affichent, avec leur nombre.</p></div><a class="more" href="#">Tous les services</a></div>
+  <ul class="cats">
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6"/></svg></span><span><b>BTP et Architecture</b><small>12 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span><span><b>Ingénierie et Industrie</b><small>5 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><span><b>Développement et Informatique</b><small>9 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z"/></svg></span><span><b>Design et Graphisme</b><small>14 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/></svg></span><span><b>Photo et Vidéo</b><small>7 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v3l12 5V6L3 11zM15 9a3 3 0 010 6M6 15l1 5"/></svg></span><span><b>Marketing et Communication</b><small>6 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14M12 5v14M8 19h8"/></svg></span><span><b>Rédaction et Traduction</b><small>8 services</small></span></a></li>
+    <li><a href="#"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg></span><span><b>Formation et Accompagnement</b><small>3 services</small></span></a></li>
+  </ul>
+</div></section>
+
+<section class="block" aria-labelledby="hs"><div class="wrap">
+  <div class="head"><div><h2 id="hs">Services publiés récemment</h2><p>Huit services, avec le prix et le délai annoncés.</p></div><a class="more" href="#">Voir tout le catalogue</a></div>
+  <ul class="grid">
+    <li><article class="card"><div class="thumb t1"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="6" y="6" width="108" height="78" rx="4"/><path d="M6 44h50M56 6v78M80 44h34M80 6v38"/><circle cx="90" cy="64" r="8"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">BTP et Architecture</p><h3>Convertir vos plans PDF en fichiers AutoCAD (DWG)</h3><p class="who"><span class="av">KS</span>Kader S. · Dessinateur DAO</p><div class="foot"><span>5 jours</span><b>35 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t2"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="10" y="18" width="66" height="46" rx="6"/><circle cx="32" cy="41" r="9"/><path d="M50 36h18M50 46h12"/><rect x="62" y="30" width="48" height="52" rx="4" fill="currentColor" opacity=".15"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Design et Graphisme</p><h3>Créer votre logo et une mini charte graphique</h3><p class="who"><span class="av">MT</span>Mariam T. · Designer</p><div class="foot"><span>7 jours</span><b>45 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t3"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="8" y="10" width="104" height="62" rx="6"/><path d="M8 24h104M20 38h40M20 48h28"/><rect x="72" y="34" width="30" height="26" rx="3"/><path d="M40 82h40"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Développement et Informatique</p><h3>Site vitrine de 5 pages, prêt à publier</h3><p class="who"><span class="av">YG</span>Yann G. · Développeur web</p><div class="foot"><span>14 jours</span><b>120 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t4"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="12" y="10" width="42" height="64" rx="4"/><rect x="66" y="10" width="42" height="64" rx="4"/><path d="M20 26h26M20 36h20M74 26h26M74 36h20M54 42h12M60 36l6 6-6 6"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Rédaction et Traduction</p><h3>Traduire un document du français vers l'anglais (10 pages)</h3><p class="who"><span class="av">SC</span>Salimata C. · Traductrice</p><div class="foot"><span>3 jours</span><b>25 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t2"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="22" y="8" width="76" height="74" rx="4"/><path d="M34 26h52M34 38h52M34 50h30"/><circle cx="82" cy="62" r="9"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Design et Graphisme</p><h3>Affiche d'événement au format A3, prête à imprimer</h3><p class="who"><span class="av">MT</span>Mariam T. · Designer</p><div class="foot"><span>3 jours</span><b>18 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t1"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="60" cy="45" r="14"/><path d="M60 8v14M60 68v14M22 45h14M84 45h14M33 18l10 10M77 62l10 10M87 18L77 28M43 62L33 72"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Ingénierie et Industrie</p><h3>Note de calcul de structure pour une dalle béton</h3><p class="who"><span class="av">AK</span>Awa K. · Ingénieure structure</p><div class="foot"><span>6 jours</span><b>80 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t3"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="10" y="14" width="100" height="62" rx="6"/><circle cx="60" cy="45" r="16"/><path d="M52 40l16 5-16 5z" fill="currentColor"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Photo et Vidéo</p><h3>Montage d'une vidéo de présentation de 90 secondes</h3><p class="who"><span class="av">DB</span>Doumbia B. · Monteur vidéo</p><div class="foot"><span>5 jours</span><b>60 000 <small>FCFA</small></b></div></div></article></li>
+    <li><article class="card"><div class="thumb t4"><svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="12" y="12" width="96" height="66" rx="6"/><path d="M26 62l16-18 14 12 22-26 16 20"/></svg><span class="fav" aria-hidden="true">♡</span></div><div class="body"><p class="cat">Marketing et Communication</p><h3>Calendrier de publications pour vos réseaux sociaux</h3><p class="who"><span class="av">NT</span>Nadège T. · Community manager</p><div class="foot"><span>4 jours</span><b>30 000 <small>FCFA</small></b></div></div></article></li>
+  </ul>
+</div></section>
+
+<section class="block" aria-labelledby="hw"><div class="wrap">
+  <div class="head"><div><h2 id="hw">Deux façons de commencer</h2><p>Le même suivi de commande dans les deux cas : accord, paiement, livraison, validation.</p></div></div>
+  <div class="ways">
+    <div class="way a"><h3>Je choisis un service</h3><p>Prix et délai sont annoncés. Vous comparez, vous envoyez votre demande, le freelance accepte.</p><ul><li>Prix et corrections figés à l'accord</li><li>Le freelance répond dans le délai prévu</li></ul><a class="btn btn-marine" href="#">Voir les services</a></div>
+    <div class="way b"><h3>Je décris mon besoin</h3><p>Publiez une mission, recevez des propositions à prix ferme, comparez et retenez la meilleure.</p><ul><li>Seul vous voyez les propositions</li><li>Aucune coordonnée privée n'est publiée</li></ul><a class="btn btn-accent" href="#">Publier une mission</a></div>
+  </div>
+</div></section>
+
+<section class="block" aria-labelledby="hh"><div class="wrap">
+  <div class="head"><div><h2 id="hh">Comment ça marche</h2></div><a class="more" href="#">Le détail</a></div>
+  <ol class="how">
+    <li><b>Choisir</b><span>Un service à prix et délai annoncés, ou une mission décrite par vos soins.</span></li>
+    <li><b>Convenir</b><span>Le freelance accepte : l'accord est figé (prix, délai, corrections).</span></li>
+    <li><b>Suivre</b><span>Paiement, brief, livraison et corrections dans un seul dossier.</span></li>
+    <li><b>Valider</b><span>Vous validez la livraison, puis laissez un avis si la commande est réelle.</span></li>
+  </ol>
+</div></section>
+
+<section class="band" aria-labelledby="hb"><div class="wrap">
+  <div><h2 id="hb">Vous êtes freelance ?</h2><p>Présentez vos compétences et publiez vos prestations.</p></div>
+  <a class="btn btn-accent" href="#">Créer mon profil</a>
+</div></section>
+
+<footer class="site"><div class="wrap">
+  <div><a class="logo" href="#"><i>F</i><span>Free<b>CI</b></span></a><p class="tag-line">Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.</p></div>
+  <div><h4>Découvrir</h4><ul><li><a href="#">Services</a></li><li><a href="#">Missions</a></li><li><a href="#">Freelances</a></li></ul></div>
+  <div><h4>Aide</h4><ul><li><a href="#">Comment ça marche</a></li><li><a href="#">Centre d'aide</a></li><li><a href="#">Contact</a></li></ul></div>
+  <div><h4>Informations</h4><ul><li><a href="#">Conditions d'utilisation</a></li><li><a href="#">Confidentialité</a></li><li><a href="#">Mentions légales</a></li></ul></div>
+</div></footer>
+
+<div class="wrap legend">
+  <h2>Ce que cette maquette change par rapport à l'accueil actuel</h2>
+  <ul>
+    <li>Le suivi de commande devient une carte vivante dans l'en-tête, au lieu d'un encadré de texte.</li>
+    <li>Trois garanties tirées des règles du produit, sans chiffres ni témoignages inventés.</li>
+    <li>Une catégorie « à la une » et un bandeau d'annonce, tous deux modifiables par l'administration.</li>
+    <li>Une section « Deux façons de commencer » qui met la mission au même rang que le catalogue.</li>
+    <li>Sur téléphone, les cartes de service passent en liste compacte et le bouton favori ne recouvre plus l'image.</li>
+  </ul>
+</div>

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Modules\Admin\Settings\AppSettings;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,7 +15,7 @@ class AccountNoticeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'FreeCI : '.$this->subjectLine);
+        return new Envelope(subject: AppSettings::text('mailtpl.subject_prefix').' : '.$this->subjectLine);
     }
 
     public function content(): Content

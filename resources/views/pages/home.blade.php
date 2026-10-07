@@ -1,5 +1,14 @@
-@php($hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k"))
 <x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'">
+@php
+  $hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k");
+  $announce = trim((string) config('freeci.home.announce_text'));
+  $links = ['services' => route('services.index'), 'missions' => route('missions.index'), 'freelances' => route('freelances.index'), 'mission_new' => route('client.missions.new'), 'freelance_activate' => route('freelance.activate'), 'how' => route('info', 'fonctionnement')];
+  $announceUrl = $links[(string) config('freeci.home.announce_link')] ?? null;
+  $featured = collect($categories)->first(fn ($c) => $c->featured && $c->services > 0);
+@endphp
+@if(config('freeci.home.announce_enabled') && $announce !== '')
+<div class="announce" role="region" aria-label="Annonce"><div class="container"><p>{{ $announce }}</p>@if($announceUrl)<a class="btn btn-secondary" href="{{ $announceUrl }}">{{ config('freeci.home.announce_link_label') ?: 'En savoir plus' }}</a>@endif</div></div>
+@endif
 <section class="hero on-dark" aria-labelledby="h-hero">
   <div class="hero-grid-bg" aria-hidden="true"></div>
   <div class="container">
@@ -44,6 +53,10 @@
   <div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p style="font-weight:600">Les premiers services seront publiés ici.</p></div>
   @endif
 </div></section>
+
+@if($featured)
+<section class="section section-featured" aria-labelledby="h-feat"><div class="container"><div class="featured-cat"><span class="ico"><x-fc.icon :name="$featured->icon" :size="26" /></span><div><p class="eyebrow">À la une</p><h2 class="t-h2" id="h-feat">{{ $featured->name }}</h2><p class="muted">{{ $featured->services }} {{ $featured->services > 1 ? 'services publiés' : 'service publié' }}</p></div><a class="btn btn-primary" href="{{ route('services.index', ['categorie' => $featured->slug]) }}">Voir cette catégorie</a></div></div></section>
+@endif
 
 <section class="section section-alt" aria-labelledby="h-cats"><div class="container">
   <div class="section-head"><h2 class="t-h2" id="h-cats">Parcourir par besoin</h2><a class="btn btn-link" href="{{ route('services.index') }}">Tous les services <x-fc.icon name="arrow-right" :size="18" /></a></div>

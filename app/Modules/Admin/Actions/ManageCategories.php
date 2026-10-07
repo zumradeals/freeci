@@ -30,7 +30,7 @@ final class ManageCategories
         $missions = DB::table('mission_versions')->selectRaw('category_id, count(distinct mission_id) as n')->groupBy('category_id')->pluck('n', 'category_id');
 
         return Category::query()->orderByRaw('archived_at is not null')->orderBy('position')->get()->map(fn (Category $c) => [
-            'id' => $c->getKey(), 'name' => $c->name, 'slug' => $c->slug, 'icon' => $c->icon, 'archived' => $c->archived_at !== null,
+            'id' => $c->getKey(), 'name' => $c->name, 'slug' => $c->slug, 'icon' => $c->icon, 'archived' => $c->archived_at !== null, 'featured' => $c->featured_at !== null,
             'services' => (int) ($services[$c->getKey()] ?? 0), 'published' => (int) ($published[$c->getKey()] ?? 0), 'missions' => (int) ($missions[$c->getKey()] ?? 0),
         ])->all();
     }
@@ -81,6 +81,27 @@ final class ManageCategories
         });
     }
 
+    /** Une seule catégorie est mise en avant à la fois sur l'accueil (la précédente est retirée). */
+    public function feature(User $admin, string $id): void
+    {
+        $category = $this->find($id);
+        $this->audit->run($admin, 'category.feature', 'category', $id, $category->name, null, function () use ($category) {
+            if ($category->archived_at !== null) {
+                throw new ModerationDenied('Une catégorie archivée ne peut pas être mise en avant.');
+            }
+            DB::transaction(function () use ($category) {
+                Category::query()->whereNotNull('featured_at')->update(['featured_at' => null]);
+                $category->update(['featured_at' => now()]);
+            });
+        });
+    }
+
+    public function unfeature(User $admin, string $id): void
+    {
+        $category = $this->find($id);
+        $this->audit->run($admin, 'category.unfeature', 'category', $id, $category->name, null, fn () => $category->update(['featured_at' => null]));
+    }
+
     public function archive(User $admin, string $id, string $reason): void
     {
         $category = $this->find($id);
@@ -91,7 +112,7 @@ final class ManageCategories
             if (Category::query()->active()->count() <= 1) {
                 throw new ModerationDenied('Au moins une catégorie doit rester proposée : sans catégorie, aucun service ni mission ne peut être créé.');
             }
-            $category->update(['archived_at' => now()]);
+            $category->update(['archived_at' => now(), 'featured_at' => null]);
         });
     }
 

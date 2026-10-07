@@ -10,5 +10,6 @@ final readonly class CategoryItem
         public string $name,
         public string $icon,
         public int $services = 0,
+        public bool $featured = false,
     ) {}
 }

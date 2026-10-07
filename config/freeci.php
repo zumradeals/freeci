@@ -133,7 +133,23 @@ return [
         'mission_prompt' => 'Un besoin précis ?',
         'freelance_title' => 'Vous êtes freelance ?',
         'freelance_text' => 'Présentez vos compétences et publiez vos prestations.',
+        'announce_enabled' => false,
+        'announce_text' => null,
+        'announce_link' => '',
+        'announce_link_label' => 'En savoir plus',
         'tagline' => 'Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.',
+    ],
+
+    // Textes des courriels (valeurs de départ), modifiables dans Paramètres › Courriels. Les liens, la durée de validité et les consignes de sécurité restent fixés par l'application.
+    'mailtpl' => [
+        'subject_prefix' => 'FreeCI',
+        'greeting' => 'Bonjour,',
+        'signature' => 'FreeCI',
+        'verify_intro' => 'Pour confirmer votre adresse e-mail sur FreeCI, ouvrez ce lien :',
+        'verify_ignore' => 'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : rien ne sera modifié.',
+        'notification_intro' => 'Pour consulter les détails, connectez-vous à votre espace FreeCI :',
+        'notification_note' => 'Ce courriel ne contient volontairement ni message privé ni pièce jointe. Vous réglez vos notifications facultatives depuis votre espace.',
+        'account_warning' => 'Si vous n’êtes pas à l’origine de cette opération, connectez-vous et changez votre mot de passe, ou contactez l’assistance depuis votre espace.',
     ],
 
     // Identité de l'exploitant et pages d'information : AUCUNE valeur inventée. Vide = « à renseigner » (brouillon).

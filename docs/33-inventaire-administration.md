@@ -39,3 +39,17 @@
 1. Liste initiale des catégories (noms, ordre, icônes) : à vous de la valider ; les huit actuelles viennent du jeu de démonstration.
 2. Souhaitez-vous des bandeaux d'accueil éditables (annonce, mise en avant d'une catégorie) ? Non fait.
 3. Souhaitez-vous rendre les gabarits de courriels éditables avant l'ouverture ?
+
+## 5. Décisions du porteur et réalisation (lot 32)
+| Décision | Réalisation |
+|---|---|
+| Liste initiale des catégories : validée (les huit actuelles) | Posée par la migration en **production seulement** et **seulement si la table est vide** ; ensuite gérée dans Catégories. Rien n'est écrasé. |
+| Bandeaux d'accueil éditables : oui | Bandeau d'annonce (Paramètres › Accueil et vitrine : activation, texte, destination choisie dans une liste de pages du site, texte du bouton) ; catégorie « à la une » (une seule à la fois, depuis Catégories). |
+| Gabarits de courriels éditables : oui | Paramètres › Courriels : début de l'objet, formule d'ouverture, signature, phrases des courriels de confirmation d'adresse, de notification et d'avis de sécurité. Champ vide = texte de départ. Les liens, la durée de validité du lien (60 minutes) et l'absence de message privé dans les courriels restent fixés par l'application. |
+| « Les deux points de l'inventaire dans l'espace admin » | Équipe d'assistance : page dédiée (accorder / retirer l'habilitation « support », motif obligatoire, identité reconfirmée, journalisé). **L'habilitation d'administrateur reste hors interface** (voir ci-dessous). Structure des menus : à préciser. |
+
+### Pourquoi l'habilitation d'administrateur ne passe pas par l'interface
+Votre décision D39 : un seul administrateur gère les opérations financières. Si l'interface pouvait créer un administrateur, un compte administrateur compromis pourrait créer ses propres complices. Accorder ce pouvoir se fait donc en console, à la demande du porteur. Si vous voulez malgré tout l'avoir dans l'interface, il faudra une règle explicite (par exemple double validation) : à décider par vous.
+
+## 6. Maquette de la page d'accueil
+`docs/maquettes/accueil-moderne.html` (aussi publiée comme page privée). Proposition, rien n'est branché : à valider avant toute mise en œuvre.

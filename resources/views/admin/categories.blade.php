@@ -16,7 +16,7 @@
         <article class="record">
           <div class="record-head"><div><strong>{{ $r['name'] }}</strong>
             <p class="muted small"><span class="num">/{{ $r['slug'] }}</span> · {{ $r['services'] }} service{{ $r['services'] > 1 ? 's' : '' }} ({{ $r['published'] }} publié{{ $r['published'] > 1 ? 's' : '' }}) · {{ $r['missions'] }} mission{{ $r['missions'] > 1 ? 's' : '' }}</p></div>
-            <span class="badge {{ $r['archived'] ? 'tone-neutral' : 'tone-success' }}">{{ $r['archived'] ? 'Archivée' : 'Proposée' }}</span></div>
+            <span class="row row-gap">@if($r['featured'])<span class="badge tone-info">À la une</span>@endif<span class="badge {{ $r['archived'] ? 'tone-neutral' : 'tone-success' }}">{{ $r['archived'] ? 'Archivée' : 'Proposée' }}</span></span></div>
           <form method="post" action="{{ route('admin.categories.update', $r['id']) }}" class="form-grid" data-once>@csrf
             <div class="field"><label for="c-name-{{ $r['id'] }}">Nom</label><input class="input" id="c-name-{{ $r['id'] }}" name="name" value="{{ $r['name'] }}" minlength="3" maxlength="60" required></div>
             <div class="field"><label for="c-icon-{{ $r['id'] }}">Icône</label><select class="select" id="c-icon-{{ $r['id'] }}" name="icon">@foreach($icons as $k => $l)<option value="{{ $k }}" @selected($r['icon'] === $k)>{{ $l }}</option>@endforeach</select></div>
@@ -24,6 +24,8 @@
           </form>
           <div class="row row-gap">
             @unless($r['archived'])
+              @if($r['featured'])<form method="post" action="{{ route('admin.categories.unfeature', $r['id']) }}">@csrf<button class="btn btn-link" type="submit">★ À la une : retirer</button></form>
+              @else<form method="post" action="{{ route('admin.categories.feature', $r['id']) }}">@csrf<button class="btn btn-link" type="submit">☆ Mettre à la une sur l’accueil</button></form>@endif
               <form method="post" action="{{ route('admin.categories.move', [$r['id'], 'up']) }}">@csrf<button class="btn btn-link" type="submit" aria-label="Monter {{ $r['name'] }}">↑ Monter</button></form>
               <form method="post" action="{{ route('admin.categories.move', [$r['id'], 'down']) }}">@csrf<button class="btn btn-link" type="submit" aria-label="Descendre {{ $r['name'] }}">↓ Descendre</button></form>
             @endunless

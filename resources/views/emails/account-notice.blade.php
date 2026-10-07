@@ -6,4 +6,4 @@
 {{ $url }}
 
 @endif
-Si vous n’êtes pas à l’origine de cette opération, connectez-vous et changez votre mot de passe, ou contactez l’assistance depuis votre espace.
+{{ \App\Modules\Admin\Settings\AppSettings::text('mailtpl.account_warning') }}
