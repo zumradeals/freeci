@@ -1160,3 +1160,35 @@ a.kpi:hover { background: var(--marine-100); }
 .hv-way-dark p { color: var(--on-marine-2); }
 .btn-accent { background: var(--accent-500); color: #1a0c00; border-color: var(--accent-500); }
 .btn-accent:hover { background: #ff7a2e; color: #1a0c00; }
+
+/* Missions publiques : même langage visuel que le catalogue, sans couverture. */
+.catalog.mission-catalog { gap: 0; }
+.mission-catalog-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-bottom: 24px; }
+.mission-catalog-head > div { min-width: 0; flex: 1 1 420px; }
+.mission-catalog-head .muted { margin-top: 8px; max-width: 65ch; }
+.catalog-filters.mission-filters { gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.mission-search-submit { align-self: end; }
+.mission-search-submit .btn { min-height: 48px; width: 100%; }
+.mission-filter-reset:empty { display: none; }
+.mission-result-count { margin-block: 20px 12px; }
+.mission-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.mission-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.mission-category { display: flex; align-items: center; gap: 8px; color: var(--ink-600); font-size: .875rem; }
+.mission-category svg { flex: none; color: var(--marine-700); }
+.mission-card .t-h3 { line-height: 1.4; overflow-wrap: anywhere; }
+.mission-card .t-h3 a { text-decoration: none; color: var(--ink-900); }
+.mission-card .t-h3 a:hover { text-decoration: underline; color: var(--marine-700); }
+.mission-excerpt { color: var(--ink-600); line-height: 1.6; overflow-wrap: anywhere; }
+.mission-card-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 16px; }
+.mission-facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0; }
+.mission-facts dt { font-size: .8125rem; color: var(--ink-600); margin-bottom: 4px; }
+.mission-facts dd { margin: 0; font-size: .9375rem; overflow-wrap: anywhere; }
+.mission-facts .price { font-size: 1.125rem; }
+.mission-card-bottom > .btn { justify-self: start; }
+@media (min-width: 600px) { .mission-facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (min-width: 900px) { .mission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) {
+  .catalog-filters.mission-filters { grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1.3fr) auto; }
+  .mission-filters .more-filters { grid-column: 1 / -1; }
+}
+@media (max-width: 599px) { .mission-catalog-head > .btn, .mission-card-bottom > .btn { width: 100%; } }

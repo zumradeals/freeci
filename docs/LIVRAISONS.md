@@ -55,3 +55,9 @@ Totaux financiers complets, détail paginé, séparation legacy/réel côté cli
 | **35 — installation de la démonstration sans console** | Carte « Données de démonstration » : bouton d'installation (phrase, identité reconfirmée, journal d'audit) ; commande `freeci:demo-install` ; compte rendu du nombre de cartes visibles sur l'accueil ; les catégories existantes ne sont jamais renommées ; 3 tests | aucune | aucune |
 | **36 — diagnostic et réparation de la démonstration** | La carte « Données de démonstration » indique combien de cartes l'accueil affiche (sur 8) et pourquoi les autres ne s'affichent pas (archivées, vendeur suspendu, date) ; l'installation remet en ligne services archivés, vendeurs suspendus et profils dépubliés ; section ouverte d'office s'il manque des cartes | aucune | aucune |
 | **37 — prompt pour Claude sur le serveur** | `docs/34-prompt-claude-vps.md` : cartes de démonstration, 504/503, vérifications d'exploitation (cron, file, sauvegardes, copie hors serveur, restauration, HTTPS, courriel), avec règles de sécurité et format de rapport | aucune | aucune |
+
+### Missions publiques — harmonisation sans couverture
+
+Catalogue public : en-tête avec publication d'une mission, filtres compacts sur grand écran, cartes en deux colonnes dès 900 px et une colonne en dessous. Catégorie, résumé, budget et clôture des candidatures sont distincts ; lien explicite « Voir la mission ». Pas d'image, de migration, de changement métier ou de paiement. Filtres GET et pagination existants conservés.
+
+Validation : build Vite et `git diff --check` réussis. Contrôle visuel en navigateur et compilation Blade non effectués dans cet environnement ; contrôler l'affichage après déploiement, notamment à 360 et 1440 px, avec et sans résultats.
