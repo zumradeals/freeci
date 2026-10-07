@@ -76,4 +76,12 @@ class DemoInstallTest extends TestCase
         $this->assertSame(8, preg_match_all('/class="svc[ "]/', $this->get('/')->getContent()));
         $this->asAdmin($this->admin)->get('/admin/exploitation')->assertSee('8</strong> carte(s) sur 8', false);
     }
+
+    public function test_demo_profiles_are_published_so_the_directory_and_profile_pages_are_not_empty(): void
+    {
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/installer', ['phrase' => 'INSTALLER LA DEMO'])->assertSessionHas('status');
+        $this->app['auth']->forgetGuards();
+        $this->get('/freelances')->assertOk()->assertSee('9 profils publiés')->assertSee('Kader Soro')->assertSee('Voir le profil');
+        $this->get('/freelances/kader-soro-demo')->assertOk()->assertSee('Présentation')->assertSee('AutoCAD')->assertSee('profil d’exemple');
+    }
 }

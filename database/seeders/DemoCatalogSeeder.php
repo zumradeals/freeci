@@ -103,26 +103,30 @@ class DemoCatalogSeeder extends Seeder
     private function profiles(): array
     {
         $rows = [
-            'kader' => ['Kader Soro', 'Dessinateur DAO', 'Abidjan'],
-            'mariam' => ['Mariam Touré', 'Designer', 'Abidjan'],
-            'yann' => ['Yann Gnagne', 'Développeur web', 'Bouaké'],
-            'salimata' => ['Salimata Cissé', 'Traductrice', 'Abidjan'],
-            'ibrahim' => ['Ibrahim Konaté', 'Monteur', 'Yamoussoukro'],
-            'awa' => ['Awa Diallo', 'Community manager', 'Abidjan'],
-            'joel' => ['Joël Ahoussou', 'Ingénieur méthodes', 'San-Pédro'],
-            'nadege' => ['Nadège Kouamé', 'Formatrice bureautique', 'Abidjan'],
-            'serge' => ['Serge Yapi', 'Architecte d’intérieur', 'Abidjan'],
+            'kader' => ['Kader Soro', 'Dessinateur DAO', 'Abidjan', ['AutoCAD', 'Dessin technique', 'Plans']],
+            'mariam' => ['Mariam Touré', 'Designer', 'Abidjan', ['Identité visuelle', 'Logo', 'Affiche']],
+            'yann' => ['Yann Gnagne', 'Développeur web', 'Bouaké', ['Site web', 'WordPress', 'HTML et CSS']],
+            'salimata' => ['Salimata Cissé', 'Traductrice', 'Abidjan', ['Traduction', 'Rédaction', 'Relecture']],
+            'ibrahim' => ['Ibrahim Konaté', 'Monteur', 'Yamoussoukro', ['Montage vidéo', 'Retouche photo']],
+            'awa' => ['Awa Diallo', 'Community manager', 'Abidjan', ['Réseaux sociaux', 'Planning éditorial']],
+            'joel' => ['Joël Ahoussou', 'Ingénieur méthodes', 'San-Pédro', ['Planification', 'Tableur', 'Calculs']],
+            'nadege' => ['Nadège Kouamé', 'Formatrice bureautique', 'Abidjan', ['Excel', 'Formation']],
+            'serge' => ['Serge Yapi', 'Architecte d’intérieur', 'Abidjan', ['Aménagement intérieur', 'Plans 2D']],
         ];
         $out = [];
-        foreach ($rows as $key => [$name, $headline, $city]) {
+        foreach ($rows as $key => [$name, $headline, $city, $skills]) {
             $user = User::firstOrNew(['email' => $key.'@'.self::DOMAIN]);
             if (! $user->exists) {
                 // Mot de passe aléatoire jeté : ce compte vendeur n'est pas utilisable pour se connecter.
                 $user->forceFill(['name' => $name, 'password' => Hash::make(Str::random(64)), 'is_demo' => true])->save();
             }
             $user->roles()->firstOrCreate(['role' => 'freelance']);
+            // Profils publiés avec leur adresse : sans cela, l'annuaire des freelances et les pages de profil seraient vides.
             $out[$key] = FreelanceProfile::updateOrCreate(['user_id' => $user->id], [
                 'display_name' => $name, 'headline' => $headline, 'city' => $city, 'is_demo' => true,
+                'slug' => Str::slug($name).'-demo', 'published_at' => now(),
+                'bio' => $name.' est un profil d’exemple, créé pour présenter FreeCI. Les services, les prix et les délais affichés sont fictifs.',
+                'skills' => $skills,
             ]);
         }
 
