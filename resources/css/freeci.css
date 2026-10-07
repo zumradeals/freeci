@@ -1098,3 +1098,12 @@ a.kpi:hover { background: var(--marine-100); }
 .mt-6 { margin-top: 6px; } .mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
 .card-accent-success { border-left: 4px solid var(--success-700); }
 .card-accent-error { border-left: 4px solid var(--error-700); }
+
+/* Lot 30 : accueil (second bouton du hero, nombre de services par catégorie, section réduite sur grand écran) et page publique d'une mission */
+.hero-alt { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 16px; color: #fff; font-weight: 600; }
+.hero .btn-secondary { background: transparent; color: #fff; border-color: rgb(255 255 255 / .55); }
+.hero .btn-secondary:hover { background: rgb(255 255 255 / .12); color: #fff; border-color: #fff; }
+.cat small.cat-n { display: block; margin-top: 2px; font-weight: 400; color: var(--ink-600); font-size: .8125rem; }
+@media (min-width: 1024px) { .only-narrow { display: none; } .section-compact { padding-block: 32px; } }
+.container-narrow { max-width: 860px; }
+.public-page { padding-block: 24px; }

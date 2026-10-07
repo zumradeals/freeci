@@ -17,7 +17,7 @@
         @foreach(['Plan AutoCAD', 'Logo', 'Site web', 'Traduction'] as $term)
         <a class="chip" href="{{ route('services.index', ['q' => $term]) }}">{{ $term }}</a>
         @endforeach</div>
-      <a class="hero-link" href="{{ route('client.missions.new') }}">Un besoin précis ? Publier une mission <x-fc.icon name="arrow-right" :size="18" /></a>
+      <div class="hero-alt"><span>Un besoin précis ?</span><a class="btn btn-secondary btn-lg" href="{{ route('client.missions.new') }}">Publier une mission</a></div>
     </div>
     <aside class="hero-card" aria-labelledby="h-card">
       <p class="eyebrow muted">Le suivi d’une commande</p>
@@ -48,21 +48,21 @@
   <div class="section-head"><h2 class="t-h2" id="h-cats">Parcourir par besoin</h2><a class="btn btn-link" href="{{ route('services.index') }}">Tous les services <x-fc.icon name="arrow-right" :size="18" /></a></div>
   <ul class="cats">
     @foreach($categories as $c)
-    <li><a class="cat" href="{{ route('services.index', ['categorie' => $c->slug]) }}"><span class="ico"><x-fc.icon :name="$c->icon" :size="22" /></span><span class="t">{{ $c->name }}</span></a></li>
+    <li><a class="cat" href="{{ route('services.index', ['categorie' => $c->slug]) }}"><span class="ico"><x-fc.icon :name="$c->icon" :size="22" /></span><span class="t">{{ $c->name }}@if($c->services > 0)<small class="cat-n">{{ $c->services }} {{ $c->services > 1 ? 'services' : 'service' }}</small>@endif</span></a></li>
     @endforeach
   </ul>
 </div></section>
 
-<section class="section" id="comment" aria-labelledby="h-ways"><div class="container">
+<section class="section section-compact" id="comment" aria-labelledby="h-ways"><div class="container">
   <div class="section-head"><div><h2 class="t-h2" id="h-ways">Comment ça marche</h2><p style="margin-top:6px">Le travail démarre après paiement confirmé et brief complet ; vous examinez chaque livraison puis validez : rien n’est validé à votre place.</p></div>
     <a class="btn btn-link" href="{{ route('info', 'fonctionnement') }}">Le détail <x-fc.icon name="arrow-right" :size="18" /></a></div>
-  <ol class="steps-row">
+  {{-- Sur grand écran, les étapes sont déjà dans l'encadré de l'en-tête : elles ne sont répétées que sur téléphone et tablette. --}}
+  <ol class="steps-row only-narrow">
     <li><b>Choisir</b><span>Un service à prix et délai annoncés, ou une mission décrite par vos soins.</span></li>
     <li><b>Convenir</b><span>Le freelance accepte : l’accord est figé (prix, délai, corrections).</span></li>
     <li><b>Suivre</b><span>Paiement, brief, livraison et corrections dans un seul dossier.</span></li>
     <li><b>Valider</b><span>Vous validez la livraison, puis laissez un avis si la commande est réelle.</span></li>
   </ol>
-  <div class="row" style="gap:12px;margin-top:20px"><a class="btn btn-primary btn-lg" href="{{ route('services.index') }}">Voir les services</a><a class="btn btn-secondary btn-lg" href="{{ route('client.missions.new') }}">Publier une mission</a></div>
 </div></section>
 
 <section class="freelance-band on-dark" aria-labelledby="h-fl"><div class="container">

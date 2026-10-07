@@ -26,3 +26,17 @@
 
 ## 4. Prochaine étape proposée
 Vous répondez point par point (par exemple « A1 : bloc de suivi dans le hero, section du bas réduite ; A2 : oui, voici mes formulations ; A3 : 8 ; A4 : oui ; A5 : "Devenir freelance" ; A6 : oui ; A7 : à voir plus tard »). J'implémente alors tout en un lot, avec captures avant/après et tests, sans toucher aux paiements ni aux règles métier. A8 peut partir dès maintenant.
+
+## 5. Décisions et réalisation (lot 30)
+| # | Décision | Réalisation |
+|---|---|---|
+| A1 | Garder le hero | Encadré de suivi conservé dans le hero ; la section « Comment ça marche » est réduite à une phrase et un lien « Le détail » sur grand écran (les quatre étapes restent sur téléphone et tablette, où l'encadré n'apparaît pas). Boutons dupliqués supprimés. |
+| A2 | Non tranché (formulations à fournir) | Non traité. |
+| A3 | 8 services | Huit cartes (deux rangées complètes sur bureau). Données de démonstration déjà retirées par vous. |
+| A4 | Oui | Nombre de services sous chaque catégorie ; catégories sans service publié masquées. Tant qu'aucune catégorie n'a de service (lancement), toutes restent visibles, sans nombre. |
+| A5 | Approuvé | « Devenir freelance » dans l'en-tête et le menu mobile pour les visiteurs (non connectés). |
+| A6 | Approuvé | « Publier une mission » devient un bouton secondaire du hero. |
+| A7 | **Décision déléguée, prise par moi** | Pas de page « À propos » pour l'instant : elle exige un texte institutionnel que vous seul pouvez valider, et rien ne doit être inventé. L'assistance reste dans le pied de page (Centre d'aide, Contact) et dans les espaces connectés ; l'en-tête reste léger (cinq entrées). À rouvrir si vous voulez une page de présentation de GAMAD ou de FreeCI. |
+| A8 | Traité | Page publique d'une mission : structure de référence (`page-head`, `page-body`), marges en ligne retirées. |
+
+Fichier inutilisé supprimé : `resources/views/welcome.blade.php` (page d'accueil du modèle Laravel, jamais servie).

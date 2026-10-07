@@ -4,3 +4,4 @@
 <a href="{{ route('missions.index') }}">@if($drawer)<x-fc.icon name="briefcase" />@endif Missions</a>
 <a href="{{ route('freelances.index') }}">@if($drawer)<x-fc.icon name="user" />@endif Freelances</a>
 <a href="{{ route('info', 'fonctionnement') }}">@if($drawer)<x-fc.icon name="info" />@endif Comment ça marche</a>
+@guest<a href="{{ route('freelance.activate') }}">@if($drawer)<x-fc.icon name="briefcase" />@endif Devenir freelance</a>@endguest

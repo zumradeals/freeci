@@ -9,5 +9,6 @@ final readonly class CategoryItem
         public string $slug,
         public string $name,
         public string $icon,
+        public int $services = 0,
     ) {}
 }
