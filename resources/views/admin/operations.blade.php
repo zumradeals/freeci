@@ -10,7 +10,9 @@
 
   @php($demoLeft = $d['demo']['services'] + $d['demo']['missions'] + $d['demo']['profiles'] + $d['demo']['users'])
   <section class="card panel" aria-labelledby="h-demo"><div class="card-head"><h2 class="t-h2" id="h-demo">Données de démonstration</h2><span class="badge {{ $demoLeft === 0 ? 'tone-success' : 'tone-warning' }}">{{ $demoLeft === 0 ? 'Aucune' : $demoLeft.' élément(s)' }}</span></div>
-    <details @if($demoLeft === 0) open @endif><summary>Installer les données de démonstration (huit cartes sur l’accueil)</summary>
+    @php($dd = $d['demoDiag'])
+    <p>Sur l’accueil, les visiteurs voient <strong>{{ $dd['home'] }}</strong> carte(s) sur 8 attendues. Services de démonstration : <strong>{{ $dd['visible'] }}</strong> visible(s) sur {{ $dd['total'] }}@if($dd['total'] > $dd['visible']) ; non visibles : {{ $dd['archived'] }} archivé(s) (retrait précédent)@if($dd['other_status']), {{ $dd['other_status'] }} en brouillon, contrôle ou suspendu(s)@endif @if($dd['vendor_suspended']), {{ $dd['vendor_suspended'] }} dont le vendeur est suspendu @endif @if($dd['future']), {{ $dd['future'] }} à date de publication future ou absente @endif @endif.</p>
+    <details @if($dd['home'] < 8) open @endif><summary>{{ $dd['home'] < 8 ? 'Installer ou remettre en ligne la démonstration' : 'Réinstaller les données de démonstration' }} (huit cartes sur l’accueil)</summary>
       <p class="muted small mt-8">Ajoute des services <strong>fictifs</strong> publiés (vendeurs d’exemple non connectables) pour présenter le site. Aucune variable de configuration n’est nécessaire ; les catégories existantes ne sont pas modifiées. Se retire ensuite avec le bouton « Retirer » ci-dessous.</p>
       <form method="post" action="{{ route('admin.operations.install-demo') }}" class="stack-sm mt-8" data-once>@csrf
         <div class="field"><label for="di-p">Pour confirmer, saisissez : INSTALLER LA DEMO</label><input class="input" id="di-p" name="phrase" autocomplete="off" maxlength="40" required></div>

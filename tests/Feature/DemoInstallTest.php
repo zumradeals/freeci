@@ -58,4 +58,22 @@ class DemoInstallTest extends TestCase
     {
         $this->artisan('freeci:demo-install', ['--yes' => true])->expectsOutputToContain('L\'accueil affiche 8 carte(s)')->assertSuccessful();
     }
+
+    public function test_the_installation_repairs_archived_services_and_suspended_vendors_and_the_page_explains_the_cause(): void
+    {
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/installer', ['phrase' => 'INSTALLER LA DEMO'])->assertSessionHas('status');
+        // état observé après un retrait partiel : services archivés, un vendeur suspendu, un profil dépublié
+        DB::table('services')->where('is_demo', true)->update(['status' => 'archived']);
+        $vendor = User::where('is_demo', true)->first();
+        $vendor->forceFill(['suspended_at' => now()])->save();
+        DB::table('freelance_profiles')->where('is_demo', true)->update(['published_at' => null]);
+        $this->asAdmin($this->admin)->get('/admin/exploitation')->assertOk()->assertSee('0</strong> carte(s) sur 8', false)->assertSee('archivé(s)')->assertSee('Installer ou remettre en ligne la démonstration');
+
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/installer', ['phrase' => 'INSTALLER LA DEMO'])->assertSessionHas('status');
+        $this->assertNull($vendor->fresh()->suspended_at);
+        $this->assertSame(0, DB::table('freelance_profiles')->where('is_demo', true)->whereNull('published_at')->count());
+        $this->app['auth']->forgetGuards();
+        $this->assertSame(8, preg_match_all('/class="svc[ "]/', $this->get('/')->getContent()));
+        $this->asAdmin($this->admin)->get('/admin/exploitation')->assertSee('8</strong> carte(s) sur 8', false);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Modules\Admin\Queries;
 use App\Integrations\FileScan\FileScanner;
 use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\PaymentMode;
+use App\Modules\Admin\Actions\InstallDemoData;
 use App\Modules\Admin\Actions\PurgeDemoData;
 use App\Modules\Admin\Legal\LegalDefaults;
 use App\Modules\Admin\Legal\LegalPages;
@@ -35,7 +36,7 @@ final class OperationsStatus
     {
         $backup = $this->backup();
 
-        return ['tasks' => $this->tasks(), 'queue' => $this->queue(), 'mail' => $this->mail(), 'files' => $this->files(), 'payments' => $this->payments(), 'backup' => $backup, 'demo' => PurgeDemoData::counts(), 'readiness' => $this->readiness($backup)];
+        return ['tasks' => $this->tasks(), 'queue' => $this->queue(), 'mail' => $this->mail(), 'files' => $this->files(), 'payments' => $this->payments(), 'backup' => $backup, 'demo' => PurgeDemoData::counts(), 'demoDiag' => InstallDemoData::diagnostic(), 'readiness' => $this->readiness($backup)];
     }
 
     private function tasks(): array
