@@ -33,15 +33,10 @@
         <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
         <p class="muted" style="max-width:32em">{{ config('freeci.home.tagline') ?: \App\Modules\Admin\Settings\AppSettings::default('home.tagline') }}</p>
       </div>
-      <div><h2>Découvrir</h2><ul>
-        <li><a href="{{ route('services.index') }}">Services</a></li><li><a href="{{ route('missions.index') }}">Missions</a></li><li><a href="{{ route('freelances.index') }}">Freelances</a></li></ul></div>
-      <div><h2>Aide</h2><ul>
-        <li><a href="{{ route('info', 'fonctionnement') }}">Comment ça marche</a></li>
-        <li><a href="{{ route('info', 'aide') }}">Centre d’aide</a></li><li><a href="{{ route('info', 'contact') }}">Contact</a></li></ul></div>
-      <div><h2>Informations</h2><ul>
-        <li><a href="{{ route('info', 'conditions') }}">Conditions d’utilisation</a></li>
-        <li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li>
-        <li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
+      @foreach(['footer_discover' => 'Découvrir', 'footer_help' => 'Aide', 'footer_info' => 'Informations'] as $area => $heading)
+      <div><h2>{{ $heading }}</h2><ul>
+        @foreach(\App\Modules\Admin\Navigation\MenuItems::links($area) as [$label, $url, $dest])<li><a href="{{ $url }}">{{ $label }}</a></li>@endforeach</ul></div>
+      @endforeach
     </div>
   </div>
 </footer>

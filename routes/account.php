@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\LegalPagesController;
 use App\Http\Controllers\Admin\MfaController;
 use App\Http\Controllers\Admin\ModerationController;
+use App\Http\Controllers\Admin\NavigationController;
 use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\ReconciliationController;
@@ -249,6 +250,17 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::get('/equipe', [SupportTeamController::class, 'index'])->name('admin.team');
             Route::post('/equipe', [SupportTeamController::class, 'grant'])->middleware(['recent-auth', 'throttle:10,1'])->name('admin.team.grant');
             Route::post('/equipe/{id}/retirer', [SupportTeamController::class, 'revoke'])->whereUuid('id')->middleware(['recent-auth', 'throttle:10,1'])->name('admin.team.revoke');
+            Route::post('/equipe/administrateurs', [SupportTeamController::class, 'grantAdmin'])->middleware(['recent-auth', 'throttle:5,1'])->name('admin.team.admin.grant');
+            Route::post('/equipe/administrateurs/{id}/retirer', [SupportTeamController::class, 'revokeAdmin'])->whereUuid('id')->middleware(['recent-auth', 'throttle:5,1'])->name('admin.team.admin.revoke');
+            Route::get('/navigation', [NavigationController::class, 'index'])->name('admin.navigation');
+            Route::middleware(['recent-auth', 'throttle:30,1'])->group(function () {
+                Route::post('/navigation/{area}/personnaliser', [NavigationController::class, 'customize'])->name('admin.navigation.customize');
+                Route::post('/navigation/{area}/ajouter', [NavigationController::class, 'add'])->name('admin.navigation.add');
+                Route::post('/navigation/{area}/retablir', [NavigationController::class, 'reset'])->name('admin.navigation.reset');
+                Route::post('/navigation/liens/{id}', [NavigationController::class, 'update'])->whereNumber('id')->name('admin.navigation.update');
+                Route::post('/navigation/liens/{id}/deplacer/{direction}', [NavigationController::class, 'move'])->whereNumber('id')->whereIn('direction', ['up', 'down'])->name('admin.navigation.move');
+                Route::post('/navigation/liens/{id}/supprimer', [NavigationController::class, 'delete'])->whereNumber('id')->name('admin.navigation.delete');
+            });
             Route::get('/categories', [CategoriesController::class, 'index'])->name('admin.categories');
             Route::middleware(['recent-auth', 'throttle:30,1'])->group(function () {
                 Route::post('/categories', [CategoriesController::class, 'store'])->name('admin.categories.store');

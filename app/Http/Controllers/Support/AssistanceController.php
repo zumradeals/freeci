@@ -31,7 +31,7 @@ class AssistanceController extends Controller
 
     public function create(Request $request): View
     {
-        return view('support.new', ['categories' => CaseRules::SUPPORT_CATEGORIES, 'order' => (string) $request->query('commande', ''), 'key' => (string) Str::uuid()]);
+        return view('support.new', ['categories' => CaseRules::subjectLabels(), 'order' => (string) $request->query('commande', ''), 'key' => (string) Str::uuid()]);
     }
 
     public function store(Request $request, OpenCase $open): RedirectResponse

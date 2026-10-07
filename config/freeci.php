@@ -102,7 +102,9 @@ return [
     // Administration : accès soumis à une adresse vérifiée, à la double authentification, et à une confirmation récente pour les actes sensibles.
     'admin' => ['mfa_session_minutes' => 480, 'reauth_minutes' => 10, 'mfa_attempts' => 5, 'mfa_lock_minutes' => 15, 'page_size' => 25, 'issuer' => 'FreeCI'],
     // Assistance, signalements, litiges : bornes provisoires.
-    'support' => ['body_max' => 4000, 'per_day' => 10, 'messages_per_hour' => 30, 'max_files' => 20, 'page_size' => 25],
+    'support' => ['body_max' => 4000, 'per_day' => 10, 'messages_per_hour' => 30, 'max_files' => 20, 'page_size' => 25,
+        // Libellés des sujets proposés dans le formulaire d'assistance (les clés sont fixes) ; vides = libellé de départ.
+        'subjects' => ['order' => null, 'account' => null, 'payment' => null, 'technical' => null, 'other' => null]],
     'messaging' => ['body_max' => 4000, 'per_10_minutes' => 30, 'page_size' => 20],
 
     'files' => [
@@ -133,6 +135,10 @@ return [
         'mission_prompt' => 'Un besoin précis ?',
         'freelance_title' => 'Vous êtes freelance ?',
         'freelance_text' => 'Présentez vos compétences et publiez vos prestations.',
+        'mission_btn_label' => 'Publier une mission',
+        'mission_btn_dest' => 'mission_new',
+        'freelance_btn_label' => 'Créer mon profil',
+        'freelance_btn_dest' => 'freelance_activate',
         'announce_enabled' => false,
         'announce_text' => null,
         'announce_link' => '',

@@ -32,7 +32,12 @@ class DemoCatalogSeeder extends Seeder
         $categories = $this->categories();
         $profiles = $this->profiles();
 
-        foreach ($this->services() as $i => $s) {
+        // Les huit premières cartes de l'accueil (les plus récentes) correspondent à la maquette validée par le porteur.
+        $top = ['convertir-plans-pdf-en-dwg', 'logo-mini-charte-graphique', 'site-vitrine-5-pages', 'traduction-fr-en-10-pages', 'affiche-evenement-a3', 'note-calcul-dalle-beton', 'montage-video-presentation-90-secondes', 'calendrier-publications-reseaux-sociaux-mensuel'];
+        $services = $this->services();
+        usort($services, fn ($a, $b) => (($pa = array_search($a['slug'], $top, true)) === false ? 99 : $pa) <=> (($pb = array_search($b['slug'], $top, true)) === false ? 99 : $pb));
+
+        foreach ($services as $i => $s) {
             $payload = [
                 'category_id' => $categories[$s['cat']]->id,
                 'freelance_profile_id' => $profiles[$s['by']]->id,
@@ -163,6 +168,27 @@ class DemoCatalogSeeder extends Seeder
                 ['Le dimensionnement ou la vérification technique des ouvrages.', 'La création de plans à partir de croquis à main levée.', 'Les demandes au-delà de 12 plans ou 3 niveaux.'],
                 ['Vos plans au format PDF (vectoriel de préférence, sinon scan net à 300 dpi).', 'Le nombre de plans et de niveaux concernés.', 'La version d’AutoCAD de destination.', 'Vos conventions de calques, si vous en avez.'],
                 ['gallery' => $dwgGallery]),
+            $s('note-calcul-dalle-beton', 'ingenierie', 'joel', 'Note de calcul de structure pour une dalle béton',
+                'Une note de calcul claire pour dimensionner une dalle béton simple, avec les hypothèses retenues.',
+                'Une dalle de bâtiment courant, une note de calcul de 6 à 10 pages, une reprise comprise. Exemple fictif de démonstration.',
+                80000, 6, 1, $this->img('plan-calques-wide.svg', 'Exemple : plan et calques d’un ouvrage', 'plan-dwg.svg'),
+                ['Une note de calcul au format PDF.', 'La liste des hypothèses et des charges retenues.'],
+                ['Les plans de ferraillage d’exécution.', 'Le suivi de chantier.'],
+                ['Le plan de la dalle et ses dimensions.', 'L’usage prévu et les charges connues.']),
+            $s('montage-video-presentation-90-secondes', 'video', 'ibrahim', 'Montage d’une vidéo de présentation de 90 secondes',
+                'Vos séquences assemblées en une présentation courte, avec titres, musique libre de droits et sous-titres.',
+                'Jusqu’à 20 minutes de rushs fournis, une vidéo de 90 secondes, 2 corrections. Exemple fictif de démonstration.',
+                60000, 5, 2, $video,
+                ['Une vidéo au format MP4 en 1080p.', 'Une version avec sous-titres.'],
+                ['Le tournage et la prise de vue.', 'La création de musique originale.'],
+                ['Vos séquences vidéo et vos logos.', 'Le message à faire passer, en deux phrases.']),
+            $s('calendrier-publications-reseaux-sociaux-mensuel', 'marketing', 'awa', 'Calendrier de publications pour vos réseaux sociaux',
+                'Un mois de publications planifiées : idées, textes courts et jours de parution.',
+                'Un calendrier d’un mois sur deux réseaux, 12 publications rédigées, une reprise. Exemple fictif de démonstration.',
+                30000, 4, 1, $social,
+                ['Un calendrier de publication au format tableur.', 'Douze textes de publication prêts à copier.'],
+                ['La création des visuels.', 'La publication à votre place.'],
+                ['Votre activité et votre public.', 'Les réseaux utilisés et les dates importantes.']),
             $s('plan-amenagement-interieur-2d', 'btp', 'serge', 'Plan d’aménagement intérieur en 2D pour un appartement',
                 'Un plan coté de l’aménagement de votre logement, avec deux variantes de disposition.',
                 'Un logement jusqu’à 120 m², deux variantes de disposition, une reprise de chaque variante.',

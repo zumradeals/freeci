@@ -2,8 +2,9 @@
 @php
   $hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k");
   $announce = trim((string) config('freeci.home.announce_text'));
-  $links = ['services' => route('services.index'), 'missions' => route('missions.index'), 'freelances' => route('freelances.index'), 'mission_new' => route('client.missions.new'), 'freelance_activate' => route('freelance.activate'), 'how' => route('info', 'fonctionnement')];
-  $announceUrl = $links[(string) config('freeci.home.announce_link')] ?? null;
+  $announceUrl = \App\Modules\Admin\Navigation\Destinations::url((string) config('freeci.home.announce_link'));
+  $missionUrl = \App\Modules\Admin\Navigation\Destinations::url($hm('mission_btn_dest')) ?? route('client.missions.new');
+  $freelanceUrl = \App\Modules\Admin\Navigation\Destinations::url($hm('freelance_btn_dest')) ?? route('freelance.activate');
   $featured = collect($categories)->first(fn ($c) => $c->featured && $c->services > 0);
 @endphp
 @if(config('freeci.home.announce_enabled') && $announce !== '')
@@ -27,7 +28,7 @@
         @foreach(array_slice(array_values(array_filter(array_map('trim', explode(',', (string) $hm('chips'))))), 0, 6) as $term)
         <a class="chip" href="{{ route('services.index', ['q' => $term]) }}">{{ $term }}</a>
         @endforeach</div>
-      <div class="hero-alt"><span>{{ $hm('mission_prompt') }}</span><a class="btn btn-secondary btn-lg" href="{{ route('client.missions.new') }}">Publier une mission</a></div>
+      <div class="hero-alt"><span>{{ $hm('mission_prompt') }}</span><a class="btn btn-secondary btn-lg" href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }}</a></div>
     </div>
     <aside class="hero-card" aria-labelledby="h-card">
       <p class="eyebrow muted">Le suivi d’une commande</p>
@@ -81,7 +82,7 @@
 
 <section class="freelance-band on-dark" aria-labelledby="h-fl"><div class="container">
   <div><h2 class="t-h2" id="h-fl">{{ $hm('freelance_title') }}</h2><p style="margin-top:6px">{{ $hm('freelance_text') }}</p></div>
-  <a class="btn btn-primary btn-lg" href="{{ route('freelance.activate') }}">Créer mon profil</a>
+  <a class="btn btn-primary btn-lg" href="{{ $freelanceUrl }}">{{ $hm('freelance_btn_label') }}</a>
 </div></section>
 
 </x-layouts.public>

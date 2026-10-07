@@ -28,7 +28,7 @@ class HomeContentSettingsTest extends TestCase
 
     private function save(array $v)
     {
-        return $this->asAdmin($this->admin)->post('/admin/parametres/vitrine', ['v' => $v, 'reason' => 'Textes de la vitrine validés.']);
+        return $this->asAdmin($this->admin)->post('/admin/parametres/vitrine', ['v' => $this->settingsGroup('vitrine', $v), 'reason' => 'Textes de la vitrine validés.']);
     }
 
     public function test_the_settings_page_offers_the_showcase_group_with_the_starting_texts(): void

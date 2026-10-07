@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\NotificationMail;
 use App\Mail\VerifyEmailMail;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Admin\Actions\ManageAdministrators;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,7 +34,7 @@ class AdminShowcaseTeamMailTest extends TestCase
 
     private function save(string $group, array $v)
     {
-        return $this->asAdmin($this->admin)->post("/admin/parametres/{$group}", ['v' => $v, 'reason' => 'Réglage de la vitrine validé.']);
+        return $this->asAdmin($this->admin)->post("/admin/parametres/{$group}", ['v' => $this->settingsGroup($group, $v), 'reason' => 'Réglage de la vitrine validé.']);
     }
 
     public function test_the_announcement_banner_is_shown_only_when_enabled_with_a_safe_internal_link(): void
@@ -109,5 +110,36 @@ class AdminShowcaseTeamMailTest extends TestCase
         $this->assertSame(['support.grant', 'support.revoke'], DB::table('admin_actions')->where('result', 'done')->whereIn('action', ['support.grant', 'support.revoke'])->orderBy('id')->pluck('action')->all());
         // le personnel d'assistance lui-même n'accède pas à cette page
         $this->actingAs($agent)->get('/admin/equipe')->assertNotFound();
+    }
+
+    public function test_administrator_rights_can_be_granted_and_revoked_from_the_administration_under_safeguards(): void
+    {
+        $phrase = ManageAdministrators::PHRASE;
+        $second = User::factory()->create(['email' => 'second@example.test']);
+        $base = ['email' => 'second@example.test', 'reason' => 'Désignation d’un second administrateur.', 'phrase' => $phrase, 'confirm' => '1'];
+
+        $this->asAdmin($this->admin)->get('/admin/equipe')->assertOk()->assertSee('Administrateurs')->assertSee('Un administrateur peut tout faire');
+        // phrase fausse, case non cochée, compte inconnu ou non vérifié : refus
+        $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', ['phrase' => 'oui'] + $base)->assertSessionHas('error');
+        $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', array_diff_key($base, ['confirm' => 1]))->assertSessionHasErrors('confirm');
+        $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', ['email' => 'nobody@example.test'] + $base)->assertSessionHas('error');
+        $second->forceFill(['email_verified_at' => null])->save();
+        $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', $base)->assertSessionHas('error');
+        $this->assertFalse($second->fresh()->isAdministrator());
+        // sans reconfirmation récente : aucune écriture
+        $second->forceFill(['email_verified_at' => now()])->save();
+        $this->asAdmin($this->admin, false)->post('/admin/equipe/administrateurs', $base)->assertRedirect();
+        $this->assertFalse($second->fresh()->isAdministrator());
+        // octroi correct (apostrophe droite acceptée)
+        $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', ['phrase' => str_replace('’', "'", mb_strtolower($phrase))] + $base)->assertSessionHas('status');
+        $this->assertTrue($second->fresh()->isAdministrator());
+        $this->assertSame('admin:'.$this->admin->id, DB::table('staff_grants')->where('user_id', $second->id)->where('capability', 'administrator')->value('granted_by'));
+        // on ne retire pas sa propre habilitation ; un autre administrateur peut retirer ; jamais le dernier
+        $this->asAdmin($this->admin)->post("/admin/equipe/administrateurs/{$this->admin->id}/retirer", ['reason' => 'Je me retire moi-même.', 'confirm' => '1'])->assertSessionHas('error');
+        $this->assertTrue($this->admin->fresh()->isAdministrator());
+        $this->asAdmin($this->admin)->post("/admin/equipe/administrateurs/{$second->id}/retirer", ['reason' => 'Fin de la mission du second.', 'confirm' => '1'])->assertSessionHas('status');
+        $this->assertFalse($second->fresh()->isAdministrator());
+        $this->assertSame(['admin.grant', 'admin.revoke'], DB::table('admin_actions')->where('result', 'done')->whereIn('action', ['admin.grant', 'admin.revoke'])->orderBy('id')->pluck('action')->all());
+        $this->assertGreaterThanOrEqual(2, DB::table('admin_actions')->where('result', 'refused')->whereIn('action', ['admin.grant', 'admin.revoke'])->count());
     }
 }

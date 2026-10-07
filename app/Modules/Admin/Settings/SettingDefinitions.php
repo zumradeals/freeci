@@ -2,6 +2,8 @@
 
 namespace App\Modules\Admin\Settings;
 
+use App\Modules\Admin\Navigation\Destinations;
+
 /**
  * Registre des paramètres administrables. Chaque paramètre vise un chemin de configuration (par défaut `freeci.<clé>`) : le code existant le lit inchangé,
  * l'administration ne fait que SUPERPOSER une valeur saisie (statut provisoire / approuvé, auteur, motif, historique). Sans valeur saisie, la valeur
@@ -45,7 +47,7 @@ final class SettingDefinitions
                 'keys' => array_merge($r('missions', ['title', 'description', 'budget_xof']), ['missions.deadline_max_days', 'missions.client_inputs_max', 'missions.line_max'], $r('missions.proposal', ['price_xof', 'delivery_days', 'revisions', 'scope', 'validity_days']), ['missions.proposal.deliverables_max'])],
             'echanges' => ['title' => 'Avis, messagerie et assistance', 'approvable' => false,
                 'intro' => 'Longueurs et cadences (protection contre les abus).',
-                'keys' => ['reviews.comment_min', 'reviews.comment_max', 'reviews.reply_max', 'reviews.per_page', 'messaging.body_max', 'messaging.per_10_minutes', 'support.body_max', 'support.per_day', 'support.messages_per_hour', 'support.max_files']],
+                'keys' => ['reviews.comment_min', 'reviews.comment_max', 'reviews.reply_max', 'reviews.per_page', 'messaging.body_max', 'messaging.per_10_minutes', 'support.subjects.order', 'support.subjects.account', 'support.subjects.payment', 'support.subjects.technical', 'support.subjects.other', 'support.body_max', 'support.per_day', 'support.messages_per_hour', 'support.max_files']],
             'securite' => ['title' => 'Sécurité des accès', 'approvable' => false,
                 'intro' => 'Durées et tentatives de la double authentification et des actes sensibles. Des valeurs trop permissives affaiblissent la protection de l’administration.',
                 'keys' => ['admin.mfa_session_minutes', 'admin.reauth_minutes', 'admin.mfa_attempts', 'admin.mfa_lock_minutes', 'admin.page_size', 'account.export_per_day', 'account.email_change_minutes']],
@@ -57,7 +59,7 @@ final class SettingDefinitions
                 'keys' => ['mailtpl.subject_prefix', 'mailtpl.greeting', 'mailtpl.signature', 'mailtpl.verify_intro', 'mailtpl.verify_ignore', 'mailtpl.notification_intro', 'mailtpl.notification_note', 'mailtpl.account_warning']],
             'vitrine' => ['title' => 'Accueil et vitrine', 'approvable' => false,
                 'intro' => 'Les textes de la page d’accueil et du pied de page. Un champ laissé vide reprend le texte de départ. Les destinations des boutons ne se modifient pas ici.',
-                'keys' => ['home.eyebrow', 'home.title', 'home.lede', 'home.search_hint', 'home.chips', 'home.mission_prompt', 'home.freelance_title', 'home.freelance_text', 'home.tagline', 'home.announce_enabled', 'home.announce_text', 'home.announce_link', 'home.announce_link_label']],
+                'keys' => ['home.eyebrow', 'home.title', 'home.lede', 'home.search_hint', 'home.chips', 'home.mission_prompt', 'home.freelance_title', 'home.freelance_text', 'home.tagline', 'home.mission_btn_label', 'home.mission_btn_dest', 'home.freelance_btn_label', 'home.freelance_btn_dest', 'home.announce_enabled', 'home.announce_text', 'home.announce_link', 'home.announce_link_label']],
             'site' => ['title' => 'Site et sauvegardes', 'approvable' => false,
                 'intro' => 'Visibilité du site, courriels de notification et suivi des sauvegardes.',
                 'keys' => ['noindex', 'notifications.emails', 'ops.backup_dir', 'ops.backup_max_age_hours']],
@@ -163,6 +165,11 @@ final class SettingDefinitions
             'mailtpl.notification_intro' => ['label' => 'Courriel de notification : phrase avant le lien', 'help' => 'Le titre de la notification et le lien sont ajoutés automatiquement.', 'type' => 'text', 'length' => 240],
             'mailtpl.notification_note' => ['label' => 'Courriel de notification : note finale', 'help' => 'Aucun message privé ni pièce jointe n’est jamais envoyé par courriel.', 'type' => 'text', 'length' => 300],
             'mailtpl.account_warning' => ['label' => 'Avis de sécurité du compte : consigne finale', 'help' => 'Pour les changements d’adresse et les fermetures de compte.', 'type' => 'text', 'length' => 300],
+            'support.subjects.order' => ['label' => 'Assistance : sujet « commande »', 'help' => 'Libellé proposé dans le formulaire de contact. Vide : « Une commande ».', 'type' => 'text', 'length' => 50],
+            'support.subjects.account' => ['label' => 'Assistance : sujet « compte »', 'help' => 'Vide : « Mon compte ».', 'type' => 'text', 'length' => 50],
+            'support.subjects.payment' => ['label' => 'Assistance : sujet « paiement »', 'help' => 'Vide : « Un paiement ».', 'type' => 'text', 'length' => 50],
+            'support.subjects.technical' => ['label' => 'Assistance : sujet « problème technique »', 'help' => 'Vide : « Un problème technique ».', 'type' => 'text', 'length' => 50],
+            'support.subjects.other' => ['label' => 'Assistance : sujet « autre »', 'help' => 'Vide : « Autre ».', 'type' => 'text', 'length' => 50],
             'home.eyebrow' => ['label' => 'Accroche au-dessus du titre', 'help' => 'Petite ligne en majuscules, en haut de l’accueil.', 'type' => 'text', 'length' => 80],
             'home.title' => ['label' => 'Titre de l’accueil', 'help' => 'La phrase principale.', 'type' => 'text', 'length' => 90],
             'home.lede' => ['label' => 'Sous-titre de l’accueil', 'help' => 'Une ou deux phrases sous le titre.', 'type' => 'text', 'length' => 220],
@@ -172,9 +179,13 @@ final class SettingDefinitions
             'home.freelance_title' => ['label' => 'Titre de la bande freelance', 'help' => 'Bande en bas de l’accueil.', 'type' => 'text', 'length' => 80],
             'home.freelance_text' => ['label' => 'Texte de la bande freelance', 'help' => 'Une phrase.', 'type' => 'text', 'length' => 160],
             'home.tagline' => ['label' => 'Phrase du pied de page', 'help' => 'Sous le logo, dans le pied de page de tout le site.', 'type' => 'text', 'length' => 200],
+            'home.mission_btn_label' => ['label' => 'Bouton « mission » de l’en-tête : texte', 'help' => 'Le second bouton, sous la recherche.', 'type' => 'text', 'length' => 40],
+            'home.mission_btn_dest' => ['label' => 'Bouton « mission » de l’en-tête : mène vers', 'help' => 'Une page du site.', 'type' => 'select', 'options' => Destinations::options()],
+            'home.freelance_btn_label' => ['label' => 'Bouton de la bande freelance : texte', 'help' => 'Bouton de la bande en bas de l’accueil.', 'type' => 'text', 'length' => 40],
+            'home.freelance_btn_dest' => ['label' => 'Bouton de la bande freelance : mène vers', 'help' => 'Une page du site.', 'type' => 'select', 'options' => Destinations::options()],
             'home.announce_enabled' => ['label' => 'Afficher un bandeau d’annonce sur l’accueil', 'help' => 'Une ligne d’information sous l’en-tête (nouveauté, période particulière, rappel). Désactivé : aucun bandeau.', 'type' => 'bool'],
             'home.announce_text' => ['label' => 'Texte du bandeau d’annonce', 'help' => 'Une phrase courte.', 'type' => 'text', 'length' => 160],
-            'home.announce_link' => ['label' => 'Où mène le bouton du bandeau', 'help' => 'Choisissez une page du site ; aucun lien extérieur n’est possible ici.', 'type' => 'select', 'options' => ['' => 'Aucun bouton', 'services' => 'Catalogue des services', 'missions' => 'Missions ouvertes', 'freelances' => 'Annuaire des freelances', 'mission_new' => 'Publier une mission', 'freelance_activate' => 'Devenir freelance', 'how' => 'Comment ça marche']],
+            'home.announce_link' => ['label' => 'Où mène le bouton du bandeau', 'help' => 'Choisissez une page du site ; aucun lien extérieur n’est possible ici.', 'type' => 'select', 'options' => ['' => 'Aucun bouton'] + Destinations::options()],
             'home.announce_link_label' => ['label' => 'Texte du bouton du bandeau', 'help' => 'Ex. « Voir le catalogue ».', 'type' => 'text', 'length' => 40],
             'noindex' => ['label' => 'Masquer le site aux moteurs de recherche', 'help' => 'Activé : les moteurs de recherche n’indexent pas le site. À désactiver à l’ouverture au public.', 'type' => 'bool'],
             'notifications.emails' => ['label' => 'Envoyer les notifications par courriel', 'help' => 'Sans courrier configuré, aucun courriel n’est envoyé quoi qu’il arrive.', 'type' => 'bool'],

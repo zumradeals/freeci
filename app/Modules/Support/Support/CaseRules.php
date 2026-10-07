@@ -28,6 +28,17 @@ final class CaseRules
 
     public const SUPPORT_CATEGORIES = ['order' => 'Une commande', 'account' => 'Mon compte', 'payment' => 'Un paiement', 'technical' => 'Un problème technique', 'other' => 'Autre'];
 
+    /** Sujets de l'assistance avec leurs libellés (modifiables dans l'administration ; les clés, elles, sont fixes). @return array<string, string> */
+    public static function subjectLabels(): array
+    {
+        $out = [];
+        foreach (self::SUPPORT_CATEGORIES as $key => $default) {
+            $out[$key] = (string) (config("freeci.support.subjects.{$key}") ?: $default);
+        }
+
+        return $out;
+    }
+
     public const REPORT_REASONS = ['fraud' => 'Fraude ou arnaque', 'abuse' => 'Propos abusifs ou harcèlement', 'illegal' => 'Contenu illicite', 'private_contact' => 'Échange de coordonnées pour contourner la plateforme', 'false_info' => 'Informations fausses ou trompeuses', 'other' => 'Autre'];
 
     public const TARGETS = ['profile' => 'Profil', 'service' => 'Service', 'mission' => 'Mission', 'message' => 'Message', 'review' => 'Avis', 'reply' => 'Réponse à un avis'];

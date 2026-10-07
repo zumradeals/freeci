@@ -53,3 +53,19 @@ Votre décision D39 : un seul administrateur gère les opérations financières.
 
 ## 6. Maquette de la page d'accueil
 `docs/maquettes/accueil-moderne.html` (aussi publiée comme page privée). Proposition, rien n'est branché : à valider avant toute mise en œuvre.
+
+## 7. Lot 33 : tout ce qui restait dans le code passe dans l'administration
+| Élément | Où | Garde-fous |
+|---|---|---|
+| Octroi et retrait de l'habilitation **d'administrateur** | Équipe et habilitations | Administrateur avec double authentification, identité reconfirmée, phrase de confirmation exacte, case à cocher, motif, compte existant à adresse vérifiée et non suspendu ; on ne retire jamais sa propre habilitation ni la dernière ; journal d'audit + journal de sécurité du compte ; son accès s'ouvre seulement après activation de la double authentification. |
+| Octroi et retrait de l'habilitation « assistance » | Équipe et habilitations | Idem (sans phrase). |
+| Menu de l'en-tête et trois colonnes du pied de page (texte, ordre, visibilité, ajout, suppression) | Menus du site | Destination choisie dans une **liste fermée de pages du site** (aucun lien libre) ; le menu principal garde au moins un lien visible ; « Rétablir » revient aux liens d'origine. |
+| Boutons de l'accueil (second bouton du hero, bande freelance, bouton du bandeau) : texte et page de destination | Paramètres › Accueil et vitrine | Même liste fermée. |
+| Sujets du formulaire d'assistance (libellés) | Paramètres › Avis, messagerie et assistance | Les clés des sujets restent fixes ; libellé vide = libellé de départ. |
+| Gabarits de courriels | Paramètres › Courriels (lot 32) | Liens, durée de validité et absence de message privé fixés par l'application. |
+
+Restent volontairement dans le code : catégories de signalement et de modération des avis (alignées sur les procédures), compétences (liste libre), identité du produit.
+
+### Catégories vides et données de démonstration de l'accueil
+- L'accueil affiche désormais **toutes les catégories proposées, même vides** ; le nombre n'apparaît que lorsqu'il y a au moins un service. Une catégorie archivée n'est jamais affichée.
+- Le jeu de démonstration (`DemoCatalogSeeder`) place en tête les **huit cartes de la maquette validée** : conversion DWG, logo, site vitrine, traduction, affiche, note de calcul de structure, montage vidéo de 90 secondes, calendrier de publications. Sur le VPS, il ne s'exécute que sur votre demande explicite (voir `docs/07`) ; ces données restent marquées « démonstration » et se retirent avec la carte « Données de démonstration » d'Exploitation.
