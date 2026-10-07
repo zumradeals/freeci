@@ -43,3 +43,4 @@ Formulaire large en trois étapes, résumé de saisie et libellés simplifiés ;
 ### Consolidation du moteur — première tranche
 
 Totaux financiers complets, détail paginé, séparation legacy/réel côté client ; disponibilité réelle du scanner et traitement des erreurs de processus. Aucune migration ni variable. Vérifications et limites de validation : `docs/31-consolidation-moteur.md`. Le 504 reste ouvert.
+| **26 — parcours mission : écrans restants** | Proposition du freelance, comparaison, sélection, détail et étapes d'une mission dans la structure de référence (`page-body`, marges en ligne retirées) ; 300 tests passent | aucune | aucune |
