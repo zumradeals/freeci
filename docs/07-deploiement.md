@@ -191,7 +191,8 @@ deploy/rollback.sh <SHA-PRECEDENT> --restore-db /var/backups/freeci/<dossier-de-
 ## 9. Données de démonstration (optionnelles, volontaires)
 
 - **Jamais** automatiques : `migrate` et `update.sh` n'en installent pas, et ne les réinstallent pas après suppression.
-- Pour une démonstration **volontaire** sur ce serveur : mettre `FREECI_ALLOW_DEMO_SEED=true` dans `.env`, puis `php artisan config:cache && php artisan db:seed --force` (le mot de passe du client de démonstration est affiché **une seule fois** ; ou le fixer dans `FREECI_DEMO_CLIENT_PASSWORD`). **Remettre ensuite `FREECI_ALLOW_DEMO_SEED=false`** (le contrôle de production avertit tant que c'est `true`).
+- **Le plus simple (depuis le lot 35)** : Administration › État et préparation › « Installer les données de démonstration » (phrase à saisir, identité reconfirmée, journal d'audit), ou en console `php artisan freeci:demo-install --yes`. Aucune variable d'environnement n'est nécessaire ; les catégories existantes ne sont pas modifiées ; le compte rendu indique combien de cartes l'accueil affiche (il en faut huit).
+- Autre méthode, pour une démonstration **volontaire** sur ce serveur : mettre `FREECI_ALLOW_DEMO_SEED=true` dans `.env`, puis `php artisan config:cache && php artisan db:seed --force` (le mot de passe du client de démonstration est affiché **une seule fois** ; ou le fixer dans `FREECI_DEMO_CLIENT_PASSWORD`). **Remettre ensuite `FREECI_ALLOW_DEMO_SEED=false`** (le contrôle de production avertit tant que c'est `true`).
 - Retirer les données fictives (et elles seules, via `is_demo`) : sauvegarde, puis `php artisan freeci:demo-purge`.
 - Comptes de démonstration : `client@demo.freeci.invalid` (mot de passe voir plus haut) ; vendeurs `*@demo.freeci.invalid` non connectables.
 

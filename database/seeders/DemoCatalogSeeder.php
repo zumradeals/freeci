@@ -29,6 +29,15 @@ class DemoCatalogSeeder extends Seeder
             return;
         }
 
+        $this->seed();
+    }
+
+    /**
+     * Pose le jeu de démonstration SANS contrôle d'environnement : réservé aux appels volontaires (console `freeci:demo-install`, carte « Données de démonstration »
+     * de l'administration). Les catégories existantes ne sont jamais modifiées ; le compte client de démonstration n'est créé que sur demande.
+     */
+    public function seed(bool $withClient = true): void
+    {
         $categories = $this->categories();
         $profiles = $this->profiles();
 
@@ -62,7 +71,9 @@ class DemoCatalogSeeder extends Seeder
             Service::updateOrCreate(['slug' => $s['slug']], $payload);
         }
 
-        $this->demoClient();
+        if ($withClient) {
+            $this->demoClient();
+        }
     }
 
     /** @return array<string, Category> */
@@ -81,7 +92,8 @@ class DemoCatalogSeeder extends Seeder
         $out = [];
         $pos = 1;
         foreach ($rows as $key => [$name, $icon]) {
-            $out[$key] = Category::updateOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'icon' => $icon, 'position' => $pos++]);
+            $out[$key] = Category::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'icon' => $icon, 'position' => $pos]);
+            $pos++;
         }
 
         return $out;

@@ -10,6 +10,11 @@
 
   @php($demoLeft = $d['demo']['services'] + $d['demo']['missions'] + $d['demo']['profiles'] + $d['demo']['users'])
   <section class="card panel" aria-labelledby="h-demo"><div class="card-head"><h2 class="t-h2" id="h-demo">Données de démonstration</h2><span class="badge {{ $demoLeft === 0 ? 'tone-success' : 'tone-warning' }}">{{ $demoLeft === 0 ? 'Aucune' : $demoLeft.' élément(s)' }}</span></div>
+    <details @if($demoLeft === 0) open @endif><summary>Installer les données de démonstration (huit cartes sur l’accueil)</summary>
+      <p class="muted small mt-8">Ajoute des services <strong>fictifs</strong> publiés (vendeurs d’exemple non connectables) pour présenter le site. Aucune variable de configuration n’est nécessaire ; les catégories existantes ne sont pas modifiées. Se retire ensuite avec le bouton « Retirer » ci-dessous.</p>
+      <form method="post" action="{{ route('admin.operations.install-demo') }}" class="stack-sm mt-8" data-once>@csrf
+        <div class="field"><label for="di-p">Pour confirmer, saisissez : INSTALLER LA DEMO</label><input class="input" id="di-p" name="phrase" autocomplete="off" maxlength="40" required></div>
+        <div><button class="btn btn-secondary" type="submit">Installer la démonstration</button></div></form></details>
     @if($demoLeft === 0)<p class="muted">Aucune donnée de démonstration n’est présente.</p>@else
     <p>Présents : <strong>{{ $d['demo']['services'] }}</strong> service(s), <strong>{{ $d['demo']['missions'] }}</strong> mission(s), <strong>{{ $d['demo']['profiles'] }}</strong> profil(s), <strong>{{ $d['demo']['users'] }}</strong> compte(s)@if($d['demo']['orders']) ; {{ $d['demo']['orders'] }} commande(s) de démonstration sont conservées (historique)@endif.</p>
     <p class="muted small">Seules les données marquées « démonstration » sont concernées : jamais un compte, un service ou une commande réels, ni les catégories. Ce qui est référencé par une commande, un message ou une proposition est <strong>conservé</strong> ; un service conservé est archivé (il quitte le catalogue public). L’opération est définitive : faites une sauvegarde avant.</p>

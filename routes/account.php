@@ -240,6 +240,7 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::post('/paiements/{id}/examiner', [ReconciliationController::class, 'review'])->middleware('throttle:30,1')->name('admin.payments.review');
 
             Route::get('/exploitation', OperationsController::class)->name('admin.operations');
+            Route::post('/exploitation/demo/installer', [OperationsController::class, 'installDemo'])->middleware(['recent-auth', 'throttle:3,10'])->name('admin.operations.install-demo');
             Route::post('/exploitation/demo/retirer', [OperationsController::class, 'purgeDemo'])->middleware(['recent-auth', 'throttle:3,10'])->name('admin.operations.purge-demo');
 
             // Paramètres de la plateforme et textes légaux : modifiables par l'administrateur (confirmation récente d'identité à chaque écriture, historique, audit).
