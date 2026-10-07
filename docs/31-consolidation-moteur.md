@@ -14,7 +14,7 @@ Aucune migration, variable, écriture financière, modification de l’accord ou
 - Syntaxe des sept fichiers PHP concernés vérifiée avec PHP WASM.
 - Compilation des vues Blade et build Vite réussis ; diff sans erreur d’espacement.
 - Tests ajoutés : historique de 101 commandes, invariance des totaux entre pages 1 et 6, séparation test/réel, absence de recouvrement entre pages, isolation d’un tiers ; fausse disponibilité d’un scanner dont seule la version répond ; échec de la commande de diagnostic si scanner absent.
-- **Tests PostgreSQL et tests de processus non exécutés ici** : PHP natif et PostgreSQL ne sont pas disponibles. Les tests ajoutés ne constituent pas une preuve de passage tant qu’ils ne sont pas exécutés.
+- **Exécution confirmée ensuite** sur PostgreSQL local, avec la suite complète : 300 tests sur 300 passent, dont les trois tests ajoutés (101 commandes, disponibilité ClamAV, échec de `freeci:files:check`). Mise en forme Pint corrigée sur `FinanceOperationsTest`.
 
 ## Parcours métier : état de la revue
 

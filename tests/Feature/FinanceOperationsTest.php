@@ -9,7 +9,9 @@ use App\Modules\Accounts\Security\TwoFactor;
 use App\Modules\Finance\Actions\Beneficiaries;
 use App\Modules\Finance\Actions\FinancialOperations;
 use App\Modules\Finance\Actions\ProcessProviderEvent;
+use App\Modules\Finance\Queries\ClientFinance;
 use App\Modules\Finance\Queries\FinanceAdmin;
+use App\Modules\Finance\Queries\FreelancerEarnings;
 use App\Modules\Finance\Support\FinanceConflict;
 use App\Modules\Finance\Support\FinancialPayoutExecution;
 use App\Modules\Finance\Support\FinancialPolicy;
@@ -627,8 +629,8 @@ class FinanceOperationsTest extends TestCase
         }
         $expectedPaid = 101 * 35000;
         $expectedDue = 101 * 31500;
-        $earnings = app(\App\Modules\Finance\Queries\FreelancerEarnings::class);
-        $clientFinance = app(\App\Modules\Finance\Queries\ClientFinance::class);
+        $earnings = app(FreelancerEarnings::class);
+        $clientFinance = app(ClientFinance::class);
         foreach ([1, 6] as $page) {
             $d = $earnings->overview($this->freelancer, $page);
             $this->assertSame($expectedDue, $d['totals']['test']['upcoming']);
