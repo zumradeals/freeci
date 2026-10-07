@@ -2,31 +2,28 @@
 
 namespace App\Console\Commands;
 
-use App\Modules\Accounts\Models\User;
-use App\Modules\Catalog\Models\FreelanceProfile;
-use App\Modules\Catalog\Models\Service;
-use App\Modules\Orders\Models\Order;
+use App\Modules\Admin\Actions\PurgeDemoData;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
-/** Retire UNIQUEMENT les données marquées « démonstration » (is_demo = true). Jamais de donnée réelle. */
+/** Retire UNIQUEMENT les données marquées « démonstration » (is_demo = true). Jamais de donnée réelle ; ce qui est référencé par l'historique est conservé. */
 class DemoPurge extends Command
 {
-    protected $signature = 'freeci:demo-purge {--force : confirmer sans question (indispensable en production hors terminal)}';
+    protected $signature = 'freeci:demo-purge {--dry-run : afficher ce qui serait concerné, sans rien supprimer} {--force : confirmer sans question (indispensable en production hors terminal)}';
 
-    protected $description = 'Supprime les services, profils et comptes de démonstration (is_demo = true), et eux seuls.';
+    protected $description = 'Supprime les services, missions, profils et comptes de démonstration (is_demo = true), et eux seuls ; archive ce qui est référencé par une commande.';
 
-    public function handle(): int
+    public function handle(PurgeDemoData $purge): int
     {
-        $counts = [
-            'services' => Service::where('is_demo', true)->count(),
-            'profils' => FreelanceProfile::where('is_demo', true)->count(),
-            'comptes' => User::where('is_demo', true)->count(),
-        ];
-        $this->table(['Élément de démonstration', 'Nombre'], collect($counts)->map(fn ($n, $k) => [$k, $n])->values()->all());
+        $c = PurgeDemoData::counts();
+        $this->table(['Élément de démonstration', 'Nombre'], [['services', $c['services']], ['missions', $c['missions']], ['profils', $c['profiles']], ['comptes', $c['users']], ['commandes (conservées : historique)', $c['orders']]]);
 
-        if (array_sum($counts) === 0) {
+        if (array_sum([$c['services'], $c['missions'], $c['profiles'], $c['users']]) === 0) {
             $this->info('Rien à supprimer.');
+
+            return self::SUCCESS;
+        }
+        if ($this->option('dry-run')) {
+            $this->line('Simulation : rien n\'a été supprimé. Faites une sauvegarde, puis relancez sans --dry-run.');
 
             return self::SUCCESS;
         }
@@ -36,16 +33,11 @@ class DemoPurge extends Command
             return self::FAILURE;
         }
 
-        DB::transaction(function () {
-            // Ce qui est référencé par une commande est CONSERVÉ (accord et historique sont en ajout seul).
-            Service::where('is_demo', true)->whereNotIn('id', Order::whereNotNull('service_id')->select('service_id'))->delete();
-            // Un profil de démonstration lié à un service restant est conservé.
-            FreelanceProfile::where('is_demo', true)->whereDoesntHave('services')->delete();
-            User::where('is_demo', true)->whereDoesntHave('freelanceProfile')
-                ->whereNotIn('id', Order::select('client_id'))->whereNotIn('id', Order::select('freelancer_id'))
-                ->whereNotIn('id', DB::table('missions')->select('client_id'))->whereNotIn('id', DB::table('proposals')->select('freelancer_id'))->delete();      // missions et propositions sont conservées avec leurs auteurs
-        });
-
+        $r = $purge->run();
+        $this->table(['Résultat', 'Supprimés', 'Conservés (référencés par l\'historique)'], [
+            ['services', $r['services_removed'], $r['services_kept']], ['missions', $r['missions_removed'], $r['missions_kept']],
+            ['profils', $r['profiles_removed'], $r['profiles_kept']], ['comptes', $r['users_removed'], $r['users_kept']],
+        ]);
         $this->info('Données de démonstration supprimées.');
 
         return self::SUCCESS;

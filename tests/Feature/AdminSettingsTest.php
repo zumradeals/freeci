@@ -6,7 +6,10 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Admin\Queries\SettingsOverview;
 use App\Modules\Admin\Settings\AppSettings;
 use App\Modules\Admin\Settings\SettingDefinitions;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Service;
 use App\Modules\Notifications\Support\MailStatus;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -250,5 +253,46 @@ class AdminSettingsTest extends TestCase
             $page->assertSee($g['title']);
         }
         $this->assertGreaterThan(90, count(SettingDefinitions::all()));
+    }
+
+    // ---------------------------------------------------------------- retrait des données de démonstration
+
+    public function test_demo_data_removal_from_the_admin_is_confirmed_audited_and_keeps_real_and_referenced_data(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $realServices = Service::where('is_demo', false)->count();
+        $this->assertGreaterThan(10, Service::where('is_demo', true)->count());
+        $this->placeOrder();                                              // commande réelle (fixture non démo) : doit survivre
+        $categories = Category::count();
+
+        $this->asAdmin($this->admin)->get('/admin/exploitation')->assertSee('Données de démonstration')->assertSee('RETIRER LA DEMO')->assertSee('à retirer depuis cette page');
+        $body = ['reason' => 'Ouverture : retrait de la démonstration.', 'confirm' => '1', 'phrase' => 'RETIRER LA DEMO'];
+        $this->asAdmin($this->admin, false)->post('/admin/exploitation/demo/retirer', $body)->assertRedirect(route('admin.reauth'));
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/retirer', ['phrase' => 'non'] + $body)->assertSessionHas('error');
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/retirer', array_diff_key($body, ['confirm' => 1]))->assertSessionHasErrors('confirm');
+        $this->actingAs($this->client)->post('/admin/exploitation/demo/retirer', $body)->assertNotFound();
+        $this->assertGreaterThan(0, Service::where('is_demo', true)->count(), 'rien ne part sans les trois confirmations');
+
+        $this->asAdmin($this->admin)->post('/admin/exploitation/demo/retirer', $body)->assertSessionHas('status');
+        $this->assertSame(1, Service::where('is_demo', true)->count(), 'seul le service référencé par une commande est conservé…');
+        $this->assertSame('archived', Service::where('is_demo', true)->first()->status->value, '…et archivé');
+        $this->assertSame($realServices, Service::where('is_demo', false)->count());
+        $this->assertSame($categories, Category::count(), 'les catégories ne sont jamais supprimées');
+        $this->assertSame(1, DB::table('orders')->count());
+        $this->assertSame(1, DB::table('admin_actions')->where('action', 'demo.purge')->where('result', 'done')->count());
+        $this->asAdmin($this->admin)->get('/admin/exploitation')->assertSee('élément(s)');
+        $this->artisan('freeci:demo-purge', ['--dry-run' => true])->assertSuccessful();
+    }
+
+    public function test_demo_service_referenced_by_an_order_is_kept_but_archived_out_of_the_public_catalog(): void
+    {
+        $this->service->update(['is_demo' => true]);
+        $order = $this->placeOrder();
+        $this->artisan('freeci:demo-purge', ['--dry-run' => true])->assertSuccessful();
+        $this->assertSame('published', $this->service->fresh()->status->value, 'la simulation ne change rien');
+        $this->artisan('freeci:demo-purge', ['--force' => true])->assertSuccessful();
+        $this->assertTrue($this->service->fresh()->exists);
+        $this->assertSame('archived', $this->service->fresh()->status->value);
+        $this->assertSame(1, DB::table('orders')->where('id', $order->id)->count());
     }
 }

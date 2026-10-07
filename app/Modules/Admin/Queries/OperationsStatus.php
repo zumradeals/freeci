@@ -5,6 +5,7 @@ namespace App\Modules\Admin\Queries;
 use App\Integrations\FileScan\FileScanner;
 use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\PaymentMode;
+use App\Modules\Admin\Actions\PurgeDemoData;
 use App\Modules\Admin\Legal\LegalDefaults;
 use App\Modules\Admin\Legal\LegalPages;
 use App\Modules\Admin\Settings\AppSettings;
@@ -34,7 +35,7 @@ final class OperationsStatus
     {
         $backup = $this->backup();
 
-        return ['tasks' => $this->tasks(), 'queue' => $this->queue(), 'mail' => $this->mail(), 'files' => $this->files(), 'payments' => $this->payments(), 'backup' => $backup, 'readiness' => $this->readiness($backup)];
+        return ['tasks' => $this->tasks(), 'queue' => $this->queue(), 'mail' => $this->mail(), 'files' => $this->files(), 'payments' => $this->payments(), 'backup' => $backup, 'demo' => PurgeDemoData::counts(), 'readiness' => $this->readiness($backup)];
     }
 
     private function tasks(): array
@@ -139,6 +140,10 @@ final class OperationsStatus
             'detail' => $missing === [] ? 'Toutes adoptées.' : 'Non adoptées (brouillon public) : '.implode(', ', array_map(fn ($k) => LegalDefaults::PAGES[$k], $missing)).'.'];
         $operator = filled(config('freeci.legal.operator_name')) && filled(config('freeci.legal.operator_address')) && filled(config('freeci.legal.contact_email'));
         $items[] = ['key' => 'operator', 'label' => 'Identité et contact de l’exploitant', 'state' => $operator ? 'ok' : 'todo', 'link' => route('admin.settings'), 'detail' => $operator ? 'Renseignés dans Paramètres.' : 'À renseigner dans Paramètres (nom, adresse, contact) : rien n’est inventé.'];
+
+        $demo = PurgeDemoData::counts();
+        $left = $demo['services'] + $demo['missions'] + $demo['profiles'] + $demo['users'];
+        $items[] = ['key' => 'demo', 'label' => 'Données de démonstration', 'state' => $left === 0 ? 'ok' : 'todo', 'detail' => $left === 0 ? 'Aucune donnée de démonstration.' : $left.' élément(s) de démonstration présents (services, missions, profils, comptes) : à retirer depuis cette page.'];
 
         return $items;
     }
