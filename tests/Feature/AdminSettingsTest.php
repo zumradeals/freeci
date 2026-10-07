@@ -295,4 +295,18 @@ class AdminSettingsTest extends TestCase
         $this->assertSame('archived', $this->service->fresh()->status->value);
         $this->assertSame(1, DB::table('orders')->where('id', $order->id)->count());
     }
+
+    /** Régression : avec le cache « database » (production), des objets mis en cache ne sont pas rendus (serializable_classes = false) → page 500 après la première écriture. */
+    public function test_settings_survive_a_serializing_cache_store_and_approval_does_not_crash(): void
+    {
+        config(['cache.default' => 'database']);
+        Cache::flush();
+        $form = ['orders_response_hours' => '48', 'orders_payment_hours' => '24', 'orders_review_days' => '7', 'orders_extension_max_days' => '30', 'missions_selection_days' => '14', 'reviews_publication_days' => '14', 'account_closure_grace_days' => '14'];
+        $this->save('delais', $form, ['approve' => '1'])->assertSessionHas('status');          // approbation sans changement de valeur
+        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Approuvé');   // lecture depuis le cache sérialisé
+        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk();
+        AppSettings::apply();
+        $this->assertSame(48, config('freeci.orders.response_hours'));
+        $this->assertSame('approved', AppSettings::rows()['orders.response_hours']->status);
+    }
 }

@@ -36,7 +36,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Paramètres saisis en administration, superposés à la configuration du code / du .env (lot 16).
-        AppSettings::apply();
+        // Une anomalie de lecture des paramètres ne doit JAMAIS faire tomber le site : on journalise et on garde les valeurs par défaut.
+        try {
+            AppSettings::apply();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         // Production : migrate:fresh, migrate:refresh, migrate:reset et db:wipe sont refusés (préservation des données).
         DB::prohibitDestructiveCommands($this->app->isProduction());

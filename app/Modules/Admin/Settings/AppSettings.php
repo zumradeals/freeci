@@ -13,19 +13,26 @@ use Throwable;
  */
 final class AppSettings
 {
-    private const CACHE_KEY = 'app_settings.v1';
+    private const CACHE_KEY = 'app_settings.v2';
 
     /** @var array<string, mixed> valeurs par défaut (code / .env) relevées AVANT superposition */
     private static array $defaults = [];
 
-    /** @return array<string, object{value: mixed, status: string, approved_at: ?string}> */
+    /**
+     * Valeurs saisies, indexées par clé. Le cache ne reçoit que des TABLEAUX : avec le cache « database » (production), des objets mis en cache
+     * reviennent « incomplets » (cache.serializable_classes = false) et provoquent une erreur 500.
+     *
+     * @return array<string, object{value: mixed, status: string, approved_at: ?string}>
+     */
     public static function rows(): array
     {
         try {
-            return Cache::remember(self::CACHE_KEY, 300, fn () => DB::table('app_settings')->get()->mapWithKeys(fn ($r) => [$r->key => (object) ['value' => json_decode($r->value, true), 'status' => $r->status, 'approved_at' => $r->approved_at]])->all());
+            $plain = Cache::remember(self::CACHE_KEY, 300, fn () => DB::table('app_settings')->get()->mapWithKeys(fn ($r) => [$r->key => ['value' => json_decode($r->value, true), 'status' => $r->status, 'approved_at' => $r->approved_at]])->all());
         } catch (Throwable) {
             return [];
         }
+
+        return array_map(fn ($r) => (object) $r, is_array($plain) ? $plain : []);
     }
 
     public static function apply(): void
