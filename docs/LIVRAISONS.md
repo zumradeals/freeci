@@ -44,3 +44,4 @@ Formulaire large en trois étapes, résumé de saisie et libellés simplifiés ;
 
 Totaux financiers complets, détail paginé, séparation legacy/réel côté client ; disponibilité réelle du scanner et traitement des erreurs de processus. Aucune migration ni variable. Vérifications et limites de validation : `docs/31-consolidation-moteur.md`. Le 504 reste ouvert.
 | **26 — parcours mission : écrans restants** | Proposition du freelance, comparaison, sélection, détail et étapes d'une mission dans la structure de référence (`page-body`, marges en ligne retirées) ; 300 tests passent | aucune | aucune |
+| **27 — parcours mission d'un seul tenant** | `MissionToDeliveryTest` : mission publiée, deux propositions, comparaison, sélection, paiement sandbox confirmé par le serveur, livraison, validation, clôture, écrans de fin (avis, revenus, finances) ; 46 contrôles | aucune | aucune |
