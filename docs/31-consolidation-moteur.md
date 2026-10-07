@@ -37,3 +37,9 @@ La lecture par lots borne la mémoire mais pas le nombre de requêtes : les calc
 - Vérifier les pages Paiements et Revenus et leurs montants sur les comptes existants.
 - Exécuter `php8.3 artisan freeci:files:check` depuis le dossier du projet sous l’utilisateur freeci ; vérifier le scanner réel.
 - Conserver le suivi du slowlog. Les validations financières réelles et l’ouverture du live restent hors de ce changement.
+
+## 503 observé sur l'accueil (7 octobre)
+
+La fenêtre affichait « 503 | Service Unavailable » : c'est la page minimale de Laravel, pas celle de nginx. Aucun `abort(503)` n'existe dans le code ; l'hypothèse la plus probable est le **mode maintenance** activé par `deploy/update.sh` (`artisan down` … `artisan up`) pendant une mise à jour, alors qu'une page restée ouverte interrogeait le serveur (compteurs toutes les 30 s). Cause non confirmée : à vérifier sur le VPS (`ls storage/framework/down` absent = site en ligne ; l'heure de la mise à jour dans le journal de déploiement).
+Si une mise à jour échoue, le site reste volontairement en maintenance (voir `docs/07`) : un 503 durable doit être lu ainsi.
+Corrigé côté présentation (lot 28) : page 503 en français ; une indisponibilité passagère (502/503/504) d'une requête Livewire n'ouvre plus la fenêtre technique, un message discret s'affiche et les compteurs réessaient. Cela ne remplace pas le diagnostic du 504 du 6 octobre (cause distincte : expiration nginx).

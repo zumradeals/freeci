@@ -84,6 +84,16 @@ if (EMAIL && PASSWORD) {
     await page.keyboard.press('Escape');
   }
   check((await overflow(page)) <= 0, '/espace sans débordement horizontal sur mobile');
+
+  // 7. Indisponibilité passagère (503) d'une requête Livewire : message discret, aucune fenêtre technique « 503 Service Unavailable ».
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await open(page, '/espace');
+  await page.route(/livewire.*\/update/, (route) => route.fulfill({ status: 503, contentType: 'text/html', body: '<h1>503 | Service Unavailable</h1>' }));
+  await page.evaluate(() => Promise.resolve(window.Livewire.all()[0]?.$wire.$refresh()).catch(() => {}));
+  await page.waitForTimeout(800);
+  check((await page.locator('#livewire-error').count()) === 0, 'un 503 Livewire n’ouvre pas la fenêtre d’erreur technique');
+  check(await page.getByRole('status').filter({ hasText: 'momentanément indisponible' }).isVisible(), 'un 503 Livewire affiche le message discret');
+  await page.unroute(/livewire.*\/update/);
 } else { console.log('-- connexion ignorée (E2E_EMAIL / E2E_PASSWORD absents)'); }
 
 await browser.close();
