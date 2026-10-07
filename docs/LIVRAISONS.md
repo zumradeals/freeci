@@ -67,3 +67,9 @@ Validation : build Vite et `git diff --check` réussis. Contrôle visuel en navi
 Suppression de la colonne étroite centrée. Présentation en deux colonnes dès 1024 px (besoin et éléments fournis / budget, échéance et candidature), empilement sur petits écrans. Sections en cartes et signalement aligné ; signalement masqué dans l'aperçu non publié. Description toujours échappée, actions et états existants conservés. Aucune migration ni modification des paiements.
 
 Validation : compilation Blade via PHP WASM, build Vite et `git diff --check` réussis. Pas de contrôle visuel navigateur local ; rendu à confirmer après déploiement.
+
+### Annuaire et profil freelance — harmonisation
+
+Annuaire : recherche compacte, avatars plus visibles, métier et ville séparés, trois compétences au maximum dans la carte, favoris préservés et lien « Voir le profil ». Grille à une, deux ou quatre colonnes selon la largeur. Profil : fil d'Ariane vers Freelances, identité sur la largeur commune, favoris dans l'en-tête, présentation et compétences conditionnelles, services conservés, avis dans une carte avec état vide sobre. Aucun ajout de photo, de couverture, de données ou de logique métier.
+
+Validation : compilation Blade via PHP WASM, build Vite et `git diff --check` réussis. Pas de contrôle navigateur local ni de test PostgreSQL pour ces changements de présentation ; vérifier les deux pages sur mobile et ordinateur après déploiement.

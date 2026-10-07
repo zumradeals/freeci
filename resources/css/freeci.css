@@ -1210,3 +1210,33 @@ a.kpi:hover { background: var(--marine-100); }
 .mission-proposal-box .btn { width: 100%; white-space: normal; text-align: center; }
 .mission-proposal-box p { overflow-wrap: anywhere; }
 @media (min-width: 1024px) { .mission-detail-grid { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 32px; } }
+
+/* Annuaire et profil freelance : identité, compétences, services, avis. */
+.catalog-filters.talent-filters { grid-template-columns: minmax(0, 1fr); }
+.talent-search-submit .btn { min-height: 48px; width: 100%; }
+.talent-filter-reset:empty { display: none; }
+.talent-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+.talent-card { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.talent-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.talent-card-top .fav { position: static; }
+.talent-card .fav-btn { border-color: var(--line); }
+.talent-identity { display: grid; gap: 4px; overflow-wrap: anywhere; }
+.talent-identity h2 a { color: var(--ink-900); text-decoration: none; }
+.talent-identity h2 a:hover { text-decoration: underline; }
+.talent-skills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.talent-skills li { min-width: 0; max-width: 100%; }
+.talent-skills .badge { white-space: normal; overflow-wrap: anywhere; }
+.talent-card-bottom { display: grid; gap: 12px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
+.profile-page { display: grid; gap: 24px; }
+.profile-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; }
+.profile-identity { display: flex; gap: 20px; align-items: center; min-width: 0; flex: 1 1 400px; }
+.profile-identity > div { min-width: 0; overflow-wrap: anywhere; }
+.profile-headline { margin-block: 8px 4px; font-size: 1.125rem; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.profile-about, .profile-services, .profile-reviews { display: grid; gap: 16px; min-width: 0; }
+.profile-about .talent-skills { margin-top: 12px; }
+.profile-bio { line-height: 1.75; max-width: 85ch; overflow-wrap: anywhere; }
+@media (min-width: 640px) { .talent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .catalog-filters.talent-filters { grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1.3fr) auto; } }
+@media (min-width: 1200px) { .talent-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 599px) { .profile-identity { align-items: flex-start; gap: 12px; } .profile-identity .avatar { width: 56px; height: 56px; font-size: 1rem; } .profile-actions, .profile-actions > *, .profile-actions .btn { width: 100%; } .profile-actions .btn { white-space: normal; text-align: center; } }
