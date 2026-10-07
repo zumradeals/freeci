@@ -1192,3 +1192,21 @@ a.kpi:hover { background: var(--marine-100); }
   .mission-filters .more-filters { grid-column: 1 / -1; }
 }
 @media (max-width: 599px) { .mission-catalog-head > .btn, .mission-card-bottom > .btn { width: 100%; } }
+
+/* Fiche de mission : contenu et candidature, dans la largeur publique commune. */
+.mission-detail .page-head { margin: 0; }
+.mission-detail .t-h1 { max-width: 40ch; overflow-wrap: anywhere; }
+.mission-detail-grid { display: grid; gap: 24px; align-items: start; }
+.mission-detail-content, .mission-detail-aside { display: grid; gap: 20px; min-width: 0; }
+.mission-detail-section { display: grid; gap: 16px; }
+.mission-description { line-height: 1.75; overflow-wrap: anywhere; }
+.mission-overview { display: grid; gap: 20px; }
+.mission-overview-facts { display: grid; gap: 16px; margin: 0; }
+.mission-overview-facts > div + div { border-top: 1px solid var(--line); padding-top: 16px; }
+.mission-overview-facts dt { color: var(--ink-600); font-size: .875rem; margin-bottom: 6px; }
+.mission-overview-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.mission-overview-facts .price { font-size: 1.75rem; }
+.mission-proposal-box { display: grid; gap: 16px; border-top: 3px solid var(--marine-700); }
+.mission-proposal-box .btn { width: 100%; white-space: normal; text-align: center; }
+.mission-proposal-box p { overflow-wrap: anywhere; }
+@media (min-width: 1024px) { .mission-detail-grid { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 32px; } }

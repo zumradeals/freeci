@@ -1,16 +1,20 @@
 <x-layouts.public :title="$m['title']" :description="mb_substr($m['description'], 0, 150)">
-<div class="container container-narrow public-page"><div class="page-body">
+<div class="container public-page mission-detail"><div class="page-body">
   @isset($preview)<div class="notice tone-warning" role="note"><x-fc.icon name="flag" /><p><strong>Aperçu — non publié.</strong> Rendu public de votre version de travail ; personne d’autre ne le voit. <a href="{{ $preview }}">Revenir à l’édition</a></p></div>@endisset
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('missions.index') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Missions</a><a class="hide-m" href="{{ route('missions.index') }}">Missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $m['category'] }}</span></nav>
   <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $m['category'] }}</p><h1 class="t-h1">{{ $m['title'] }}</h1></div></div></header>
-  <section class="card"><dl class="meta"><div><dt>Budget du client</dt><dd><x-fc.money :amount="$m['budget']" /></dd></div><div><dt>Candidatures jusqu’au</dt><dd>{{ $m['deadline'] }}</dd></div></dl>
-    @if($m['status'] !== 'preview' && ! $m['accepting'])<p class="note-line"><x-fc.icon name="lock" :size="16" /><span><strong>Cette mission n’accepte plus de propositions.</strong></span></p>@endif</section>
-  <section aria-labelledby="h-d"><h2 class="t-h2" id="h-d">Le besoin</h2><p>{!! nl2br(e($m['description'])) !!}</p></section>
-  @if(count($m['inputs']))<section aria-labelledby="h-i"><h2 class="t-h2" id="h-i">Ce que le client fournira</h2><ul class="checklist need">@foreach($m['inputs'] as $i)<li><x-fc.icon name="clipboard" /><span>{{ $i }}</span></li>@endforeach</ul>
+  <div class="mission-detail-grid">
+  <div class="mission-detail-content">
+  <section class="card mission-detail-section" aria-labelledby="h-d"><h2 class="t-h2" id="h-d">Le besoin</h2><div class="mission-description">{!! nl2br(e($m['description'])) !!}</div></section>
+  @if(count($m['inputs']))<section class="card mission-detail-section" aria-labelledby="h-i"><h2 class="t-h2" id="h-i">Ce que le client fournira</h2><ul class="checklist need">@foreach($m['inputs'] as $i)<li><x-fc.icon name="clipboard" /><span>{{ $i }}</span></li>@endforeach</ul>
     <p class="muted small">Seuls les intitulés sont publics ; les réponses ne sont communiquées qu’au freelance retenu.</p></section>@endif
   <p class="note-line"><x-fc.icon name="shield" :size="16" /><span>Aucune pièce jointe ni coordonnée du client n’est publiée. Les échanges passent par FreeCI.</span></p>
+  </div>
+  <aside class="mission-detail-aside" aria-label="Résumé et candidature">
+  <section class="card mission-overview"><h2 class="t-h3">La mission en bref</h2><dl class="mission-overview-facts"><div><dt>Budget du client</dt><dd><x-fc.money :amount="$m['budget']" /></dd></div><div><dt>Candidatures jusqu’au</dt><dd>{{ $m['deadline'] }}</dd></div></dl>
+    @if($m['status'] !== 'preview' && ! $m['accepting'])<p class="note-line"><x-fc.icon name="lock" :size="16" /><span><strong>Cette mission n’accepte plus de propositions.</strong></span></p>@endif</section>
   @unless(isset($preview))
-  <section class="card" aria-labelledby="h-p"><h2 class="t-h2" id="h-p">Votre proposition</h2>
+  <section class="card mission-proposal-box" aria-labelledby="h-p"><h2 class="t-h2" id="h-p">Votre proposition</h2>
     @if($m['own'])<p>C’est votre mission. <a href="{{ route('client.missions') }}">Gérer mes missions</a></p>
     @elseif($m['mine'])
       <p><span class="badge tone-{{ $m['mine']['state'] === 'selected' ? 'success' : ($m['mine']['stale'] || $m['mine']['expired'] ? 'warning' : 'info') }}">{{ ['active' => 'Proposition envoyée', 'selected' => 'Retenue', 'withdrawn' => 'Retirée', 'released' => 'Libérée', 'closed' => 'Mission terminée'][$m['mine']['state']] }}</span> version {{ $m['mine']['number'] }} · <x-fc.money :amount="$m['mine']['price']" /> · valable jusqu’au {{ $m['mine']['validUntil'] }}</p>
@@ -22,6 +26,10 @@
     @else<p class="muted">Cette mission n’accepte plus de propositions.</p>@endif
   </section>
   @endunless
+  </aside>
+  </div>
+  @unless(isset($preview))
+    @auth<p class="small muted"><a href="{{ route('support.report.form', ['mission', $m['slug']]) }}">Signaler cette mission</a></p>@endauth
+  @endunless
 </div></div>
-@auth<div class="container" style="margin:8px auto 48px"><p class="small muted"><a href="{{ route('support.report.form', ['mission', request()->route('slug')]) }}">Signaler cette mission</a></p></div>@endauth
 </x-layouts.public>

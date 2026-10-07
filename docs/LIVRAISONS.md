@@ -61,3 +61,9 @@ Totaux financiers complets, détail paginé, séparation legacy/réel côté cli
 Catalogue public : en-tête avec publication d'une mission, filtres compacts sur grand écran, cartes en deux colonnes dès 900 px et une colonne en dessous. Catégorie, résumé, budget et clôture des candidatures sont distincts ; lien explicite « Voir la mission ». Pas d'image, de migration, de changement métier ou de paiement. Filtres GET et pagination existants conservés.
 
 Validation : build Vite et `git diff --check` réussis. Contrôle visuel en navigateur et compilation Blade non effectués dans cet environnement ; contrôler l'affichage après déploiement, notamment à 360 et 1440 px, avec et sans résultats.
+
+### Fiche publique de mission — harmonisation
+
+Suppression de la colonne étroite centrée. Présentation en deux colonnes dès 1024 px (besoin et éléments fournis / budget, échéance et candidature), empilement sur petits écrans. Sections en cartes et signalement aligné ; signalement masqué dans l'aperçu non publié. Description toujours échappée, actions et états existants conservés. Aucune migration ni modification des paiements.
+
+Validation : compilation Blade via PHP WASM, build Vite et `git diff --check` réussis. Pas de contrôle visuel navigateur local ; rendu à confirmer après déploiement.
