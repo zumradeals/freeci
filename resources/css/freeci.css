@@ -692,12 +692,15 @@ html:has(body.has-sticky-buy) { scroll-padding-bottom: 104px; }
 .svc .stretch::after { content: ""; position: absolute; inset: 0; }
 .svc .seller { display: none; }
 .svc .foot { border-top: 0; padding-top: 0; margin-top: 2px; }
+/* Téléphone : le bouton favori s'ancre au coin haut droit de la carte, jamais sur la miniature ; le titre lui laisse la place. */
+.svc .cat-l, .svc .ttl { padding-right: 40px; }
 .svc .foot .dl { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-600); font-size: .9375rem; }
 @media (min-width: 768px) {
   .svc-grid { gap: 16px; }
   .svc { display: flex; flex-direction: column; align-items: stretch; padding: 0; gap: 0; }
-  .svc .thumb { width: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+  .svc .thumb { position: relative; width: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
   .svc .body { padding: 16px; gap: 8px; }
+  .svc .cat-l, .svc .ttl { padding-right: 0; }
   .svc .ttl { font-size: 1.0625rem; line-height: 1.35; }
   .svc .seller { display: flex; }
   .svc .foot { border-top: 1px solid var(--line); padding-top: 12px; margin-top: auto; }
@@ -906,7 +909,8 @@ a.kpi:hover { border-color: var(--marine-800); }
 .hist li { border-left: 3px solid var(--line-strong); padding-left: 12px; }
 
 /* Lot 12 — favoris, notes, avis, filtres supplémentaires */
-.svc .thumb { position: relative; }
+.svc .thumb { position: static; }
+@media (min-width: 768px) { .svc .thumb { position: relative; } }
 .fav { position: absolute; top: 10px; right: 10px; z-index: 3; margin: 0; }
 .fav-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-600); cursor: pointer; padding: 0; }
 .fav-btn:hover { color: var(--accent-700); border-color: var(--accent-500); }

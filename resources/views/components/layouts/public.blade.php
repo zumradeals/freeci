@@ -43,7 +43,6 @@
         <li><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a></li>
         <li><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></li></ul></div>
     </div>
-    <p class="legal">Pages d’information : brouillons tant qu’elles ne sont pas adoptées.</p>
   </div>
 </footer>
 @include('partials.drawer')
