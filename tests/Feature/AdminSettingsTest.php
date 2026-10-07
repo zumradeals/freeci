@@ -3,12 +3,17 @@
 namespace Tests\Feature;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Admin\Queries\SettingsOverview;
 use App\Modules\Admin\Settings\AppSettings;
+use App\Modules\Admin\Settings\SettingDefinitions;
+use App\Modules\Notifications\Support\MailStatus;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Support\AdminFixtures;
@@ -40,7 +45,7 @@ class AdminSettingsTest extends TestCase
     {
         $this->actingAs($this->client)->get('/admin/parametres')->assertNotFound();
         $this->actingAs($this->client)->get('/admin/pages')->assertNotFound();
-        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Commission')->assertSee('Provisoire')->assertSee('Valeur par défaut');
+        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Commission')->assertSee('Provisoire')->assertSee('Défaut :');
         $this->save('commission', ['finance_commission_bp' => '8'], ['confirm' => '1'], false)->assertRedirect(route('admin.reauth'));
         $this->assertSame(0, DB::table('app_settings')->count());
     }
@@ -110,7 +115,7 @@ class AdminSettingsTest extends TestCase
     public function test_operator_identity_and_site_toggles_are_editable_and_drive_public_pages(): void
     {
         $this->get('/')->assertSee('noindex', false);
-        $this->save('site', ['noindex' => '0', 'notifications_emails' => '1'])->assertSessionHas('status');
+        $this->save('site', ['noindex' => '0', 'notifications_emails' => '1', 'ops_backup_dir' => '/var/backups/freeci', 'ops_backup_max_age_hours' => '36'])->assertSessionHas('status');
         $this->assertFalse(config('freeci.noindex'));
         $this->get('/')->assertDontSee('content="noindex', false);
         $this->save('exploitant', ['legal_operator_name' => 'Société Test SARL', 'legal_operator_address' => 'Abidjan, Cocody', 'legal_operator_registration' => '', 'legal_publication_director' => '', 'legal_host' => '', 'legal_contact_email' => 'pas-un-mail'])->assertSessionHas('error');
@@ -147,5 +152,103 @@ class AdminSettingsTest extends TestCase
     {
         $this->asAdmin($this->admin)->get('/admin/exploitation')->assertSee('Compléter')->assertSee(route('admin.settings'), false)->assertSee(route('admin.legal'), false);
         $this->artisan('freeci:readiness')->assertSuccessful();
+    }
+
+    // ---------------------------------------------------------------- lot 17 : secrets, limites techniques, tout autre réglage
+
+    private function paymentForm(array $over = []): array
+    {
+        return $over + ['payments_mode' => 'sandbox', 'payments_enabled' => '1', 'payments_live_authorized' => '', 'payments_genius_base_url' => 'https://geniuspay.ci/api/v1/merchant', 'payments_genius_checkout_hosts' => 'geniuspay.ci',
+            'payments_genius_webhook_tolerance' => '90000', 'payments_genius_sandbox_merchant_id' => '', 'payments_genius_live_merchant_id' => ''];
+    }
+
+    public function test_secrets_are_encrypted_write_only_never_displayed_nor_logged_and_can_be_removed(): void
+    {
+        $this->save('paiement', $this->paymentForm(['payments_genius_sandbox_api_key' => 'pk_sandbox_SECRETKEYVALUE', 'payments_genius_sandbox_api_secret' => 'sk_sandbox_TOPSECRETVALUE', 'payments_genius_sandbox_webhook_secret' => 'whsec_SECRETWEBHOOK12345']), ['confirm' => '1'])->assertSessionHas('status');
+        $this->assertSame('sk_sandbox_TOPSECRETVALUE', config('freeci.payments.genius.sandbox.api_secret'));
+        $raw = (string) DB::table('app_settings')->where('key', 'payments.genius.sandbox.api_secret')->value('value');
+        $this->assertStringNotContainsString('TOPSECRET', $raw, 'chiffré au repos');
+        $this->assertSame('sk_sandbox_TOPSECRETVALUE', Crypt::decryptString(json_decode($raw, true)));
+
+        $page = $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Défini dans l’administration')->getContent();
+        foreach (['TOPSECRET', 'SECRETKEYVALUE', 'SECRETWEBHOOK'] as $needle) {
+            $this->assertStringNotContainsString($needle, $page, 'un secret n’est jamais réaffiché');
+            $this->assertStringNotContainsString($needle, json_encode(DB::table('app_setting_changes')->get()), 'ni journalisé');
+            $this->assertStringNotContainsString($needle, json_encode(DB::table('admin_actions')->get()), 'ni audité');
+        }
+        $this->assertSame('••••••', collect(app(SettingsOverview::class)->changes())->firstWhere('label', 'Clé secrète (bac à sable)')['new']);
+
+        // Laisser vide = conserver ; « retirer » = retour à la valeur du serveur.
+        $this->save('paiement', $this->paymentForm(['payments_genius_sandbox_api_secret' => '']), ['confirm' => '1'])->assertSessionHas('error');
+        $this->assertSame('sk_sandbox_TOPSECRETVALUE', config('freeci.payments.genius.sandbox.api_secret'));
+        $this->save('paiement', $this->paymentForm(), ['confirm' => '1', 'clear' => ['payments_genius_sandbox_api_secret' => '1']])->assertSessionHas('status');
+        $this->assertNotSame('sk_sandbox_TOPSECRETVALUE', config('freeci.payments.genius.sandbox.api_secret'));
+        $this->assertSame(0, DB::table('app_settings')->where('key', 'payments.genius.sandbox.api_secret')->count());
+    }
+
+    public function test_real_payment_needs_a_typed_phrase_and_confirmation_and_sandbox_stays_the_default(): void
+    {
+        $this->assertSame('sandbox', config('freeci.payments.mode'));
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'live']), ['confirm' => '1'])->assertSessionHas('error');
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'live']), ['confirm' => '1', 'live_phrase' => 'oui'])->assertSessionHas('error');
+        $this->assertSame('sandbox', config('freeci.payments.mode'));
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'live']), ['live_phrase' => 'PAIEMENT REEL'])->assertSessionHas('error');             // confirmation financière manquante
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'sandbox', 'payments_live_authorized' => '1']), ['confirm' => '1'])->assertSessionHas('error');  // autoriser le réel = même exigence
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'live']), ['confirm' => '1', 'live_phrase' => 'paiement reel'])->assertSessionHas('status');
+        $this->assertSame('live', config('freeci.payments.mode'));
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'sandbox']), ['confirm' => '1'])->assertSessionHas('status');             // revenir au test : sans phrase
+        $this->assertSame('sandbox', config('freeci.payments.mode'));
+        $this->save('paiement', $this->paymentForm(['payments_mode' => 'invalide']), ['confirm' => '1'])->assertSessionHas('error');
+        $this->save('paiement', $this->paymentForm(['payments_genius_base_url' => 'http://pas-securise.test']), ['confirm' => '1'])->assertSessionHas('error');
+    }
+
+    public function test_mail_settings_apply_at_once_the_test_mail_goes_only_to_the_admin_and_failures_are_explained(): void
+    {
+        $mail = ['mail_default' => 'smtp', 'mail_host' => 'smtp.gmail.com', 'mail_port' => '587', 'mail_scheme' => '', 'mail_username' => 'dg@example.test', 'mail_from_address' => 'dg@example.test', 'mail_from_name' => 'FreeCI'];
+        $this->save('courrier', $mail + ['mail_password' => 'APP-PASSWORD-123'])->assertSessionHas('status');
+        $this->assertSame('smtp.gmail.com', config('mail.mailers.smtp.host'));
+        $this->assertSame('APP-PASSWORD-123', config('mail.mailers.smtp.password'));
+        $this->assertSame('dg@example.test', config('mail.from.address'));
+        $this->assertTrue(MailStatus::configured());
+
+        Mail::fake();
+        $this->asAdmin($this->admin)->post('/admin/parametres-test/courrier')->assertSessionHas('status');
+        $this->save('courrier', ['mail_default' => 'log'] + $mail)->assertSessionHas('status');
+        $this->asAdmin($this->admin)->post('/admin/parametres-test/courrier')->assertSessionHas('error');
+        $this->asAdmin($this->admin, false)->post('/admin/parametres-test/courrier')->assertRedirect(route('admin.reauth'));
+        $this->actingAs($this->client)->post('/admin/parametres-test/courrier')->assertNotFound();
+        $this->save('courrier', ['mail_default' => 'smtp', 'mail_host' => 'h', 'mail_port' => '99999', 'mail_scheme' => '', 'mail_username' => '', 'mail_from_address' => 'pas-un-mail', 'mail_from_name' => 'x'])->assertSessionHas('error');
+    }
+
+    public function test_genius_connection_test_reads_the_merchant_account_without_creating_a_payment_or_showing_keys(): void
+    {
+        $this->enableSandbox();
+        $this->asAdmin($this->admin)->post('/admin/parametres-test/genius/sandbox')->assertSessionHas('status');
+        $this->asAdmin($this->admin)->post('/admin/parametres-test/genius/live')->assertSessionHas('error');          // live non configuré : aucun appel
+        $this->assertSame(0, DB::table('payments')->count());
+        $this->asAdmin($this->admin)->post('/admin/parametres-test/genius/autre')->assertNotFound();
+    }
+
+    public function test_technical_limits_are_editable_validated_and_applied(): void
+    {
+        $limits = fn (array $o = []) => $o + ['catalog_title_0' => '15', 'catalog_title_1' => '100', 'catalog_summary_0' => '30', 'catalog_summary_1' => '300', 'catalog_scope_0' => '150', 'catalog_scope_1' => '5000',
+            'catalog_delivery_days_0' => '1', 'catalog_delivery_days_1' => '60', 'catalog_revisions_0' => '0', 'catalog_revisions_1' => '10', 'catalog_bio_0' => '50', 'catalog_bio_1' => '1500', 'catalog_skill_0' => '2', 'catalog_skill_1' => '40',
+            'catalog_deliverables_max' => '10', 'catalog_exclusions_max' => '10', 'catalog_client_inputs_max' => '8', 'catalog_line_max' => '200', 'catalog_images_max' => '6', 'catalog_image_max_mb' => '5', 'catalog_image_min_width' => '400', 'catalog_skills_max' => '10'];
+        $this->save('catalogue', $limits())->assertSessionHas('error');                                            // rien à changer
+        $this->save('catalogue', $limits(['catalog_title_0' => '120', 'catalog_title_1' => '100']))->assertSessionHas('error');   // minimum > maximum
+        $this->save('catalogue', $limits(['catalog_images_max' => '99']))->assertSessionHas('error');              // hors bornes
+        $this->save('catalogue', $limits(['catalog_images_max' => '3', 'catalog_title_1' => '120']))->assertSessionHas('status');
+        $this->assertSame(3, config('freeci.catalog.images_max'));
+        $this->assertSame([15, 120], config('freeci.catalog.title'));
+        $this->assertSame([5000, 500000], config('freeci.catalog.price_xof'), 'les autres bornes ne bougent pas');
+    }
+
+    public function test_every_group_renders_and_every_default_is_reflected_without_a_false_change(): void
+    {
+        $page = $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk();
+        foreach (SettingDefinitions::groups() as $g) {
+            $page->assertSee($g['title']);
+        }
+        $this->assertGreaterThan(90, count(SettingDefinitions::all()));
     }
 }

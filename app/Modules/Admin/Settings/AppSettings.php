@@ -3,6 +3,7 @@
 namespace App\Modules\Admin\Settings;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -30,22 +31,35 @@ final class AppSettings
     public static function apply(): void
     {
         $rows = self::rows();
-        foreach (array_keys(SettingDefinitions::all()) as $key) {
-            self::$defaults[$key] ??= config('freeci.'.$key);
+        foreach (SettingDefinitions::all() as $key => $def) {
+            $path = $def['path'];
+            self::$defaults[$key] ??= config($path);
             if (isset($rows[$key])) {
-                config(['freeci.'.$key => $rows[$key]->value]);
-            } elseif (array_key_exists($key, self::$defaults)) {
-                config(['freeci.'.$key => self::$defaults[$key]]);        // valeur supprimée : retour au défaut (processus longs, tests)
+                $value = $rows[$key]->value;
+                if ($def['secret']) {
+                    try {
+                        $value = Crypt::decryptString((string) $value);
+                    } catch (Throwable) {
+                        $value = self::$defaults[$key];       // clé de chiffrement changée : on retombe sur la valeur du serveur
+                    }
+                }
+                config([$path => $value]);
+            } else {
+                config([$path => self::$defaults[$key]]);        // valeur supprimée : retour au défaut (processus longs, tests)
             }
         }
         // L'étiquette conservée dans l'accord suit le statut de la commission : « approuvée » seulement si le porteur l'a validée.
         self::$defaults['finance.commission_policy'] ??= config('freeci.finance.commission_policy');
         config(['freeci.finance.commission_policy' => ($rows['finance.commission_bp']->status ?? null) === 'approved' ? 'approuvee' : self::$defaults['finance.commission_policy']]);
+        // Un courrier déjà instancié dans ce processus reprend la nouvelle configuration.
+        if (app()->resolved('mail.manager') && method_exists(app('mail.manager'), 'forgetMailers')) {
+            app('mail.manager')->forgetMailers();
+        }
     }
 
     public static function default(string $key): mixed
     {
-        return self::$defaults[$key] ?? config('freeci.'.$key);
+        return self::$defaults[$key] ?? config(SettingDefinitions::all()[$key]['path'] ?? 'freeci.'.$key);
     }
 
     public static function forget(): void

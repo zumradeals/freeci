@@ -27,3 +27,14 @@ Les lignes « Paramètres commerciaux », « Pages légales » et « Identité d
 
 ## Limites
 Les bornes techniques du catalogue (images, longueurs de champs), les limites de fichiers et le plafond de missions restent dans le code ; à exposer si le besoin apparaît. Les processus `queue:work` déjà lancés relisent les paramètres au redémarrage (`queue:restart` par `update.sh`).
+
+## Lot 17 — extension : secrets, limites techniques et autres réglages
+Décision du porteur : l'espace d'administration est le poste de contrôle global ; l'accès est protégé par double authentification (application d'authentification). Le registre couvre désormais **107 paramètres en 11 rubriques** : commission, délais, prix, **paiement Genius Pay** (mode, ouverture des paiements, autorisation du réel, adresse API, hôtes, tolérance, clés et secrets sandbox/live, comptes marchands), **courrier SMTP**, fichiers (antivirus, tailles), limites des services et profils, limites des missions et propositions, avis/messagerie/assistance, sécurité des accès (durées et tentatives), exploitant, site et sauvegardes.
+
+**Secrets** (mot de passe SMTP, clés publiques/secrètes et secrets de webhook) : chiffrés avec `APP_KEY` au repos, **en écriture seule** (jamais réaffichés : le champ montre « défini »), jamais présents dans l'historique, le journal d'audit ni les pages ; champ vide = conserver ; case « retirer » = retour à la valeur du serveur. Une valeur illisible (clé de chiffrement changée) retombe sur la valeur du serveur.
+
+**Paiement réel** : le mode reste « sandbox » par défaut. Passer en « live », ou donner l'autorisation du réel, exige : confirmation financière cochée + saisie de la phrase `PAIEMENT REEL` + confirmation récente d'identité. Revenir au test n'exige pas la phrase. Chaque commande et chaque paiement gardent leur environnement.
+
+**Vérifier sans risque** : « Courriel de test » (envoyé uniquement à l'adresse de l'administrateur connecté) et « Tester la connexion » Genius Pay (lecture du compte marchand ; aucun paiement créé ; aucune clé affichée).
+
+**Ne peuvent pas se régler ici** (nécessaires avant la lecture de la base ou à l'amorçage) : `APP_KEY` (la clé qui chiffre les secrets), identifiants de la base de données, `APP_URL`, `APP_ENV`/`APP_DEBUG`, réglages des cookies de session, HSTS. Ils restent dans le `.env` du serveur.

@@ -17,6 +17,7 @@ final class SettingsOverview
     {
         return match (true) {
             $type === 'bool' => $v ? 'Oui' : 'Non',
+            $type === 'secret' => $v ? 'Défini' : 'Non défini',
             $v === null || $v === '' => '—',
             $type === 'percent' => rtrim(rtrim(number_format($v / 100, 2, ',', ''), '0'), ','),
             default => (string) $v,
@@ -26,7 +27,7 @@ final class SettingsOverview
     /** Valeur proposée dans un champ de saisie. */
     public static function input(string $type, mixed $v): string
     {
-        return $type === 'percent' ? rtrim(rtrim(number_format(((int) $v) / 100, 2, ',', ''), '0'), ',') : (string) ($v ?? '');
+        return $type === 'secret' ? '' : ($type === 'percent' ? rtrim(rtrim(number_format(((int) $v) / 100, 2, ',', ''), '0'), ',') : (string) ($v ?? ''));
     }
 
     public function settings(): array
@@ -39,8 +40,12 @@ final class SettingsOverview
             foreach ($d['keys'] as $key) {
                 $def = SettingDefinitions::all()[$key];
                 $row = $rows[$key] ?? null;
-                $value = $row ? $row->value : AppSettings::default($key);
-                $fields[] = $def + ['key' => $key, 'input' => self::input($def['type'], $value), 'value' => $value, 'shown' => self::show($def['type'], $value), 'default' => self::show($def['type'], AppSettings::default($key)),
+                $secret = $def['type'] === 'secret';
+                $default = SettingDefinitions::normalize($key, AppSettings::default($key));
+                $value = $secret ? ($row !== null || filled($default)) : SettingDefinitions::normalize($key, $row ? $row->value : $default);
+                $fields[] = $def + ['key' => $key, 'input' => self::input($def['type'], $value), 'value' => $value,
+                    'shown' => $secret ? ($row !== null ? 'Défini dans l’administration' : (filled($default) ? 'Défini sur le serveur (.env)' : 'Non défini')) : self::show($def['type'], $value),
+                    'default' => $secret ? (filled($default) ? 'définie sur le serveur' : 'non définie') : (($def['options'] ?? null) && $default !== null ? ($def['options'][$default] ?? self::show($def['type'], $default)) : self::show($def['type'], $default)),
                     'custom' => $row !== null, 'status' => $d['approvable'] ? ($row->status ?? 'provisional') : null,
                     'approvedBy' => $approvers[$key] ?? null, 'approvedAt' => $row && $row->approved_at ? Dates::short(Carbon::parse($row->approved_at)) : null];
             }
@@ -57,7 +62,11 @@ final class SettingsOverview
                 $def = SettingDefinitions::all()[$c->key] ?? null;
                 $type = $def['type'] ?? 'text';
 
-                return ['label' => $def['label'] ?? $c->key, 'old' => self::show($type, json_decode($c->old_value, true)), 'new' => self::show($type, json_decode($c->new_value, true)), 'status' => $c->status_after,
+                $o = json_decode($c->old_value, true);
+                $n = json_decode($c->new_value, true);
+                $shown = fn ($v) => ($type === 'secret' || $v === '[secret]') ? '••••••' : (is_string($v) && str_starts_with($v, '[') ? $v : self::show($type, $v));
+
+                return ['label' => $def['label'] ?? $c->key, 'old' => $shown($o), 'new' => $shown($n), 'status' => $c->status_after,
                     'reason' => $c->reason, 'actor' => $c->actor, 'when' => Dates::format(Carbon::parse($c->created_at))];
             })->all();
     }

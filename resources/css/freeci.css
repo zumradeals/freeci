@@ -1073,3 +1073,4 @@ a.metric:hover { background: var(--marine-100); }
 .card .order-list .order-card:hover { background: var(--canvas); border-color: var(--line); box-shadow: none; }
 .card .order-list { grid-template-columns: minmax(0, 1fr) !important; }
 .metric-featured dd, .metric-featured .metric-value, .metric-featured dd.metric-hint, .metric-featured .metric-hint { color: #fff; }
+.check .muted { font-weight: 400; }

@@ -241,6 +241,8 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             // Paramètres de la plateforme et textes légaux : modifiables par l'administrateur (confirmation récente d'identité à chaque écriture, historique, audit).
             Route::get('/parametres', [SettingsController::class, 'index'])->name('admin.settings');
             Route::post('/parametres/{group}', [SettingsController::class, 'save'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.settings.save');
+            Route::post('/parametres-test/courrier', [SettingsController::class, 'testMail'])->middleware(['recent-auth', 'throttle:5,1'])->name('admin.settings.test-mail');
+            Route::post('/parametres-test/genius/{env}', [SettingsController::class, 'testGenius'])->middleware(['recent-auth', 'throttle:5,1'])->name('admin.settings.test-genius');
             Route::get('/pages', [LegalPagesController::class, 'index'])->name('admin.legal');
             Route::get('/pages/{slug}', [LegalPagesController::class, 'edit'])->name('admin.legal.edit');
             Route::middleware(['recent-auth', 'throttle:20,1'])->group(function () {
