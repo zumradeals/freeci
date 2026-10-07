@@ -89,6 +89,17 @@ class ProductionLikeSmokeTest extends TestCase
     {
         $order = $this->inProgress();
         $pages = $this->pages($order->reference);
+        // Brouillons modifiables (le service d'exemple n'est pas éditable : sa page d'édition redirige).
+        $svc = $this->actingAs($this->freelancer)->post('/freelance/services', ['title' => 'Mise en plan 2D complète d’un appartement', 'category_id' => $this->service->category_id]);
+        $svc->assertRedirect();
+        $this->app['auth']->forgetGuards();
+        $mis = $this->actingAs($this->client)->post('/espace/missions', ['title' => 'Conversion de douze plans PDF en fichiers DWG', 'category_id' => $this->service->category_id]);
+        $mis->assertRedirect();
+        foreach ([[$svc->headers->get('Location'), 'freelancer'], [$mis->headers->get('Location'), 'client']] as [$loc, $actor]) {
+            $path = parse_url((string) $loc, PHP_URL_PATH);
+            $this->assertSame(200, $this->visit($path, $actor)->getStatusCode(), "page d'édition attendue : {$path}");
+            $pages[] = [$path, $actor];
+        }
         $this->assertGreaterThan(50, count($pages), 'le parcours doit couvrir l’ensemble des pages');
 
         $this->sweep('1re passe (cache vide)', $pages);

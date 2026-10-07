@@ -1084,3 +1084,13 @@ a.metric:hover { background: var(--marine-100); }
 .kpi .l { font-size: .875rem; }
 .kpi .n { font-size: clamp(1.25rem, 1.6vw, 1.625rem); color: var(--ink-900); }
 a.kpi:hover { background: var(--marine-100); }
+
+/* Lot 24 : remplacements des styles en ligne des pages d'édition et du détail de commande */
+.fields { display: grid; gap: 16px; }
+.form-stack { display: grid; gap: 20px; min-width: 0; max-width: 720px; }
+.fieldset-bare { border: 0; padding: 0; margin: 0; display: grid; gap: 20px; min-width: 0; }
+.row-gap { gap: 12px; }
+.row-between { justify-content: space-between; }
+.mt-6 { margin-top: 6px; } .mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.card-accent-success { border-left: 4px solid var(--success-700); }
+.card-accent-error { border-left: 4px solid var(--error-700); }
