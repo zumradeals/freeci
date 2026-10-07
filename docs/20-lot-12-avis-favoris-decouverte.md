@@ -23,4 +23,4 @@ Service ou freelance, privés, sans doublon, page « Favoris ». Un contenu reti
 - Aucun badge de confiance, « recommandé » ou indicateur de popularité.
 
 ## Limites
-Avis client → freelance uniquement (réciprocité F36 non traitée). Délai de 14 jours non validé. Pas de moteur de recherche externe. Aucune commande réelle n'existe encore : aucun avis public avant l'activation du mode live.
+Avis client → freelance uniquement : **décision du porteur (D42)**, la réciprocité F36 n'est pas mise en œuvre à l'ouverture. Délai de 14 jours non validé. Pas de moteur de recherche externe. Aucune commande réelle n'existe encore : aucun avis public avant l'activation du mode live.
