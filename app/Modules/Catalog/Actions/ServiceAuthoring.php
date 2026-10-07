@@ -76,7 +76,7 @@ final class ServiceAuthoring
         } elseif (PrivateContact::found($title)) {
             $errors['title'] = 'Retirez les coordonnées privées (adresse e-mail, numéro de téléphone) : les échanges passent par FreeCI.';
         }
-        if (! Category::query()->whereKey($categoryId)->exists()) {
+        if (! Category::query()->active()->whereKey($categoryId)->exists()) {
             $errors['category_id'] = 'Choisissez une catégorie.';
         }
         if ($errors !== []) {

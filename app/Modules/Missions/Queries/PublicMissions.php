@@ -69,13 +69,13 @@ final class PublicMissions
     /** @return Collection<int, Category> */
     public function categoryChoices(): Collection
     {
-        return Category::query()->orderBy('position')->get(['id', 'name']);
+        return Category::query()->active()->orderBy('position')->get(['id', 'name']);
     }
 
     /** @return list<array{slug: string, name: string}> */
     public function categories(): array
     {
-        return Category::query()->orderBy('position')->get(['slug', 'name'])->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name])->all();
+        return Category::query()->active()->orderBy('position')->get(['slug', 'name'])->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name])->all();
     }
 
     /**

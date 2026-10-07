@@ -57,7 +57,7 @@ final class ClientMissions
 
         return [
             'mission' => $m, 'working' => $w, 'live' => $live, 'status' => $label, 'tone' => $tone, 'icon' => $icon, 'note' => $note,
-            'categories' => Category::query()->orderBy('position')->get(['id', 'name']), 'proposals' => $active, 'orderReference' => $order,
+            'categories' => Category::query()->where(fn ($q) => $q->active()->orWhere('id', $w?->category_id))->orderBy('position')->get(['id', 'name']), 'proposals' => $active, 'orderReference' => $order,
             'problems' => $w?->isEditable() ? $this->problems($w) : [],
             'selectionEnd' => $live ? Dates::format(MissionLifecycle::selectionEnd($live)) : null,
             'canEdit' => $w?->isEditable() === true, 'canSubmit' => $w?->isEditable() === true, 'canUnsubmit' => $w?->state === 'in_review', 'canPreview' => $w !== null,

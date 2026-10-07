@@ -1,23 +1,24 @@
+@php($hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k"))
 <x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'">
 <section class="hero on-dark" aria-labelledby="h-hero">
   <div class="hero-grid-bg" aria-hidden="true"></div>
   <div class="container">
     <div>
-      <p class="eyebrow">Des compétences en Côte d’Ivoire</p>
-      <h1 class="t-display" id="h-hero">Un freelance pour votre prochain projet<span class="dot" aria-hidden="true">.</span></h1>
-      <p class="lede">Comparez des prestations à prix et délai annoncés, ou décrivez votre besoin et recevez des propositions.</p>
+      <p class="eyebrow">{{ $hm('eyebrow') }}</p>
+      <h1 class="t-display" id="h-hero">{{ $hm('title') }}<span class="dot" aria-hidden="true">.</span></h1>
+      <p class="lede">{{ $hm('lede') }}</p>
       <form class="search" role="search" method="get" action="{{ route('services.index') }}">
         <label for="q">Que recherchez-vous ?</label>
         <div class="search-box">
-          <div class="search-field"><x-fc.icon name="search" :size="22" /><input class="input" id="q" name="q" type="search" placeholder="Un plan, un logo, un site web" autocomplete="off" maxlength="100"></div>
+          <div class="search-field"><x-fc.icon name="search" :size="22" /><input class="input" id="q" name="q" type="search" placeholder="{{ $hm('search_hint') }}" autocomplete="off" maxlength="100"></div>
           <button class="btn btn-primary btn-lg" type="submit">Rechercher</button>
         </div>
       </form>
       <div class="chips" role="group" aria-label="Recherches fréquentes"><span class="lbl sr-only-m">Recherches fréquentes :</span>
-        @foreach(['Plan AutoCAD', 'Logo', 'Site web', 'Traduction'] as $term)
+        @foreach(array_slice(array_values(array_filter(array_map('trim', explode(',', (string) $hm('chips'))))), 0, 6) as $term)
         <a class="chip" href="{{ route('services.index', ['q' => $term]) }}">{{ $term }}</a>
         @endforeach</div>
-      <div class="hero-alt"><span>Un besoin précis ?</span><a class="btn btn-secondary btn-lg" href="{{ route('client.missions.new') }}">Publier une mission</a></div>
+      <div class="hero-alt"><span>{{ $hm('mission_prompt') }}</span><a class="btn btn-secondary btn-lg" href="{{ route('client.missions.new') }}">Publier une mission</a></div>
     </div>
     <aside class="hero-card" aria-labelledby="h-card">
       <p class="eyebrow muted">Le suivi d’une commande</p>
@@ -66,7 +67,7 @@
 </div></section>
 
 <section class="freelance-band on-dark" aria-labelledby="h-fl"><div class="container">
-  <div><h2 class="t-h2" id="h-fl">Vous êtes freelance ?</h2><p style="margin-top:6px">Présentez vos compétences et publiez vos prestations.</p></div>
+  <div><h2 class="t-h2" id="h-fl">{{ $hm('freelance_title') }}</h2><p style="margin-top:6px">{{ $hm('freelance_text') }}</p></div>
   <a class="btn btn-primary btn-lg" href="{{ route('freelance.activate') }}">Créer mon profil</a>
 </div></section>
 

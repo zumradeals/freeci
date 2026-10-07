@@ -123,6 +123,19 @@ return [
         'export_per_day' => 5,
     ],
 
+    // Textes de la vitrine (accueil, pied de page) : valeurs de départ, modifiables dans Paramètres › Accueil et vitrine.
+    'home' => [
+        'eyebrow' => 'Des compétences en Côte d’Ivoire',
+        'title' => 'Un freelance pour votre prochain projet',
+        'lede' => 'Comparez des prestations à prix et délai annoncés, ou décrivez votre besoin et recevez des propositions.',
+        'search_hint' => 'Un plan, un logo, un site web',
+        'chips' => 'Plan AutoCAD, Logo, Site web, Traduction',
+        'mission_prompt' => 'Un besoin précis ?',
+        'freelance_title' => 'Vous êtes freelance ?',
+        'freelance_text' => 'Présentez vos compétences et publiez vos prestations.',
+        'tagline' => 'Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.',
+    ],
+
     // Identité de l'exploitant et pages d'information : AUCUNE valeur inventée. Vide = « à renseigner » (brouillon).
     'legal' => [
         'operator_name' => env('FREECI_OPERATOR_NAME'),

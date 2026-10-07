@@ -16,6 +16,7 @@ final class AuditLog
         'payment.reconciliation_review' => 'Paiement : dossier de rapprochement examiné', 'user.suspend' => 'Compte suspendu', 'user.reactivate' => 'Compte réactivé',
         'case.claim' => 'Dossier : prise en charge', 'case.assign' => 'Dossier : affectation', 'case.release' => 'Dossier : fin d’affectation', 'case.open' => 'Dossier : ouverture motivée',
         'case.view' => 'Dossier : consultation du contenu', 'case.download' => 'Dossier : pièce consultée', 'case.status' => 'Dossier : changement d’état', 'case.priority' => 'Dossier : priorité',
+        'category.create' => 'Catégorie créée', 'category.update' => 'Catégorie modifiée', 'category.move' => 'Catégorie déplacée', 'category.archive' => 'Catégorie archivée', 'category.restore' => 'Catégorie rétablie', 'category.delete' => 'Catégorie supprimée',
         'case.close' => 'Dossier : clôture', 'case.decide' => 'Dossier : décision', 'case.from_follow_up' => 'Dossier ouvert depuis un besoin de suivi',
     ];
 

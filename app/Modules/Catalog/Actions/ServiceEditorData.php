@@ -26,7 +26,7 @@ final class ServiceEditorData
     /** @return Collection<int, Category> */
     public function categoryChoices(): Collection
     {
-        return Category::query()->orderBy('position')->get(['id', 'name']);
+        return Category::query()->active()->orderBy('position')->get(['id', 'name']);
     }
 
     /** @return array<string, mixed> */
@@ -40,7 +40,7 @@ final class ServiceEditorData
 
         return [
             'service' => $service, 'version' => $v, 'live' => $live,
-            'categories' => Category::query()->orderBy('position')->get(['id', 'name']),
+            'categories' => Category::query()->where(fn ($q) => $q->active()->orWhere('id', $v?->category_id))->orderBy('position')->get(['id', 'name']),
             'images' => $v ? ImageUrls::present($v->images) : [], 'imageIds' => $v ? array_map(fn ($i) => $i['id'] ?? null, $v->images) : [],
             'imagesEnabled' => ImageProcessor::available(), 'limits' => config('freeci.catalog'),
             'profilePublished' => $profile->published_at !== null, 'profileMissing' => PublishFreelanceProfile::missing($profile),

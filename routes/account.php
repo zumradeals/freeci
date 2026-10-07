@@ -5,6 +5,7 @@ use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\LegalPagesController;
 use App\Http\Controllers\Admin\MfaController;
@@ -244,6 +245,15 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::post('/parametres/{group}', [SettingsController::class, 'save'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.settings.save');
             Route::post('/parametres-test/courrier', [SettingsController::class, 'testMail'])->middleware(['recent-auth', 'throttle:5,1'])->name('admin.settings.test-mail');
             Route::post('/parametres-test/genius/{env}', [SettingsController::class, 'testGenius'])->middleware(['recent-auth', 'throttle:5,1'])->name('admin.settings.test-genius');
+            Route::get('/categories', [CategoriesController::class, 'index'])->name('admin.categories');
+            Route::middleware(['recent-auth', 'throttle:30,1'])->group(function () {
+                Route::post('/categories', [CategoriesController::class, 'store'])->name('admin.categories.store');
+                Route::post('/categories/{id}', [CategoriesController::class, 'update'])->whereUuid('id')->name('admin.categories.update');
+                Route::post('/categories/{id}/deplacer/{direction}', [CategoriesController::class, 'move'])->whereUuid('id')->whereIn('direction', ['up', 'down'])->name('admin.categories.move');
+                Route::post('/categories/{id}/archiver', [CategoriesController::class, 'archive'])->whereUuid('id')->name('admin.categories.archive');
+                Route::post('/categories/{id}/retablir', [CategoriesController::class, 'restore'])->whereUuid('id')->name('admin.categories.restore');
+                Route::post('/categories/{id}/supprimer', [CategoriesController::class, 'destroy'])->whereUuid('id')->name('admin.categories.delete');
+            });
             Route::get('/pages', [LegalPagesController::class, 'index'])->name('admin.legal');
             Route::get('/pages/{slug}', [LegalPagesController::class, 'edit'])->name('admin.legal.edit');
             Route::middleware(['recent-auth', 'throttle:20,1'])->group(function () {

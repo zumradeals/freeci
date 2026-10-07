@@ -52,7 +52,7 @@ final class MissionAuthoring
         } elseif (PrivateContact::found($title)) {
             $errors['title'] = 'Retirez les coordonnées privées (adresse e-mail, numéro de téléphone) : une mission est publique.';
         }
-        if (! Category::query()->whereKey($categoryId)->exists()) {
+        if (! Category::query()->active()->whereKey($categoryId)->exists()) {
             $errors['category_id'] = 'Choisissez une catégorie.';
         }
         if ($errors !== []) {

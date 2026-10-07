@@ -12,7 +12,7 @@ final class ListCategories
     /** @return list<CategoryItem> */
     public function __invoke(): array
     {
-        return Category::query()->orderBy('position')->get()
+        return Category::query()->active()->orderBy('position')->get()
             ->map(fn (Category $c) => new CategoryItem($c->slug, $c->name, $c->icon))
             ->all();
     }
@@ -26,7 +26,7 @@ final class ListCategories
     public function withServiceCounts(): array
     {
         $counts = Service::query()->published()->selectRaw('category_id, count(*) as n')->groupBy('category_id')->pluck('n', 'category_id');
-        $all = Category::query()->orderBy('position')->get()
+        $all = Category::query()->active()->orderBy('position')->get()
             ->map(fn (Category $c) => new CategoryItem($c->slug, $c->name, $c->icon, (int) ($counts[$c->getKey()] ?? 0)))
             ->all();
         $used = array_values(array_filter($all, fn (CategoryItem $c) => $c->services > 0));

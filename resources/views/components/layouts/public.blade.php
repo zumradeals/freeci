@@ -31,7 +31,7 @@
     <div class="cols">
       <div class="stack-sm">
         <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
-        <p class="muted" style="max-width:32em">Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.</p>
+        <p class="muted" style="max-width:32em">{{ config('freeci.home.tagline') ?: \App\Modules\Admin\Settings\AppSettings::default('home.tagline') }}</p>
       </div>
       <div><h2>Découvrir</h2><ul>
         <li><a href="{{ route('services.index') }}">Services</a></li><li><a href="{{ route('missions.index') }}">Missions</a></li><li><a href="{{ route('freelances.index') }}">Freelances</a></li></ul></div>

@@ -19,6 +19,14 @@ class Category extends Model
 
     protected $guarded = [];
 
+    protected $casts = ['archived_at' => 'datetime'];
+
+    /** Catégories proposées : les archivées restent attachées à leur historique mais ne sont plus offertes. */
+    public function scopeActive($query)
+    {
+        return $query->whereNull('archived_at');
+    }
+
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
