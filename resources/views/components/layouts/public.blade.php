@@ -27,12 +27,12 @@
 {{ $slot }}
 </main>
 <footer class="ft">
-  @guest
+  @if(auth()->guest() && ! request()->routeIs('home'))
   <section class="ft-cta" aria-label="Commencer"><div class="in">
     <div><h2>Un projet à confier, un talent à proposer ?</h2><p>Trouvez un service ou publiez le vôtre.</p></div>
     <div class="acts"><a class="b1" href="{{ route('services.index') }}">Trouver un service</a><a class="b2" href="{{ route('register') }}">Proposer mes services</a></div>
   </div></section>
-  @endguest
+  @endif
   <div class="ft-main">
     <div class="ft-brand">
       <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="36" height="36" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>

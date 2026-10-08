@@ -53,4 +53,9 @@ class ErrorPagesTest extends TestCase
             ->assertSee('Côte d’Ivoire')->assertSee('© '.now()->year.' FreeCI')->assertSee('Haut de page')->assertSee('Mentions légales');
         $this->actingAs(User::factory()->create())->get('/services')->assertOk()->assertSee('class="ft"', false)->assertDontSee('Un projet à confier, un talent à proposer ?');
     }
+
+    public function test_the_home_page_does_not_stack_a_second_call_to_action_above_the_footer(): void
+    {
+        $this->get('/')->assertOk()->assertSee('class="ft"', false)->assertDontSee('Un projet à confier, un talent à proposer ?');
+    }
 }

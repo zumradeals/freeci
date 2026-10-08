@@ -2024,17 +2024,17 @@ a.kpi:hover { background: var(--marine-100); }
 .dl-panel:not([hidden]) { display: grid; gap: 16px; }
 
 /* Lot 63 — pied de page */
-.ft{background:var(--marine-950,#0c2340);color:#d5e2ef;margin-top:48px}
+.ft{background:var(--marine-950,#0c2340);color:#d5e2ef;margin-top:0}
 .ft a{color:#d5e2ef;text-decoration:none}
 .ft a:hover{color:#fff;text-decoration:underline}
 .ft-cta{background:linear-gradient(135deg,#17375e,#0f2a4a);border-bottom:1px solid rgba(255,255,255,.12)}
-.ft-cta .in{max-width:1180px;margin:0 auto;padding:28px 24px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ft-cta .in{max-width:var(--container);margin:0 auto;padding:28px var(--gutter);display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .ft-cta h2{color:#fff;font-size:1.375rem;font-weight:800;letter-spacing:-.02em;margin:0}
 .ft-cta p{margin:4px 0 0;color:#b9cde3}
 .ft-cta .acts{display:flex;gap:10px;flex-wrap:wrap}
 .ft-cta .b1{background:#e8590c;color:#fff;border-radius:10px;padding:12px 20px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
 .ft-cta .b2{border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;padding:12px 20px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
-.ft-main{max-width:1180px;margin:0 auto;padding:44px 24px 28px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
+.ft-main{max-width:var(--container);margin:0 auto;padding:44px var(--gutter) 28px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
 .ft-brand{display:grid;gap:14px;align-content:start}
 .ft .logo{display:flex;gap:10px;align-items:center;color:#fff;font-weight:800;font-size:1.375rem}
 .ft .logo .x{width:36px;height:36px;border-radius:9px;background:#fff;color:#17375e;display:grid;place-items:center;font-style:normal}
@@ -2046,7 +2046,7 @@ a.kpi:hover { background: var(--marine-100); }
 .ft ul{list-style:none;margin:0;padding:0;display:grid}
 .ft li a{display:inline-flex;align-items:center;min-height:40px}
 .ft-bar{border-top:1px solid rgba(255,255,255,.12)}
-.ft-bar .in{max-width:1180px;margin:0 auto;padding:16px 24px;display:flex;gap:12px 24px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:.875rem;color:#9fb8d4}
+.ft-bar .in{max-width:var(--container);margin:0 auto;padding:16px var(--gutter);display:flex;gap:12px 24px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:.875rem;color:#9fb8d4}
 .ft-bar nav{display:flex;gap:6px 20px;flex-wrap:wrap}
 .ft-bar .tools{display:flex;gap:14px;align-items:center}
 .ft-top{display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 12px;color:#fff}
@@ -2067,3 +2067,54 @@ a.kpi:hover { background: var(--marine-100); }
   .ft-bar .in { padding: 16px; }
   .ft-cta .acts a { flex: 1; justify-content: center; text-align: center; }
 }
+
+/* Lot 64 — tableau de bord d'administration */
+.pl-mode{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;border:1px solid #cfdceb;background:#f3f7fb;border-radius:16px;padding:18px 20px}
+.pl-mode.live{border-color:#f0c58c;background:var(--surface)8ec}
+.pl-badge{display:grid;gap:2px;justify-items:center;padding:12px 16px;border-radius:12px;background:#17375e;color:#fff;min-width:110px}
+.pl-mode.live .pl-badge{background:#b45309}
+.pl-badge b{font-size:1.125rem;letter-spacing:.04em}
+.pl-badge small{opacity:.85}
+.pl-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.pl-stat{display:grid;gap:2px}
+.pl-stat small{color:var(--ink-600)}
+.pl-stat b{font-size:1.25rem;font-weight:800}
+.pl-stat.dim b{color:var(--ink-600)}
+.pl-note{grid-column:1/-1;color:var(--ink-600);font-size:.875rem;margin:0}
+.pl-sec{display:grid;gap:12px}
+.pl-sech{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pl-sech h2{font-size:1.25rem;font-weight:750}
+.pl-sech span{color:var(--ink-600);font-size:.875rem}
+.pl-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pl-g{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;align-content:start}
+.pl-gh{display:flex;gap:10px;align-items:center}
+.pl-gi{width:36px;height:36px;border-radius:10px;background:#eaf1f8;color:var(--marine-900);display:grid;place-items:center}
+.pl-g h3{font-size:1.0625rem;font-weight:750}
+.pl-g.alert{border-color:#f0c58c}
+.pl-g.alert .pl-gi{background:var(--surface)3e6;color:var(--accent-700)}
+.pl-row{display:grid;grid-template-columns:minmax(0,1fr) auto 18px;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--line);color:inherit;text-decoration:none}
+.pl-row:first-of-type{border-top:0}
+.pl-row:hover{background:#f7f9fc}
+.pl-row .n{min-width:36px;text-align:center;border-radius:999px;padding:3px 10px;font-weight:800;background:#eef2f7;color:var(--ink-600)}
+.pl-row.hot .n{background:var(--accent-700);color:#fff}
+.pl-row.hot span:first-child{font-weight:650}
+.pl-ctx{display:flex;gap:12px 28px;flex-wrap:wrap;color:var(--ink-600);font-size:.9375rem}
+.pl-ctx b{color:var(--ink-900)}
+.pl-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.pl-tl{list-style:none;margin:0;padding:0;display:grid}
+.pl-tl li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.pl-tl li:first-child{border-top:0}
+.pl-tl i{width:10px;height:10px;border-radius:50%;background:var(--marine-700);margin-top:6px}
+.pl-tl i.no{background:#b3261e}
+.pl-tl small{color:var(--ink-600);display:block}
+.pl-tb{display:grid}
+.pl-tr{display:grid;grid-template-columns:130px minmax(0,1fr) 150px;gap:12px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.pl-tr.h{border-top:0;font-size:.8125rem;color:var(--ink-600);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+@media(max-width:1279px){.pl-two{grid-template-columns:1fr}}
+@media(max-width:1023px){.pl-stats{grid-template-columns:1fr 1fr}
+.pl-groups{grid-template-columns:1fr}
+.pl-mode{grid-template-columns:1fr}
+.pl-tr{grid-template-columns:1fr 1fr}
+.pl-tr.h{display:none}
+.pl-tr>:nth-child(2){grid-column:1/-1;order:3}}
+@media (max-width: 600px) { .ft-cta .in, .ft-main, .ft-bar .in { padding-inline: var(--gutter); } }

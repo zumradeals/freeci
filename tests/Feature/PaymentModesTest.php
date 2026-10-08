@@ -268,7 +268,7 @@ class PaymentModesTest extends TestCase
         $o = $this->inProgress();
         $this->assertSame('test', $o->environment);
         $page = $this->asAdmin($this->readyAdmin())->get('/admin')->assertOk();
-        $page->assertSee('TEST (sandbox, aucun argent réel)')->assertSee('Encaissé réel : 0 FCFA')->assertSee('exclu des totaux');
+        $page->assertSee('TEST (sandbox, aucun argent réel)')->assertSee('Encaissé réel')->assertSee('<b>0 FCFA</b>', false)->assertSee('exclu des totaux')->assertSee('Encaissé de test');
         $this->assertSame(0, (int) DB::table('payments')->where('state', 'confirmed')->where('environment', 'live')->sum('amount_xof'));
         $this->assertSame(35000, (int) DB::table('payments')->where('state', 'confirmed')->where('environment', '<>', 'live')->sum('amount_xof'));
     }
