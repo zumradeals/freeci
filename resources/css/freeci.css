@@ -1958,3 +1958,67 @@ a.kpi:hover { background: var(--marine-100); }
 @media(max-width:600px){.er{margin:24px 0;padding:28px 20px}
 .er-links{grid-template-columns:1fr}}
 
+
+/* Lot 62 — livraison, étapes de commande et avis */
+.dl-notice{display:flex;gap:10px;align-items:flex-start;background:#f3f7fb;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.dl-notice svg{flex:none;margin-top:2px;color:var(--marine-700)}
+.dl-ctx{display:flex;gap:10px 18px;flex-wrap:wrap;color:var(--ink-600)}
+.dl-ctx b{color:var(--ink-900)}
+.dl-q{border-left:4px solid var(--accent-700);background:var(--surface)8f2;border-radius:0 12px 12px 0;padding:12px 14px}
+.dl-file{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface)}
+.dl-fi{width:44px;height:44px;border-radius:10px;background:#eaf1f8;color:var(--marine-900);display:grid;place-items:center}
+.dl-file small{color:var(--ink-600);display:block}
+.dl-ok{color:#14633b;font-weight:650;display:inline-flex;gap:6px;align-items:center;font-size:.875rem}
+.dl-drop{border:2px dashed var(--line-strong,#b8c4d0);border-radius:12px;padding:18px;text-align:center;color:var(--ink-600);background:#fafbfd}
+.dl-ck{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.dl-ck li{display:flex;gap:10px;align-items:flex-start}
+.dl-ck .m{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:.75rem;font-weight:800;background:#e6ebf1;color:var(--ink-600)}
+.dl-ck li.ok .m{background:#1a7f4b;color:#fff}
+.dl-ck small{display:block;color:var(--ink-600)}
+.dl-ver{display:grid;gap:14px}
+.dl-vh{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.dl-choices{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dl-choice{border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;background:var(--surface);align-content:start}
+.dl-choice.go{border-color:#cfe5d8;background:#f2faf5}
+.dl-choice h4{font-size:1.0625rem}
+.dl-choice ul{margin:0;padding-left:18px;color:var(--ink-600);display:grid;gap:4px}
+.dl-old{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--surface)}
+.dl-counter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dl-dots{display:flex;gap:6px}
+.dl-dots i{width:12px;height:12px;border-radius:50%;background:#c5d0dc}
+.dl-dots i.u{background:var(--marine-900)}
+.dl-stars{display:flex;gap:8px;flex-wrap:wrap}
+.dl-star{border:1px solid var(--line-strong,#b8c4d0);border-radius:12px;padding:10px 14px;min-width:64px;text-align:center;font-weight:700;background:var(--surface)}
+.dl-star.on{background:var(--marine-900);color:#fff;border-color:var(--marine-900)}
+.dl-rev{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--surface);display:grid;gap:10px}
+.dl-rv{color:#e0a100;font-size:1.25rem;letter-spacing:2px}
+.dl-reply{border-left:3px solid var(--line);padding-left:14px;display:grid;gap:4px}
+@media(max-width:1279px){.dl-choices{grid-template-columns:1fr}}
+@media(max-width:600px){.dl-file{grid-template-columns:44px minmax(0,1fr)}
+.dl-file>:last-child{grid-column:1/-1}}
+
+.dl-star-in{position:absolute;opacity:0;width:1px;height:1px}
+.dl-star{cursor:pointer;display:inline-block}
+.dl-star-in:checked+.dl-star{background:var(--marine-900);color:#fff;border-color:var(--marine-900)}
+.dl-star-in:focus-visible+.dl-star{outline:3px solid var(--marine-700);outline-offset:2px}
+.dl-pick{position:relative;display:inline-block}
+.dl-q span{display:block}
+.dl-ok.t-warning { color: #8a5a00; }
+.dl-ok.t-error, .dl-ok.t-danger { color: #a02a1f; }
+.dl-ok.t-neutral, .dl-ok.t-info { color: var(--ink-600); }
+.dl-fa { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dl-fa form { margin: 0; }
+.dl-files { display: grid; gap: 10px; }
+.dl-file b { overflow-wrap: anywhere; }
+.dl-ver h2, .dl-ver h3 { font-size: 1.25rem; font-weight: 750; }
+.dl-sec { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.dl-sec > summary { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 14px 16px; cursor: pointer; font-weight: 650; list-style: none; }
+.dl-sec > summary::-webkit-details-marker { display: none; }
+.dl-sec[open] > summary svg { transform: rotate(180deg); }
+.dl-sec .dl-body { padding: 0 16px 16px; display: grid; gap: 12px; }
+.dl-dis { opacity: .6; pointer-events: none; }
+.dl-dec { display: grid; gap: 14px; }
+.dl-dh { font-size: 1.125rem; font-weight: 750; }
+.dl-ver, .dl-dec { min-width: 0; }
+#livraison-deliveries { display: grid; gap: 16px; }
+.dl-panel:not([hidden]) { display: grid; gap: 16px; }

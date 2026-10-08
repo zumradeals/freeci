@@ -558,4 +558,16 @@ class DeliveryCycleTest extends TestCase
         $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('Demander une correction')->assertSee('Valider la livraison')->assertSee('2 sur 2 restante')->assertSee('Contrôle de sécurité ≠ qualité du travail');
         $this->actingAs($this->freelancer)->get("/commandes/{$order->reference}")->assertOk()->assertDontSee('Valider la livraison')->assertSee('en attente d’examen');
     }
+
+    public function test_delivery_screens_share_the_new_layout_without_changing_the_rules(): void
+    {
+        $order = $this->inProgress();
+        $this->draft($order);
+        $this->actingAs($this->freelancer)->get("/commandes/{$order->reference}/livraison")->assertOk()->assertSee('Brouillon privé')->assertSee('dl-file', false)->assertSee('Prêt à soumettre')->assertSee('Retirer');
+        $this->submit($order)->assertRedirect();
+        $page = $this->actingAs($this->client)->get("/commandes/{$order->reference}")->assertOk()->assertSee('dl-choices', false)->assertSee('Contrôle de sécurité ≠ qualité du travail')->assertSee('dl-dots', false);
+        $this->assertStringNotContainsString('Retirer', substr($page->getContent(), (int) strpos($page->getContent(), 'dl-choices') - 4000, 4000));
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}/validation")->assertOk()->assertSee('Ce qui va se passer')->assertSee('ne confirme ni ne déclenche aucun reversement');
+        $this->actingAs($this->client)->get("/commandes/{$order->reference}/correction")->assertOk()->assertSee('Corrections incluses')->assertSee('Points à corriger');
+    }
 }

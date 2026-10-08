@@ -147,7 +147,7 @@
         </div>
 
         @if($showDeliveries)
-        <div class="panel" role="tabpanel" id="panel-livraisons" aria-labelledby="tab-livraisons" tabindex="0">
+        <div class="panel dl-panel" role="tabpanel" id="panel-livraisons" aria-labelledby="tab-livraisons" tabindex="0">
           @include('orders._deliveries')
         </div>
         @endif

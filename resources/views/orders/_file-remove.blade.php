@@ -1,0 +1,1 @@
+<form method="post" action="{{ route('orders.delivery.remove', [$d->reference, $f['id']]) }}">@csrf<button class="btn btn-link" type="submit">Retirer<span class="sr-only"> {{ $f['name'] }}</span></button></form>
