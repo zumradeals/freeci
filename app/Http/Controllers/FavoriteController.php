@@ -14,7 +14,11 @@ class FavoriteController extends Controller
 {
     public function index(Request $request, FavoriteQueries $q): View
     {
-        return view('account.favorites', ['items' => $q->list($request->user()), 'space' => $request->user()->hasRole('freelance') && $request->query('espace') === 'freelance' ? 'freelancer' : 'client']);
+        $all = $q->list($request->user());
+        $kind = in_array($request->query('type'), ['service', 'freelance'], true) ? $request->query('type') : 'tous';
+        $counts = ['tous' => count($all), 'service' => count(array_filter($all, fn ($i) => $i['kind'] === 'service')), 'freelance' => count(array_filter($all, fn ($i) => $i['kind'] === 'freelance'))];
+
+        return view('account.favorites', ['items' => $kind === 'tous' ? $all : array_values(array_filter($all, fn ($i) => $i['kind'] === $kind)), 'kind' => $kind, 'counts' => $counts, 'space' => $request->user()->hasRole('freelance') && $request->query('espace') === 'freelance' ? 'freelancer' : 'client']);
     }
 
     public function toggle(Request $request, ToggleFavorite $toggle, string $kind, string $slug): RedirectResponse

@@ -312,5 +312,8 @@ class NotificationsTest extends TestCase
         auth()->forgetGuards();
         $this->get('/espace/notifications')->assertRedirect('/connexion');
         $this->actingAs($this->client)->get('/espace/notifications')->assertOk()->assertSee('Aucune notification');
+        $this->actingAs($this->client)->get('/espace/notifications?statut=non-lues')->assertOk()->assertSee('Aucune notification non lue');
+        $this->actingAs($this->client)->get('/espace/notifications/preferences')->assertOk()->assertSee('ac-pr', false)->assertSee('Notifications indispensables');
+        $this->actingAs($this->client)->get('/espace/compte')->assertOk()->assertSee('ac-grid', false)->assertSee('Sessions ouvertes')->assertSee('Fermer mon compte');
     }
 }

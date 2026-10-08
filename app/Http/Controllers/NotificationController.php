@@ -19,7 +19,9 @@ class NotificationController extends Controller
 
     public function index(Request $request): View
     {
-        return view('notifications.index', ['page' => $this->center->page($request->user()), 'unread' => $this->center->unread($request->user()), 'space' => $this->space($request)]);
+        $only = $request->query('statut') === 'non-lues';
+
+        return view('notifications.index', ['page' => $this->center->page($request->user(), 20, $only)->withQueryString(), 'only' => $only, 'total' => $this->center->total($request->user()), 'unread' => $this->center->unread($request->user()), 'space' => $this->space($request)]);
     }
 
     public function open(Request $request, int $id): RedirectResponse

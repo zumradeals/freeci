@@ -19,11 +19,30 @@ final class NotificationCenter
         return AppNotification::query()->where('user_id', $user->getKey())->whereNull('read_at')->count();
     }
 
-    public function page(User $user, int $perPage = 20): LengthAwarePaginator
+    public function total(User $user): int
     {
-        return AppNotification::query()->where('user_id', $user->getKey())->orderByDesc('updated_at')->orderByDesc('id')->paginate($perPage)->through(fn (AppNotification $n) => [
+        return AppNotification::query()->where('user_id', $user->getKey())->count();
+    }
+
+    public function page(User $user, int $perPage = 20, bool $unreadOnly = false): LengthAwarePaginator
+    {
+        return AppNotification::query()->where('user_id', $user->getKey())->when($unreadOnly, fn ($q) => $q->whereNull('read_at'))->orderByDesc('updated_at')->orderByDesc('id')->paginate($perPage)->through(fn (AppNotification $n) => [
             'id' => $n->getKey(), 'title' => $n->title, 'body' => $n->body, 'when' => Dates::format($n->updated_at), 'unread' => $n->read_at === null, 'optional' => $n->category === NotificationTypes::OPTIONAL,
+            'icon' => self::icon((string) $n->type),
         ]);
+    }
+
+    /** Icône indicative selon la famille du type (présentation seulement). */
+    private static function icon(string $type): string
+    {
+        return match (true) {
+            str_starts_with($type, 'message') || str_starts_with($type, 'support') => 'message',
+            str_starts_with($type, 'payment') || str_starts_with($type, 'finance') => 'card',
+            str_starts_with($type, 'proposal') || str_starts_with($type, 'mission') => 'briefcase',
+            str_starts_with($type, 'delivery') || str_starts_with($type, 'correction') || str_starts_with($type, 'extension') => 'pencil',
+            str_starts_with($type, 'order_validated') || str_starts_with($type, 'review') => 'check',
+            default => 'inbox',
+        };
     }
 
     /** Marque lue puis retourne l'URL cible (ou le centre si le lien n'est plus valide). Notification d'autrui : null (404). */

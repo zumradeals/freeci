@@ -47,6 +47,19 @@ class FavoritesTest extends TestCase
         $this->fav($u, 'service', $s->slug, 'bogus')->assertSessionHasErrors('intent');
     }
 
+    public function test_favorites_can_be_filtered_by_type_with_counters(): void
+    {
+        $s = Service::factory()->create(['title' => 'Plans en DWG']);
+        $u = User::factory()->create();
+        $this->fav($u, 'service', $s->slug);
+        $this->fav($u, 'freelance', $s->freelanceProfile->slug);
+        $this->actingAs($u)->get('/espace/favoris')->assertOk()->assertSee('sv-tabs', false)->assertSee('ac-fav', false)->assertSee('Plans en DWG')->assertSee($s->freelanceProfile->display_name);
+        $this->actingAs($u)->get('/espace/favoris?type=service')->assertOk()->assertSee('Plans en DWG');
+        $only = $this->actingAs($u)->get('/espace/favoris?type=freelance')->assertOk()->assertDontSee('Plans en DWG');
+        $this->assertStringContainsString($s->freelanceProfile->display_name, $only->getContent());
+        $this->actingAs($u)->get('/espace/favoris?type=inconnu')->assertOk()->assertSee('Plans en DWG');
+    }
+
     public function test_favorites_are_private_to_their_owner(): void
     {
         $s = Service::factory()->create(['title' => 'Service secret favori']);
