@@ -33,7 +33,7 @@ class HomeContentSettingsTest extends TestCase
 
     public function test_the_settings_page_offers_the_showcase_group_with_the_starting_texts(): void
     {
-        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Accueil et vitrine')->assertSee('Un freelance pour votre prochain projet');
+        $this->asAdmin($this->admin)->get('/admin/parametres')->assertOk()->assertSee('Accueil et vitrine')->assertSee('Les bons talents. Pour vos projets.');
     }
 
     public function test_saved_texts_replace_the_starting_ones_on_the_home_and_the_footer(): void
@@ -41,7 +41,7 @@ class HomeContentSettingsTest extends TestCase
         $this->save(['home_title' => 'Le bon freelance, près de chez vous', 'home_chips' => 'Plomberie, Traduction ,  Logo', 'home_tagline' => 'Une phrase de pied de page.', 'home_freelance_title' => 'Proposez vos talents'])->assertSessionHas('status');
         $this->app['auth']->forgetGuards();
         $page = $this->get('/')->assertOk()->assertSee('Le bon freelance, près de chez vous')->assertSee('Une phrase de pied de page.')->assertSee('Proposez vos talents')
-            ->assertSee('Plomberie')->assertDontSee('Plan AutoCAD')->assertDontSee('Un freelance pour votre prochain projet');
+            ->assertSee('Plomberie')->assertDontSee('Plan AutoCAD')->assertDontSee('Les bons talents. Pour vos projets.');
         $page->assertSee('q=Traduction', false)->assertSee('q=Logo', false);
         $this->get('/services')->assertSee('Une phrase de pied de page.');
     }
@@ -50,7 +50,7 @@ class HomeContentSettingsTest extends TestCase
     {
         $this->save(['home_title' => '', 'home_lede' => '<script>alert(1)</script> Nouvelle accroche'])->assertSessionHas('status');
         $this->app['auth']->forgetGuards();
-        $this->get('/')->assertOk()->assertSee('Un freelance pour votre prochain projet')->assertSee('&lt;script&gt;alert(1)&lt;/script&gt; Nouvelle accroche', false)->assertDontSee('<script>alert(1)</script>', false);
+        $this->get('/')->assertOk()->assertSee('Les bons talents. Pour vos projets.')->assertSee('&lt;script&gt;alert(1)&lt;/script&gt; Nouvelle accroche', false)->assertDontSee('<script>alert(1)</script>', false);
     }
 
     public function test_the_chip_list_is_limited_to_six_terms(): void

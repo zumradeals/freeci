@@ -74,3 +74,7 @@ Annuaire : recherche compacte, avatars plus visibles, métier et ville séparés
 
 Validation : compilation Blade via PHP WASM, build Vite et `git diff --check` réussis. Pas de contrôle navigateur local ni de test PostgreSQL pour ces changements de présentation ; vérifier les deux pages sur mobile et ordinateur après déploiement.
 | **38 — annuaire et profils de démonstration** | Revue des lots de ChatGPT (catalogue des missions, détail d'une mission, annuaire et profil des freelances) : 332 tests passent, 0 débordement à 360/768/1024/1440 px ; défaut corrigé : les profils de démonstration n'avaient ni adresse ni publication, donc l'annuaire et les profils restaient vides ; ils sont maintenant publiés avec compétences et présentation d'exemple ; 1 test | aucune | aucune |
+
+### 2026-10-08 — Accueil moderne approuvé
+
+Hero illustré, recherche, catégories compactes et parcours harmonisé. Données réelles et textes administrables conservés. Aucune migration ni nouvelle variable ; paiement inchangé. Compilation et rendu responsive vérifiés, limites détaillées dans `docs/35-accueil-moderne.md`.

@@ -25,6 +25,7 @@
 }
 
 @import './freeci.css';
+@import './home.css';
 
 /* ---- Écrans applicatifs (lot 1) : compléments à la référence V01.1 ---- */
 .only-wide { display: none !important; }

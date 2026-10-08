@@ -1,4 +1,4 @@
-<x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'">
+<x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'" main-class="home-modern">
 @php
   $hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k");
   $announce = trim((string) config('freeci.home.announce_text'));
@@ -11,98 +11,69 @@
 @if(config('freeci.home.announce_enabled') && $announce !== '')
 <div class="announce" role="region" aria-label="Annonce"><div class="container"><p>{{ $announce }}</p>@if($announceUrl)<a class="btn btn-secondary" href="{{ $announceUrl }}">{{ config('freeci.home.announce_link_label') ?: 'En savoir plus' }}</a>@endif</div></div>
 @endif
-<section class="hero hv-hero on-dark" aria-labelledby="h-hero">
-  <div class="hero-grid-bg" aria-hidden="true"></div>
-  <div class="container">
-    <div>
+<section class="home-hero on-dark" aria-labelledby="h-hero">
+  <div class="container home-hero-grid">
+    <div class="home-hero-copy">
       <p class="eyebrow">{{ $hm('eyebrow') }}</p>
-      <h1 class="t-display" id="h-hero">{{ $hm('title') }}<span class="dot" aria-hidden="true">.</span></h1>
-      <p class="lede">{{ $hm('lede') }}</p>
-      <form class="search" role="search" method="get" action="{{ route('services.index') }}">
-        <label for="q">Que recherchez-vous ?</label>
-        <div class="search-box">
-          <div class="search-field"><x-fc.icon name="search" :size="22" /><input class="input" id="q" name="q" type="search" placeholder="{{ $hm('search_hint') }}" autocomplete="off" maxlength="100"></div>
-          <button class="btn btn-primary btn-lg" type="submit">Rechercher</button>
-        </div>
+      <h1 id="h-hero">{{ $hm('title') }}</h1>
+      <p class="home-lede">{{ $hm('lede') }}</p>
+      <form class="home-search" role="search" method="get" action="{{ route('services.index') }}">
+        <label class="sr-only" for="q">Que recherchez-vous ?</label>
+        <div class="home-search-box"><div class="search-field"><x-fc.icon name="search" :size="22" /><input class="input" id="q" name="q" type="search" placeholder="{{ $hm('search_hint') }}" maxlength="100"></div><button class="btn btn-accent" type="submit">Rechercher</button></div>
       </form>
-      <div class="chips" role="group" aria-label="Recherches fréquentes"><span class="lbl sr-only-m">Recherches fréquentes :</span>
+      <div class="home-chips" role="group" aria-label="Recherches fréquentes">
         @foreach(array_slice(array_values(array_filter(array_map('trim', explode(',', (string) $hm('chips'))))), 0, 6) as $term)
         <a class="chip" href="{{ route('services.index', ['q' => $term]) }}">{{ $term }}</a>
-        @endforeach</div>
-      <div class="hero-alt"><span>{{ $hm('mission_prompt') }}</span><a class="btn btn-secondary btn-lg" href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }}</a></div>
+        @endforeach
+      </div>
+      <div class="home-mission-link"><span>{{ $hm('mission_prompt') }}</span><a href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }} <x-fc.icon name="arrow-right" :size="18" /></a></div>
     </div>
-    <aside class="hv-tracker" aria-labelledby="h-card">
-      <header><div><p class="ref">Exemple · commande FC-2610-00123</p><h2 id="h-card">Plans en DWG</h2></div><span class="hv-pill"><x-fc.icon name="clock" :size="16" />Livraison à examiner</span></header>
-      <ol class="hv-steps" aria-label="Étapes de la commande">
-        <li class="done"><span class="dot" aria-hidden="true"><x-fc.icon name="check" :size="16" /></span><div><b>Accord</b><span>Prix, délai et corrections figés.</span></div></li>
-        <li class="done"><span class="dot" aria-hidden="true"><x-fc.icon name="check" :size="16" /></span><div><b>Paiement et brief</b><span>Paiement confirmé, brief complet.</span></div></li>
-        <li class="now" aria-current="step"><span class="dot" aria-hidden="true">3</span><div><b>Livraison</b><span>Vous examinez, puis validez ou demandez une correction.</span></div></li>
-        <li><span class="dot" aria-hidden="true">4</span><div><b>Validation et avis</b><span>Rien n’est validé à votre place.</span></div></li>
-      </ol>
-      <footer><span>Montant convenu</span><strong>35 000 <small>FCFA</small></strong></footer>
-    </aside>
+    <div class="home-hero-visual">
+      <img class="home-work-image" src="{{ asset('images/home/creative-work-1200.webp') }}" srcset="{{ asset('images/home/creative-work-640.webp') }} 640w, {{ asset('images/home/creative-work-1200.webp') }} 1200w" sizes="(min-width: 1024px) 48vw, (min-width: 640px) 70vw, 92vw" width="1200" height="800" alt="" fetchpriority="high">
+      <aside class="home-tracker" aria-labelledby="h-tracker"><h2 id="h-tracker">Votre projet, étape par étape</h2>
+        <ol>@foreach(['clipboard' => 'Accord', 'card' => 'Paiement', 'package' => 'Livraison', 'check-circle' => 'Validation'] as $icon => $label)<li><x-fc.icon :name="$icon" :size="26" /><span>{{ $label }}</span></li>@endforeach</ol>
+      </aside>
+    </div>
   </div>
 </section>
-
-<section class="hv-trust" aria-label="Nos garanties"><div class="container">
-  <ul>
-    <li><span class="hv-ico"><x-fc.icon name="shield" :size="22" /></span><div><b>Prix et délai figés</b><span>Ce qui est convenu à l’accord ne change plus.</span></div></li>
-    <li><span class="hv-ico"><x-fc.icon name="card" :size="22" /></span><div><b>Le travail démarre une fois le paiement confirmé</b><span>Le freelance commence quand le paiement est confirmé et le brief complet.</span></div></li>
-    <li><span class="hv-ico"><x-fc.icon name="check-circle" :size="22" /></span><div><b>Rien n’est validé à votre place</b><span>Vous examinez chaque livraison, puis vous validez.</span></div></li>
-  </ul>
-</div></section>
+<section class="home-trust" aria-label="Vos repères sur FreeCI"><div class="container"><ul>
+  <li><x-fc.icon name="clipboard" :size="28" /><div><h2>Un accord clair</h2><p>Un prix et un périmètre convenus.</p></div></li>
+  <li><x-fc.icon name="message" :size="28" /><div><h2>Un suivi au même endroit</h2><p>Vos échanges et livraisons dans un seul dossier.</p></div></li>
+  <li><x-fc.icon name="check-circle" :size="28" /><div><h2>Vous validez la livraison</h2><p>Vous examinez le travail avant de décider.</p></div></li>
+</ul></div></section>
 
 @if($featured)
-<section class="section section-featured" aria-labelledby="h-feat"><div class="container"><div class="featured-cat"><span class="ico"><x-fc.icon :name="$featured->icon" :size="26" /></span><div><p class="eyebrow">À la une</p><h2 class="t-h2" id="h-feat">{{ $featured->name }}</h2><p class="muted">{{ $featured->services }} {{ $featured->services > 1 ? 'services publiés' : 'service publié' }}</p></div><a class="btn btn-primary" href="{{ $catUrl($featured) }}">Voir cette catégorie</a></div></div></section>
+<section class="home-section home-featured" aria-labelledby="h-feat"><div class="container"><div class="featured-cat"><span class="ico"><x-fc.icon :name="$featured->icon" :size="26" /></span><div><p class="eyebrow">À la une</p><h2 class="t-h2" id="h-feat">{{ $featured->name }}</h2><p class="muted">{{ $featured->services }} {{ $featured->services > 1 ? 'services publiés' : 'service publié' }}</p></div><a class="btn btn-primary" href="{{ $catUrl($featured) }}">Voir cette catégorie</a></div></div></section>
 @endif
 
-<section class="section" aria-labelledby="h-cats"><div class="container">
-  <div class="section-head"><h2 class="t-h2" id="h-cats">Parcourir par besoin</h2><a class="btn btn-link" href="{{ route('services.index') }}">Tous les services <x-fc.icon name="arrow-right" :size="18" /></a></div>
-  <ul class="cats">
-    @foreach($categories as $c)
-    <li><a class="cat" href="{{ $catUrl($c) }}"><span class="ico"><x-fc.icon :name="$c->icon" :size="22" /></span><span class="t">{{ $c->name }}@if($c->services > 0)<small class="cat-n">{{ $c->services }} {{ $c->services > 1 ? 'services' : 'service' }}</small>@endif</span></a></li>
-    @endforeach
-  </ul>
+<section class="home-section" aria-labelledby="h-cats"><div class="container">
+  <div class="section-head"><h2 class="t-h2" id="h-cats">Que souhaitez-vous réaliser ?</h2><a class="btn btn-link" href="{{ route('services.index') }}">Tous les services <x-fc.icon name="arrow-right" :size="18" /></a></div>
+  <ul class="home-categories">@foreach($categories as $c)<li><a href="{{ $catUrl($c) }}"><x-fc.icon :name="$c->icon" :size="30" /><span>{{ $c->name }}</span>@if($c->services > 0)<small>{{ $c->services }} {{ $c->services > 1 ? 'services' : 'service' }}</small>@endif</a></li>@endforeach</ul>
 </div></section>
 
-<section class="section section-alt" id="prestations" aria-labelledby="h-svc"><div class="container">
-  <div class="section-head"><div><h2 class="t-h2" id="h-svc">Services publiés récemment</h2></div>
-    <a class="btn btn-link" href="{{ route('services.index') }}">Voir tout le catalogue <x-fc.icon name="arrow-right" :size="18" /></a></div>
-  @if(count($services))
-  <div class="svc-grid">
-    @foreach($services as $service)<x-fc.service-card :service="$service" />@endforeach
-  </div>
-  @else
-  <div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p style="font-weight:600">Les premiers services seront publiés ici.</p></div>
-  @endif
+<section class="home-section home-services" id="prestations" aria-labelledby="h-svc"><div class="container">
+  <div class="section-head"><div><h2 class="t-h2" id="h-svc">Des services pour passer à l’action</h2><p class="muted small">Les dernières prestations publiées sur FreeCI.</p></div><a class="btn btn-link" href="{{ route('services.index') }}">Voir tout le catalogue <x-fc.icon name="arrow-right" :size="18" /></a></div>
+  @if(count($services))<div class="svc-grid">@foreach($services as $service)<x-fc.service-card :service="$service" />@endforeach</div>
+  @else<div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p><strong>Les premiers services seront publiés ici.</strong></p><a class="btn btn-secondary" href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }}</a></div>@endif
 </div></section>
 
-<section class="section" aria-labelledby="h-two"><div class="container">
-  <div class="section-head"><div><h2 class="t-h2" id="h-two">Deux façons de commencer</h2><p>Le même suivi de commande dans les deux cas : accord, paiement, livraison, validation.</p></div></div>
-  <div class="hv-ways">
-    <div class="hv-way"><h3>Je choisis un service</h3><p>Prix et délai sont annoncés. Vous comparez, vous envoyez votre demande, le freelance accepte.</p>
-      <ul><li>Prix et corrections figés à l’accord</li><li>Le freelance répond dans le délai prévu</li></ul>
-      <a class="btn btn-primary" href="{{ route('services.index') }}">Voir les services</a></div>
-    <div class="hv-way hv-way-dark"><h3>Je décris mon besoin</h3><p>Publiez une mission, recevez des propositions à prix ferme, comparez et retenez la meilleure.</p>
-      <ul><li>Seul le client voit les propositions</li><li>Aucune coordonnée privée n’est publiée</li></ul>
-      <a class="btn btn-accent" href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }}</a></div>
+<section class="home-section" aria-labelledby="h-two"><div class="container">
+  <div class="section-head"><h2 class="t-h2" id="h-two">Deux façons de commencer</h2></div>
+  <div class="home-ways">
+    <article class="home-way"><x-fc.icon name="grid" :size="34" /><div><h3>Je choisis un service</h3><p>Comparez les offres, puis envoyez votre demande.</p><a class="btn btn-accent" href="{{ route('services.index') }}">Explorer les services <x-fc.icon name="arrow-right" :size="18" /></a></div></article>
+    <article class="home-way home-way-dark on-dark"><x-fc.icon name="file" :size="34" /><div><h3>Je publie une mission</h3><p>Décrivez votre besoin et recevez des propositions.</p><a class="btn btn-secondary btn-lg" href="{{ $missionUrl }}">{{ $hm('mission_btn_label') }} <x-fc.icon name="arrow-right" :size="18" /></a></div></article>
   </div>
 </div></section>
-
-<section class="section section-alt" id="comment" aria-labelledby="h-ways"><div class="container">
-  <div class="section-head"><div><h2 class="t-h2" id="h-ways">Comment ça marche</h2></div>
-    <a class="btn btn-link" href="{{ route('info', 'fonctionnement') }}">Le détail <x-fc.icon name="arrow-right" :size="18" /></a></div>
-  <ol class="steps-row">
-    <li><b>Choisir</b><span>Un service à prix et délai annoncés, ou une mission décrite par vos soins.</span></li>
-    <li><b>Convenir</b><span>Le freelance accepte : l’accord est figé (prix, délai, corrections).</span></li>
-    <li><b>Suivre</b><span>Paiement, brief, livraison et corrections dans un seul dossier.</span></li>
-    <li><b>Valider</b><span>Vous validez la livraison, puis laissez un avis si la commande est réelle.</span></li>
+<section class="home-section home-process" id="comment" aria-labelledby="h-ways"><div class="container">
+  <div class="section-head"><h2 class="t-h2" id="h-ways">Un parcours simple, du besoin au résultat</h2><a class="btn btn-link" href="{{ route('info', 'fonctionnement') }}">Comment ça marche <x-fc.icon name="arrow-right" :size="18" /></a></div>
+  <ol class="home-steps">
+    <li><span class="home-step-number" aria-hidden="true">1</span><div><h3>Choisir</h3><p>Trouvez un service ou publiez votre besoin.</p></div></li>
+    <li><span class="home-step-number" aria-hidden="true">2</span><div><h3>Convenir</h3><p>Accordez-vous sur le prix, le délai et le travail attendu.</p></div></li>
+    <li><span class="home-step-number" aria-hidden="true">3</span><div><h3>Suivre</h3><p>Après paiement confirmé et brief complet, le travail commence.</p></div></li>
+    <li><span class="home-step-number" aria-hidden="true">4</span><div><h3>Valider</h3><p>Examinez le travail et validez la livraison.</p></div></li>
   </ol>
 </div></section>
-
-<section class="freelance-band on-dark" aria-labelledby="h-fl"><div class="container">
-  <div><h2 class="t-h2" id="h-fl">{{ $hm('freelance_title') }}</h2><p style="margin-top:6px">{{ $hm('freelance_text') }}</p></div>
-  <a class="btn btn-primary btn-lg" href="{{ $freelanceUrl }}">{{ $hm('freelance_btn_label') }}</a>
+<section class="home-freelance on-dark" aria-labelledby="h-fl"><div class="container">
+  <div><h2 class="t-h2" id="h-fl">{{ $hm('freelance_title') }}</h2><p>{{ $hm('freelance_text') }}</p></div><a class="btn btn-accent btn-lg" href="{{ $freelanceUrl }}">{{ $hm('freelance_btn_label') }} <x-fc.icon name="arrow-right" :size="18" /></a>
 </div></section>
-
 </x-layouts.public>

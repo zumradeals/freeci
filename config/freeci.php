@@ -127,14 +127,14 @@ return [
 
     // Textes de la vitrine (accueil, pied de page) : valeurs de départ, modifiables dans Paramètres › Accueil et vitrine.
     'home' => [
-        'eyebrow' => 'Des compétences en Côte d’Ivoire',
-        'title' => 'Un freelance pour votre prochain projet',
-        'lede' => 'Comparez des prestations à prix et délai annoncés, ou décrivez votre besoin et recevez des propositions.',
-        'search_hint' => 'Un plan, un logo, un site web',
-        'chips' => 'Plan AutoCAD, Logo, Site web, Traduction',
+        'eyebrow' => 'Le freelance, en Côte d’Ivoire',
+        'title' => 'Les bons talents. Pour vos projets.',
+        'lede' => 'Trouvez un service ou publiez votre besoin. Avancez avec un accord clair et un suivi simple.',
+        'search_hint' => 'Un logo, un site web, des plans…',
+        'chips' => 'Logo, Site web, Plans 2D, Traduction',
         'mission_prompt' => 'Un besoin précis ?',
-        'freelance_title' => 'Vous êtes freelance ?',
-        'freelance_text' => 'Présentez vos compétences et publiez vos prestations.',
+        'freelance_title' => 'Votre savoir-faire mérite d’être découvert.',
+        'freelance_text' => 'Rejoignez FreeCI et trouvez de nouvelles opportunités en Côte d’Ivoire.',
         'mission_btn_label' => 'Publier une mission',
         'mission_btn_dest' => 'mission_new',
         'freelance_btn_label' => 'Créer mon profil',
@@ -143,7 +143,7 @@ return [
         'announce_text' => null,
         'announce_link' => '',
         'announce_link_label' => 'En savoir plus',
-        'tagline' => 'Trouver une compétence, conclure un accord clair, suivre la prestation et comprendre sa situation financière.',
+        'tagline' => 'Des talents et des projets qui avancent ensemble.',
     ],
 
     // Textes des courriels (valeurs de départ), modifiables dans Paramètres › Courriels. Les liens, la durée de validité et les consignes de sécurité restent fixés par l'application.
