@@ -56,7 +56,17 @@ class CatalogVisibilityTest extends TestCase
     {
         $s = Service::factory()->create();
 
-        $this->get('/services/'.$s->slug)->assertSee('Demander cette prestation')->assertSee('Vous ne payez rien à cette étape');
+        $this->get('/services/'.$s->slug)->assertSee('Demander cette prestation')->assertSee('Aucun paiement à cette étape');
+    }
+
+    public function test_service_page_shows_the_offer_card_assurances_and_other_services_of_the_category(): void
+    {
+        $s = Service::factory()->create();
+        $other = Service::factory()->create(['category_id' => $s->category_id]);
+
+        $page = $this->get('/services/'.$s->slug)->assertOk()->assertSee('Accueil')->assertSee('Prix, délai et périmètre figés dès l’accord')->assertSee('Vous validez la livraison')
+            ->assertSee('À propos du freelance')->assertSee('Autres services :')->assertSee($other->title);
+        $this->assertSame(1, substr_count($page->getContent(), 'class="svc"'));
     }
 
     public function test_empty_catalog_is_honest(): void

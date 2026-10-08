@@ -26,7 +26,7 @@ class OrderRequestFlowTest extends TestCase
     public function test_full_journey_between_two_distinct_accounts(): void
     {
         // Visiteur : le bouton mène à la connexion, puis reprend sur la page de demande (retour interne).
-        $this->get('/services/'.$this->service->slug)->assertOk()->assertSee('Demander cette prestation')->assertSee('Vous ne payez rien à cette étape');
+        $this->get('/services/'.$this->service->slug)->assertOk()->assertSee('Demander cette prestation')->assertSee('Aucun paiement à cette étape');
         $this->get('/services/'.$this->service->slug.'/demande')->assertRedirect(route('login'));
 
         // Client : formulaire, envoi, consultation de sa demande.

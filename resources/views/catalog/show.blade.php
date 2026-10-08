@@ -6,14 +6,16 @@
 @endphp
 <div class="container">
   @isset($preview)<div class="notice tone-warning" role="note" style="margin-top:16px"><x-fc.icon name="flag" /><p><strong>Aperçu — non publié.</strong> Voici le rendu public de votre version de travail ; personne d’autre ne le voit. <a href="{{ $preview }}">Revenir à l’édition</a></p></div>@endisset
-  <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('services.index') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour aux services</a><a class="hide-m" href="{{ route('services.index') }}">Services</a><span class="sep hide-m" aria-hidden="true">›</span><a class="hide-m" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">{{ $service->categoryName }}</a></nav>
+  <nav class="crumbs sp-crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('services.index') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour aux services</a><a class="hide-m" href="{{ url('/') }}">Accueil</a><span class="sep hide-m" aria-hidden="true">/</span><a class="hide-m" href="{{ route('services.index') }}">Services</a><span class="sep hide-m" aria-hidden="true">/</span><a class="hide-m" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">{{ $service->categoryName }}</a><span class="sep hide-m" aria-hidden="true">/</span><span class="hide-m" aria-current="page">{{ $service->title }}</span></nav>
   <div class="svc-layout">
     <div>
-      <p class="eyebrow cat-eyebrow">{{ $service->categoryName }}@if($service->isDemo) · <span class="tag-demo">Exemple fictif</span>@endif</p>
+      <p class="eyebrow cat-eyebrow sp-cat">{{ $service->categoryName }}@if($service->isDemo) · <span class="tag-demo">Exemple fictif</span>@endif</p>
       <h1 class="t-h1">{{ $service->title }}</h1>
-      @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> <a class="small" href="#avis">Voir les avis</a></p>@endif
-      @if($service->id !== '')<p><x-fc.fav-button-inline kind="service" :slug="$service->slug" :on="$service->favorited" /></p>@endif
-      <p class="seller-line"><span class="avatar" aria-hidden="true">{{ $service->sellerInitials }}</span><span><b>{{ $service->sellerName }}</b><small class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</small></span></p>
+      <div class="sp-meta">
+        @if($service->sellerSlug)<a class="sp-seller" href="{{ route('freelances.show', $service->sellerSlug) }}">@else<span class="sp-seller">@endif<span class="avatar" aria-hidden="true">{{ $service->sellerInitials }}</span><span><b>{{ $service->sellerName }}</b><small>{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</small></span>@if($service->sellerSlug)</a>@else</span>@endif
+        @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> <a class="small" href="#avis">Voir les avis</a></p>@endif
+        @if($service->id !== '')<span class="sp-fav"><x-fc.fav-button-inline kind="service" :slug="$service->slug" :on="$service->favorited" /></span>@endif
+      </div>
 
       <section class="buy-summary card" aria-label="Offre">
         <p class="muted small">Prix fixe pour le périmètre décrit</p><x-fc.money :amount="$service->price" size="lg" />
@@ -44,14 +46,14 @@
         <section aria-labelledby="s1"><h2 class="t-h2" id="s1">Ce que vous recevez</h2>
           <ul class="checklist ok">@foreach($service->deliverables as $d)<li><x-fc.icon name="check-circle" /><span>{{ $d }}</span></li>@endforeach</ul></section>
         <section aria-labelledby="s2"><h2 class="t-h2" id="s2">Périmètre inclus</h2><p class="service-description">{{ $service->scope }}</p></section>
-        <section aria-label="Précisions">
-          <details class="fold" data-open-desktop><summary><span>Ce qui n’est pas inclus <span class="muted" style="font-weight:500">({{ count($service->exclusions) }})</span></span><x-fc.icon name="chev-down" class="chev" /></summary><div class="fold-body"><ul class="checklist no">@foreach($service->exclusions as $d)<li><x-fc.icon name="minus-circle" /><span>{{ $d }}</span></li>@endforeach</ul></div></details>
-          <details class="fold" data-open-desktop><summary><span>Ce que vous devez fournir <span class="muted" style="font-weight:500">({{ count($service->clientInputs) }})</span></span><x-fc.icon name="chev-down" class="chev" /></summary><div class="fold-body"><ul class="checklist need">@foreach($service->clientInputs as $d)<li><x-fc.icon name="clipboard" /><span>{{ $d }}</span></li>@endforeach</ul></div></details>
-        </section>
-        <section aria-labelledby="s5"><h2 class="t-h2" id="s5">Le vendeur</h2>
+        <div class="sp-two">
+          <section class="card sp-box" aria-labelledby="s3"><h2 id="s3"><x-fc.icon name="minus-circle" /> Ce qui n’est pas inclus</h2><ul class="checklist no">@foreach($service->exclusions as $d)<li><x-fc.icon name="minus-circle" /><span>{{ $d }}</span></li>@endforeach</ul></section>
+          <section class="card sp-box" aria-labelledby="s4"><h2 id="s4"><x-fc.icon name="clipboard" /> Ce que vous devez fournir</h2><ul class="checklist need">@foreach($service->clientInputs as $d)<li><x-fc.icon name="clipboard" /><span>{{ $d }}</span></li>@endforeach</ul></section>
+        </div>
+        <section aria-labelledby="s5"><h2 class="t-h2" id="s5">À propos du freelance</h2>
           <div class="card vendor"><div class="top"><span class="avatar avatar-lg" aria-hidden="true">{{ $service->sellerInitials }}</span>
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
-            @if($service->sellerSlug)<p style="margin-top:8px"><a href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
+            @if($service->sellerSlug)<p style="margin-top:8px"><a class="btn btn-secondary" href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
             </div></section>
         <section aria-labelledby="s6" id="avis"><h2 class="t-h2" id="s6">Avis</h2>
           @if(isset($reviews) && $reviews->total() > 0)
@@ -64,17 +66,21 @@
     </div>
 
     <aside class="offer-aside" aria-label="Offre">
-      <div class="offer">
+      <div class="offer sp-offer">
         <div><p class="muted small">Prix fixe pour le périmètre décrit</p><x-fc.money :amount="$service->price" size="lg" /></div>
-        <dl>
-          <div><dt><x-fc.icon name="clock" />Délai</dt><dd>{{ $days }}</dd></div>
-          <div><dt><x-fc.icon name="pencil" />{{ $revLabel }}</dt><dd>{{ $rev }}</dd></div>
-          <div><dt><x-fc.icon name="package" />Livrables</dt><dd>{{ count($service->deliverables) }}</dd></div>
-        </dl>
-        @include('catalog._cta', ['service' => $service, 'id' => null])
+        <ul class="sp-facts">
+          <li><x-fc.icon name="clock" :size="22" /><span><b>{{ $days }}</b><small>Délai</small></span></li>
+          <li><x-fc.icon name="pencil" :size="22" /><span><b>{{ $rev }}</b><small>{{ $revLabel }}</small></span></li>
+          <li><x-fc.icon name="package" :size="22" /><span><b>{{ count($service->deliverables) }} {{ count($service->deliverables) > 1 ? 'éléments' : 'élément' }}</b><small>Livrables</small></span></li>
+        </ul>
+        @include('catalog._cta', ['service' => $service, 'id' => null, 'aside' => true])
       </div>
     </aside>
   </div>
+  @if(! empty($similar))
+  <section class="sp-similar" aria-labelledby="sim"><div class="section-head"><h2 class="t-h2" id="sim">Autres services : {{ $service->categoryName }}</h2><a class="btn btn-link" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">Tous les services <x-fc.icon name="arrow-right" :size="18" /></a></div>
+    <div class="svc-grid service-grid">@foreach($similar as $other)<x-fc.service-card :service="$other" :level="2" />@endforeach</div></section>
+  @endif
 </div>
 <div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@endif</div>
 

@@ -1320,3 +1320,36 @@ a.kpi:hover { background: var(--marine-100); }
 @media (min-width: 640px) { .talent-directory .tg-new { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 960px) { .talent-directory .tg-new { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; } }
 @media (min-width: 1200px) { .talent-directory .tg-new { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Lot 44 : détail d'un service d'après la maquette (offre fixe à droite, galerie cadrée, cartes d'exclusions et de prérequis, services de la même catégorie). */
+.svc-page .sp-crumbs { margin-top: 8px; }
+.svc-page .sp-cat { color: var(--accent-700); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .8125rem; }
+.svc-page h1.t-h1 { line-height: 1.15; letter-spacing: -.03em; text-wrap: balance; overflow-wrap: anywhere; }
+.sp-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 14px; }
+.sp-seller { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink-900); min-width: 0; }
+.sp-seller > span:last-child { display: grid; min-width: 0; }
+.sp-seller small { color: var(--ink-600); }
+.sp-fav { margin-left: auto; }
+.svc-page .gallery .stage { display: block; position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 10; }
+.svc-page .gallery { min-width: 0; }
+.svc-page .gallery .stage img { width: 100%; height: 100%; object-fit: cover; }
+.svc-page .gallery .thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
+.svc-page .gallery .th { width: 96px; aspect-ratio: 16 / 10; }
+.svc-page .gallery .th img { width: 100%; height: 100%; object-fit: cover; }
+.svc-page .gallery .th[aria-pressed="true"] { border-color: var(--marine-900); }
+.sp-two { display: grid; gap: 16px; }
+.sp-box { box-shadow: none; }
+.sp-box h2 { display: flex; align-items: center; gap: 8px; font-size: 1.0625rem; font-weight: 700; margin-bottom: 12px; }
+.sp-offer { box-shadow: 0 8px 24px rgb(16 45 75 / .1); }
+.sp-facts { list-style: none; margin: 0; padding: 12px 0; border-block: 1px solid var(--line); display: grid; gap: 12px; }
+.sp-facts li { display: flex; align-items: center; gap: 12px; }
+.sp-facts span { display: grid; }
+.sp-facts small { color: var(--ink-600); }
+.sp-facts svg { color: var(--marine-700); flex: none; }
+.sp-assure { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: .875rem; }
+.sp-assure li { display: flex; gap: 8px; align-items: flex-start; }
+.sp-assure svg { flex: none; color: var(--success-700); margin-top: 2px; }
+.sp-similar { margin-top: 48px; }
+.sp-similar .service-grid { margin-top: 12px; }
+@media (min-width: 1024px) { .sp-two { grid-template-columns: 1fr 1fr; } .sp-similar .service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; } .svc-layout { grid-template-columns: minmax(0, 1fr) 380px; } }
+@media (max-width: 599px) { .sp-fav { margin-left: 0; } }

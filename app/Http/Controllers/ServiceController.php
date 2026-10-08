@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Modules\Catalog\Actions\FavoriteQueries;
 use App\Modules\Catalog\Actions\GetPublishedService;
+use App\Modules\Catalog\Actions\SearchServices;
+use App\Modules\Catalog\Data\ServiceSearchCriteria;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Orders\Queries\ReviewQueries;
@@ -18,7 +20,7 @@ class ServiceController extends Controller
         return view('catalog.index');
     }
 
-    public function show(Request $request, string $slug, GetPublishedService $get, ReviewQueries $reviews, FavoriteQueries $favorites): View|Response
+    public function show(Request $request, string $slug, GetPublishedService $get, ReviewQueries $reviews, FavoriteQueries $favorites, SearchServices $search): View|Response
     {
         try {
             $service = $get($slug);
@@ -31,6 +33,9 @@ class ServiceController extends Controller
         $stats = $reviews->forServices([$service->id])[$service->id] ?? null;
         $service = $service->withExtras($stats, isset($favorites->marked($request->user(), 'service', [$service->id])[$service->id]));
 
-        return view('catalog.show', ['service' => $service, 'reviews' => $reviews->pageForService($service->id, max(1, (int) $request->query('avis', 1)))->withQueryString()]);
+        // Autres services publiés de la même catégorie (le service affiché est exclu).
+        $similar = collect($search(ServiceSearchCriteria::make('', $service->categorySlug, 'pertinence'), 1, $request->user())->items())->reject(fn ($s) => $s->slug === $service->slug)->take(4)->values()->all();
+
+        return view('catalog.show', ['similar' => $similar, 'service' => $service, 'reviews' => $reviews->pageForService($service->id, max(1, (int) $request->query('avis', 1)))->withQueryString()]);
     }
 }
