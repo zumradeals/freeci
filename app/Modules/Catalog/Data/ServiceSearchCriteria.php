@@ -7,7 +7,7 @@ final readonly class ServiceSearchCriteria
 {
     public const SORTS = ['pertinence', 'prix-croissant', 'prix-decroissant', 'delai-court', 'recents', 'mieux-notes'];
 
-    public const PER_PAGE = 12; // ≤ 20 (F11)
+    public const PER_PAGE = 8;  // ≤ 20 (F11)
 
     public function __construct(
         public ?string $query = null,

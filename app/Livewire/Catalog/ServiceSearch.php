@@ -47,6 +47,20 @@ class ServiceSearch extends Component
         }
     }
 
+    /** Tranche de budget prédéfinie (FCFA) ; une valeur vide laisse la borne ouverte. */
+    public function setBudget(string $min, string $max): void
+    {
+        $this->prixMin = ctype_digit($min) ? $min : '';
+        $this->prixMax = ctype_digit($max) ? $max : '';
+        $this->resetPage();
+    }
+
+    public function setDelay(string $days): void
+    {
+        $this->delaiMax = ctype_digit($days) ? $days : '';
+        $this->resetPage();
+    }
+
     public function clear(): void
     {
         $this->reset(['q', 'categorie', 'tri', 'prixMin', 'prixMax', 'delaiMax', 'competence']);
@@ -65,7 +79,7 @@ class ServiceSearch extends Component
     public function render(SearchServices $search, ListCategories $categories, ListSkills $skills)
     {
         $criteria = ServiceSearchCriteria::make($this->q, $this->categorie, $this->tri, $this->prixMin, $this->prixMax, $this->delaiMax, $this->competence);
-        $cats = $categories();
+        $cats = $categories->withServiceCounts();
 
         return view('livewire.catalog.service-search', [
             'results' => $search($criteria, $this->getPage(), auth()->user()),

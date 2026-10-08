@@ -624,6 +624,6 @@ class ServiceManagementTest extends TestCase
 
     public function test_services_page_follows_the_home_visual_language(): void
     {
-        $this->get('/services')->assertOk()->assertSee('service-directory', false)->assertSee('talent-filters', false)->assertSee('Des prestations à prix et délai annoncés');
+        $this->get('/services')->assertOk()->assertSee('service-directory', false)->assertSee('Un savoir-faire pour chaque projet.')->assertSee('Tout voir')->assertSee('Budget')->assertSee('Vous avez un besoin sur mesure ?')->assertSee('Publier une mission');
     }
 }

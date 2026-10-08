@@ -83,7 +83,7 @@ class CatalogSearchTest extends TestCase
         $p2 = $this->search(page: 2);
         $this->assertSame(ServiceSearchCriteria::PER_PAGE, $p1->count());
         $this->assertLessThanOrEqual(20, ServiceSearchCriteria::PER_PAGE);
-        $this->assertSame(3, $p2->count());
+        $this->assertSame(15 - ServiceSearchCriteria::PER_PAGE, $p2->count());
         $this->assertSame(15, $p1->total());
         $this->assertEmpty(array_intersect($p1->pluck('slug')->all(), $p2->pluck('slug')->all()));
 
