@@ -1941,3 +1941,20 @@ a.kpi:hover { background: var(--marine-100); }
 .as-file { display: inline-flex; gap: 6px; align-items: center; font-size: .875rem; }
 .ac-note { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); color: var(--ink-600); }
 @media (max-width: 600px) { .as-case { grid-template-columns: 44px minmax(0, 1fr) 20px; } .as-st { grid-column: 2; justify-items: start; } .as-m { max-width: 94%; } }
+
+/* Lot 61 — pages d'erreur */
+.er{max-width:640px;margin:48px auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:40px 32px;display:grid;gap:14px;justify-items:center;text-align:center}
+.er-code{font-size:.8125rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--accent-700)}
+.er-i{width:64px;height:64px;border-radius:18px;background:#eaf1f8;color:var(--marine-900);display:grid;place-items:center}
+.er-i.w{background:#fff3e6;color:var(--accent-700)}
+.er-i.d{background:#fdecea;color:#a02a1f}
+.er h1{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:0}
+.er p{margin:0;color:var(--ink-600);max-width:34em}
+.er-acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.er-ref{font-size:.8125rem;color:var(--ink-600);border-top:1px solid var(--line);padding-top:14px;margin-top:6px;width:100%}
+.er-links{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-top:8px}
+.er-links a{display:flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--ink-900);font-weight:600}
+.er-main{display:grid;place-items:start center;padding:0 16px}
+@media(max-width:600px){.er{margin:24px 0;padding:28px 20px}
+.er-links{grid-template-columns:1fr}}
+

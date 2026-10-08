@@ -1,8 +1,7 @@
 <x-layouts.public title="Page introuvable" robots="noindex">
-<div class="container narrow-page">
-  <div class="card empty"><span class="ico-lg"><x-fc.icon name="minus-circle" :size="26" /></span>
-    <h1 class="t-h2">Page introuvable</h1>
-    <p class="muted" style="max-width:36em">Cette page est introuvable, ou vous n’y avez pas accès.</p>
-    <a class="btn btn-primary" href="{{ route('home') }}">Retour à l’accueil</a></div>
-</div>
+  <x-fc.error-page code="404" icon="minus-circle" title="Page introuvable">
+    Cette page est introuvable, ou vous n’y avez pas accès.
+    <x-slot:actions><a class="btn btn-primary btn-lg" href="{{ route('home') }}">Retour à l’accueil</a><a class="btn btn-secondary btn-lg" href="{{ route('services.index') }}">Parcourir les services</a></x-slot:actions>
+    <x-slot:extra><div class="er-links"><a href="{{ route('services.index') }}"><x-fc.icon name="search" :size="18" />Services</a><a href="{{ route('missions.index') }}"><x-fc.icon name="briefcase" :size="18" />Missions</a><a href="{{ route('freelances.index') }}"><x-fc.icon name="user" :size="18" />Freelances</a></div></x-slot:extra>
+  </x-fc.error-page>
 </x-layouts.public>
