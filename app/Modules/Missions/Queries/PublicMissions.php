@@ -103,6 +103,8 @@ final class PublicMissions
         return [
             'slug' => $m->slug, 'title' => $v->title, 'description' => $v->description, 'category' => $v->category->name, 'budget' => Money::xof((int) $v->budget_xof),
             'deadline' => Dates::format($v->application_deadline), 'inputs' => $v->client_inputs, 'briefFiles' => $v->brief_requires_files, 'isDemo' => $m->is_demo,
+            'categorySlug' => $v->category->slug, 'deadlineDate' => $v->application_deadline->copy()->timezone('Africa/Abidjan')->translatedFormat('j M Y'),
+            'daysLeft' => $accepting ? max(0, (int) now()->startOfDay()->diffInDays($v->application_deadline->copy()->startOfDay(), false)) : null,
             'accepting' => $accepting, 'status' => $m->status, 'own' => $own, 'mine' => $mine, 'missionId' => $m->getKey(), 'version' => $v->number,
         ];
     }

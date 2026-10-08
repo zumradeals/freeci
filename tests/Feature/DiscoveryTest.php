@@ -184,4 +184,23 @@ class DiscoveryTest extends TestCase
         $this->get('/freelances')->assertOk()->assertSee('Trouvez le talent qu’il vous faut.')->assertSee('Tout voir')->assertSee('Prix d’un service')->assertSee('Vous ne trouvez pas le bon profil ?')->assertSee('Publier une mission');
         $this->get('/freelances?prix_max=1000')->assertSee('Aucun freelance ne correspond')->assertSee('Tout effacer');
     }
+
+    public function test_mission_detail_follows_the_service_detail_layout_and_lists_other_missions_of_the_category(): void
+    {
+        $cat = Category::factory()->create(['slug' => 'btp-x', 'name' => 'BTP test']);
+        $client = User::factory()->create();
+        $slugs = [];
+        foreach (range(1, 3) as $n) {
+            $mid = (string) Str::uuid();
+            $vid = (string) Str::uuid();
+            $slugs[$n] = 'detail-'.$n;
+            DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => $slugs[$n], 'status' => 'open', 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => 'Mission détail '.$n, 'description' => 'Besoin '.$n,
+                'budget_xof' => 20000 * $n, 'application_deadline' => now()->addDays(3 + $n)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
+        }
+        $page = $this->get('/missions/'.$slugs[1])->assertOk()->assertSee('Accueil')->assertSee('Budget du client')->assertSee('Comment ça se passe')->assertSee('Seul le client voit votre proposition')
+            ->assertSee('Autres missions : BTP test')->assertSee('Mission détail 2')->assertSee('Mission détail 3')->assertSee('J-4')->assertSee('Se connecter pour proposer');
+        $this->assertSame(2, substr_count($page->getContent(), 'class="card mission-card mc-new"'));
+    }
 }

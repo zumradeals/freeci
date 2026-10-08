@@ -1353,3 +1353,18 @@ a.kpi:hover { background: var(--marine-100); }
 .sp-similar .service-grid { margin-top: 12px; }
 @media (min-width: 1024px) { .sp-two { grid-template-columns: 1fr 1fr; } .sp-similar .service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; } .svc-layout { grid-template-columns: minmax(0, 1fr) 380px; } }
 @media (max-width: 599px) { .sp-fav { margin-left: 0; } }
+
+/* Lot 45 : détail d'une mission d'après la maquette (même structure que le détail d'un service). */
+.sp-strong { color: var(--ink-900); font-weight: 700; }
+.ms-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.ms-steps li { display: flex; gap: 14px; align-items: flex-start; }
+.ms-steps p { color: var(--ink-600); font-size: .9375rem; margin: 2px 0 0; }
+.ms-ico { flex: none; width: 44px; height: 44px; border-radius: 10px; background: #eaf1f8; color: var(--marine-900); display: grid; place-items: center; }
+.ms-inputs { margin-top: 24px; }
+.mission-detail .sp-sec { margin-top: 28px; }
+.mission-detail .sp-sec h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; }
+.mission-detail .mission-description { line-height: 1.7; max-width: 70ch; overflow-wrap: anywhere; }
+.mission-detail .mission-overview { display: grid; gap: 14px; }
+.mission-detail .mission-proposal-box { display: grid; gap: 10px; border: 0; padding: 0; box-shadow: none; }
+.mission-detail .note-line { margin-top: 20px; }
+@media (min-width: 1024px) { .mission-detail .mission-detail-grid { grid-template-columns: minmax(0, 1fr) 380px; } .mission-detail .mission-overview { position: sticky; top: 16px; } }

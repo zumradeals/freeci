@@ -27,6 +27,9 @@ class PublicMissionController extends Controller
             abort(404);
         }
 
-        return view('missions.public-show', ['m' => $m]);
+        // Autres missions ouvertes de la même catégorie (la mission affichée est exclue).
+        $similar = collect($missions->search(null, $m['categorySlug'], 4)->items())->reject(fn ($o) => $o['slug'] === $m['slug'])->take(3)->values()->all();
+
+        return view('missions.public-show', ['m' => $m, 'similar' => $similar]);
     }
 }
