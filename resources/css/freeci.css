@@ -1681,3 +1681,40 @@ a.kpi:hover { background: var(--marine-100); }
 .mission-preview .defs > div { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .mission-preview .defs dd { white-space: nowrap; text-align: right; }
 .mission-preview .card-head h2 { font-size: 1.125rem; }
+
+/* Lot 55 : pages d'accès (connexion, inscription, mot de passe) d'après la maquette. */
+.au { display: grid; grid-template-columns: minmax(0, 1fr); }
+.au-side { background: var(--marine-900); color: #fff; padding: 28px 20px; display: grid; align-content: center; gap: 24px; position: relative; overflow: hidden; }
+.au-h { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 750; letter-spacing: -.03em; line-height: 1.1; max-width: 16ch; text-wrap: balance; }
+.au-lead { color: var(--on-marine-2, #dbe5ee); margin-top: 12px; max-width: 42ch; }
+.au-side ul { display: none; list-style: none; margin: 0; padding: 0; gap: 16px; }
+.au-side li { display: flex; gap: 14px; align-items: flex-start; }
+.au-side li .ic { flex: none; width: 42px; height: 42px; border-radius: 10px; background: rgb(255 255 255 / .12); display: grid; place-items: center; }
+.au-side li b { display: block; }
+.au-side li span:not(.ic) { color: #c5d0dc; font-size: .9375rem; }
+.au-side img { display: none; position: absolute; right: -40px; bottom: -40px; width: 62%; height: auto; opacity: .2; pointer-events: none; }
+.au-main { display: grid; place-items: center; padding: 28px 16px 40px; background: var(--surface-2, #f7f9fc); }
+.au-card { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 18px; box-shadow: 0 8px 24px rgb(16 45 75 / .08); }
+.au-card h1 { font-size: 1.625rem; font-weight: 750; letter-spacing: -.02em; }
+.au-card .stack { display: grid; gap: 16px; }
+.au-sub { color: var(--ink-600); margin-top: -8px; }
+.au-row { display: flex; justify-content: space-between; align-items: center; gap: 8px 12px; flex-wrap: wrap; font-size: .9375rem; }
+.au-foot { font-size: .9375rem; color: var(--ink-600); text-align: center; }
+.au-note { display: flex; gap: 10px; align-items: flex-start; background: #f3f7fb; border-radius: 10px; padding: 10px 12px; font-size: .8125rem; color: var(--ink-600); }
+.au-note svg { flex: none; margin-top: 2px; }
+.au-pw { position: relative; }
+.au-pw .input { padding-right: 96px; }
+.au-reveal { position: absolute; right: 6px; top: 4px; min-height: 40px; padding: 0 10px; border: 0; background: none; color: var(--info-700); font-weight: 600; cursor: pointer; border-radius: 8px; }
+.au-reveal:hover { background: var(--marine-50); }
+.au-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+.au-meter[hidden] { display: none; }
+.au-meter i { height: 5px; border-radius: 3px; background: var(--line); }
+.au-meter i.on { background: var(--success-700); }
+@media (min-width: 900px) {
+  .au { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 640px; }
+  .au-side { padding: 56px 48px; }
+  .au-side ul { display: grid; }
+  .au-side img { display: block; }
+  .au-main { padding: 48px 24px; }
+  .au-card { padding: 32px; }
+}

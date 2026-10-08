@@ -175,3 +175,35 @@ document.addEventListener("change", function (e) {
 
 /* Conversation : on ouvre sur le dernier message. */
 document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = t.scrollHeight; });
+
+/* Pages d'accès : afficher ou masquer le mot de passe, barre de force (indicative ; le serveur reste seul juge). */
+(function () {
+  document.querySelectorAll("[data-reveal]").forEach(function (btn) {
+    var input = document.getElementById(btn.dataset.reveal);
+    if (!input) return;
+    btn.hidden = false;
+    btn.addEventListener("click", function () {
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.setAttribute("aria-pressed", show ? "true" : "false");
+      btn.firstChild.nodeValue = show ? "Masquer" : "Afficher";
+    });
+  });
+  document.querySelectorAll("[data-strength-for]").forEach(function (meter) {
+    var input = document.getElementById(meter.dataset.strengthFor);
+    if (!input) return;
+    meter.hidden = false;
+    var bars = meter.querySelectorAll("i");
+    var score = function (v) {
+      var s = 0;
+      if (v.length >= 10) s += 1;
+      if (/[A-Za-z]/.test(v) && /\d/.test(v)) s += 1;
+      if (v.length >= 14) s += 1;
+      if (/[^A-Za-z0-9]/.test(v) && v.length >= 10) s += 1;
+      return s;
+    };
+    var paint = function () { var n = score(input.value); bars.forEach(function (b, i) { b.classList.toggle("on", i < n); }); };
+    input.addEventListener("input", paint);
+    paint();
+  });
+})();

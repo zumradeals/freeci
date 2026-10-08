@@ -138,4 +138,13 @@ class AuthenticationTest extends TestCase
     {
         $this->get('/reinitialisation/abc?email=a@example.test')->assertOk()->assertSee('Nouveau mot de passe');
     }
+
+    public function test_access_pages_use_the_two_pane_layout_and_no_longer_announce_orders_as_future(): void
+    {
+        $this->get('/connexion')->assertOk()->assertSee('Content de vous revoir.')->assertSee('Un accord clair')->assertSee('Mot de passe oublié ?')->assertSee('data-reveal="f-password"', false);
+        $register = $this->get('/inscription')->assertOk()->assertSee('Créer un compte')->assertSee('vous pourrez activer l’espace freelance ensuite')->assertSee('data-strength-for="f-password"', false)
+            ->assertSee('conditions d’utilisation')->assertSee('politique de confidentialité')->assertDontSee('prochain lot');
+        $this->assertStringNotContainsString('type="checkbox" name="terms"', $register->getContent());
+        $this->get('/mot-de-passe-oublie')->assertOk()->assertSee('Envoyer le lien');
+    }
 }
