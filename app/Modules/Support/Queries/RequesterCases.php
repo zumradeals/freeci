@@ -22,7 +22,7 @@ final class RequesterCases
 
         return DB::table('support_cases')->where(fn ($q) => $q->where('requester_id', $uid)->orWhere(fn ($w) => $w->where('counterparty_id', $uid)->whereIn('kind', ['dispute', 'cancellation'])))
             ->orderByDesc('updated_at')->limit(100)->get()->map(fn ($c) => [
-                'reference' => $c->reference, 'kind' => CaseRules::KINDS[$c->kind], 'subject' => $c->subject, 'status' => CaseRules::statusFor($c->status, $c->kind, $c->assignee_id !== null),
+                'reference' => $c->reference, 'kind' => CaseRules::KINDS[$c->kind], 'kindKey' => $c->kind, 'statusKey' => $c->status, 'subject' => $c->subject, 'status' => CaseRules::statusFor($c->status, $c->kind, $c->assignee_id !== null),
                 'live' => in_array($c->status, CaseRules::LIVE, true), 'role' => $c->requester_id === $uid ? 'requester' : 'counterparty', 'when' => Dates::format(Carbon::parse($c->updated_at)),
             ])->all();
     }

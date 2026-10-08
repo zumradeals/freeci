@@ -115,6 +115,11 @@ class SupportTest extends TestCase
         $this->assertSame(1, DB::table('support_cases')->count());
         $c = DB::table('support_cases')->first();
         $this->assertSame([$this->client->id, $o->id, 'support', 'open'], [$c->requester_id, $c->order_id, $c->kind, $c->status]);
+        $this->actingAs($this->client)->get('/espace/assistance')->assertOk()->assertSee('as-case', false)->assertSee('Question sur ma commande');
+        $this->actingAs($this->client)->get('/espace/assistance?statut=en-cours')->assertOk()->assertSee('Question sur ma commande');
+        $this->actingAs($this->client)->get('/espace/assistance?statut=clos')->assertOk()->assertDontSee('Question sur ma commande')->assertSee('Aucun dossier dans cette catégorie');
+        $this->actingAs($this->client)->get('/espace/assistance/'.$c->reference)->assertOk()->assertSee('as-sum', false)->assertSee('Demandeur')->assertSee('Votre réponse');
+        $this->actingAs($this->client)->get('/espace/assistance/nouvelle')->assertOk()->assertSee('Avant d’écrire');
 
         // commande d'autrui ou inexistante : même réponse
         $this->actingAs($this->freelancer)->post('/espace/assistance', ['operation_key' => (string) Str::uuid(), 'order' => 'FC-0000-00000'] + $payload)->assertSessionHasErrors('order');

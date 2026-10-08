@@ -26,7 +26,12 @@ class AssistanceController extends Controller
 
     public function index(Request $request): View
     {
-        return view('support.index', ['cases' => $this->cases->list($request->user())]);
+        $all = $this->cases->list($request->user());
+        $filter = in_array($request->query('statut'), ['en-cours', 'clos'], true) ? $request->query('statut') : 'tous';
+        $counts = ['tous' => count($all), 'en-cours' => count(array_filter($all, fn ($c) => $c['live'])), 'clos' => count(array_filter($all, fn ($c) => ! $c['live']))];
+        $cases = $filter === 'tous' ? $all : array_values(array_filter($all, fn ($c) => $filter === 'en-cours' ? $c['live'] : ! $c['live']));
+
+        return view('support.index', ['cases' => $cases, 'filter' => $filter, 'counts' => $counts]);
     }
 
     public function create(Request $request): View
