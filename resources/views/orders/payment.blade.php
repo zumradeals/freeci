@@ -1,7 +1,8 @@
 @php($sbx = $p->environment === 'sandbox')
 <x-layouts.account :title="$sbx ? 'Paiement (mode test)' : 'Paiement'" space="client">
   <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('orders.show', $p->reference) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour à la commande</a><a class="hide-m" href="{{ route('orders.show', $p->reference) }}">Commande {{ $p->reference }}</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Paiement</span></nav>
-  <h1 class="t-h1">Payer votre commande</h1>
+  <div class="rq-wrap pay-page">
+  <h1>Payer votre commande</h1>
 
   @if(! $p->paymentsOpen && $p->paymentState === null)
     <section class="card empty form-card"><span class="ico-lg"><x-fc.icon name="lock" :size="26" /></span>
@@ -14,8 +15,11 @@
   <div class="notice tone-warning" role="note"><x-fc.icon name="flag" /><p><strong>Mode test — aucun argent réel n’est débité.</strong> Ce paiement est un <em>test</em> chez Genius Pay (sandbox) : il ne représente aucun montant réellement encaissé, aucun revenu, aucun reversement.</p></div>
   @endif
 
-  <div class="cols">
-    <div class="stack-lg">
+  @php($payStep = $p->startedAt ? 3 : ($p->paymentState === 'confirmed' ? 2 : 1))
+  <ol class="rq-track" aria-label="Étapes de la commande">@foreach(['Accord', 'Paiement', 'Brief', 'Réalisation'] as $i => $label)<li class="{{ $i < $payStep ? 'done' : ($i === $payStep ? 'cur' : '') }}" @if($i === $payStep) aria-current="step" @endif><span class="mk" aria-hidden="true">{{ $i < $payStep ? '✓' : $i + 1 }}</span><span class="lb">{{ $label }}</span></li>@endforeach</ol>
+
+  <div class="rq-grid">
+    <div class="rq-main">
       {{-- État de la tentative : toujours lu en base, jamais déduit de l'URL --}}
       @if($p->paymentState === 'confirmed')
         <section class="card" aria-labelledby="h-res" style="border-left:4px solid var(--success-700)"><h2 class="t-h2" id="h-res"><span class="badge tone-success"><x-fc.icon name="check-circle" :size="16" />Paiement confirmé</span></h2>
@@ -41,9 +45,9 @@
       @endif
 
       @if($p->canPay)
-        <section class="card" aria-labelledby="h-pay"><h2 class="t-h2 card-title" id="h-pay">{{ $p->paymentState === 'failed' ? 'Réessayer le paiement' : 'Moyen de paiement' }}</h2>
-          <div class="choice" style="margin-bottom:12px"><h3 class="t-h3">Genius Pay{{ $sbx ? ' — mode test' : '' }}</h3><p class="muted small">Vous serez redirigé vers le checkout hébergé de Genius Pay{{ $sbx ? ' (environnement de test) : aucun argent réel n’est débité' : '' }}. Choisissez-y le moyen de paiement. Le retour de votre navigateur ne confirme rien : la confirmation est vérifiée côté serveur.</p></div>
-          @if($p->deadline)<p class="due due-block"><x-fc.icon name="clock" :size="20" /><span>Payer avant le <strong>{{ \App\Shared\Dates::format($p->deadline) }}</strong> <span class="rel">({{ \App\Shared\Dates::until($p->deadline) }})</span></span></p>@endif
+        <section class="card rq-card" aria-labelledby="h-pay"><h2 class="t-h2 card-title" id="h-pay">{{ $p->paymentState === 'failed' ? 'Réessayer le paiement' : 'Moyen de paiement' }}</h2>
+          <div class="pm-choice"><span class="lg" aria-hidden="true">GP</span><div><h3 class="t-h3">Genius Pay{{ $sbx ? ' — mode test' : '' }}</h3><p class="muted small">Vous serez redirigé vers le checkout hébergé de Genius Pay{{ $sbx ? ' (environnement de test) : aucun argent réel n’est débité' : '' }}. Choisissez-y le moyen de paiement. Le retour de votre navigateur ne confirme rien : la confirmation est vérifiée côté serveur.</p></div></div>
+          @if($p->deadline)<p class="due due-block pm-due"><x-fc.icon name="clock" :size="20" /><span>Payer avant le <strong>{{ \App\Shared\Dates::format($p->deadline) }}</strong> <span class="rel">({{ \App\Shared\Dates::until($p->deadline) }})</span></span></p>@endif
           @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first() }}</p></div>@endif
           <form method="post" action="{{ route('orders.payment.start', $p->reference) }}" data-once style="display:grid;gap:16px;margin-top:12px" novalidate>
             @csrf
@@ -55,13 +59,15 @@
       @endif
     </div>
 
-    <div class="stack-lg">
-      <section class="card" aria-labelledby="h-sum"><h2 class="t-h2 card-title" id="h-sum">Récapitulatif</h2>
-        <p style="font-weight:650">{{ $p->title }}</p><p class="muted small">Freelance : {{ $p->sellerName }}</p>
-        <dl class="defs defs-stack" style="margin-top:8px"><div><dt>Délai</dt><dd>{{ $p->deliveryDays }} {{ $p->deliveryDays > 1 ? 'jours' : 'jour' }} à partir du départ<small>Le départ est enregistré après paiement confirmé et brief complet.</small></dd></div>
-          <div><dt>Corrections</dt><dd>{{ $p->revisionsIncluded }}</dd></div>
-          <div><dt>Total à payer</dt><dd><x-fc.money :amount="$p->amount" size="lg" /><small>Montant de l’accord figé</small></dd></div></dl></section>
-    </div>
+    <aside class="rq-side" aria-label="Récapitulatif">
+      <section class="rq-sum" aria-labelledby="h-sum"><div class="b">
+        <div><p class="muted small" id="h-sum">Récapitulatif</p><h2>{{ $p->title }}</h2><p class="muted small">Freelance : {{ $p->sellerName }}</p></div>
+        <ul class="rq-facts"><li><x-fc.icon name="clock" :size="20" /><span><b>{{ $p->deliveryDays }} {{ $p->deliveryDays > 1 ? 'jours' : 'jour' }}</b> à partir du départ</span></li><li><x-fc.icon name="pencil" :size="20" /><span><b>{{ $p->revisionsIncluded }} {{ $p->revisionsIncluded > 1 ? 'corrections' : 'correction' }}</b> {{ $p->revisionsIncluded > 1 ? 'incluses' : 'incluse' }}</span></li></ul>
+        <div><p class="muted small">Total à payer</p><p class="rq-price"><x-fc.money :amount="$p->amount" size="lg" /></p><p class="muted small">Montant de l’accord figé</p></div>
+        <p class="rq-lock"><x-fc.icon name="lock" :size="18" /><span>Le départ est enregistré après paiement confirmé et brief complet.</span></p>
+      </div></section>
+    </aside>
   </div>
   @endif
+  </div>
 </x-layouts.account>

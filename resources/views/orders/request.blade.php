@@ -1,25 +1,21 @@
+@php($cover = \App\Modules\Catalog\Support\ImageUrls::present($service->images)[0]['card'] ?? null)
 <x-layouts.public title="Décrire votre besoin" robots="noindex" main-class="svc-page">
-<div class="container request-page">
-  <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('services.show', $service->slug) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour au service</a><a class="hide-m" href="{{ route('services.index') }}">Services</a><span class="sep hide-m" aria-hidden="true">›</span><a class="hide-m" href="{{ route('services.show', $service->slug) }}">{{ $service->title }}</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Demande</span></nav>
-  <h1 class="t-h1">Décrire votre besoin</h1>
+<div class="container rq-wrap request-page">
+  <nav class="rq-crumbs" aria-label="Fil d’Ariane"><a class="rq-back" href="{{ route('services.show', $service->slug) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour au service</a><a class="rq-hide" href="{{ route('services.index') }}">Services</a><span class="rq-hide" aria-hidden="true">›</span><a class="rq-hide" href="{{ route('services.show', $service->slug) }}">{{ $service->title }}</a><span class="rq-hide" aria-hidden="true">›</span><span class="rq-hide" aria-current="page">Demande</span></nav>
+  <h1>Décrire votre besoin</h1>
+  <p class="rq-lead">Quelques précisions pour que {{ explode(' ', $service->sellerName)[0] }} puisse accepter votre demande. Vous ne payez rien à cette étape.</p>
+  <ol class="rq-track" aria-label="Étapes">@foreach(['Votre demande', 'Réponse du freelance', 'Paiement', 'Travail'] as $i => $label)<li class="{{ $i === 0 ? 'cur' : '' }}" @if($i === 0) aria-current="step" @endif><span class="mk" aria-hidden="true">{{ $i + 1 }}</span><span class="lb">{{ $label }}</span></li>@endforeach</ol>
   @if($changed)
     <div class="notice tone-warning" role="alert"><x-fc.icon name="warn" /><p><strong>Ce service a été modifié</strong> (prix, délai ou périmètre) depuis votre consultation. Relisez les conditions mises à jour ci-dessous avant d’envoyer : rien n’a été envoyé, votre texte est conservé.</p></div>
   @endif
   @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Rien n’a été envoyé.</p></div>@endif
-  <div class="request-layout">
-    <form method="post" action="{{ route('services.request.store', $service->slug) }}" class="stack-lg" data-once novalidate>
+  <div class="rq-grid request-layout">
+    <form method="post" action="{{ route('services.request.store', $service->slug) }}" class="rq-main" data-once novalidate>
       @csrf
       <input type="hidden" name="service_version" value="{{ $service->version }}">
       <input type="hidden" name="operation_key" value="{{ $operationKey }}">
 
-      <section class="card" aria-labelledby="r-reminder"><h2 class="t-h2 card-title" id="r-reminder">1. Le service demandé</h2>
-        <p style="font-weight:650">{{ $service->title }}</p>
-        <p class="muted small">{{ $service->sellerName }} · version {{ $service->version }} du service, consultée maintenant</p>
-        <p class="row" style="margin-top:8px;gap:4px 16px"><x-fc.money :amount="$service->price" /> <span>{{ $service->deliveryDays }} {{ $service->deliveryDays > 1 ? 'jours' : 'jour' }} après le départ</span> <span>{{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections incluses' : 'correction incluse' }}</span></p>
-        <p class="muted small" style="margin-top:8px">Ces conditions sont <strong>figées</strong> dans votre commande au moment de l’envoi : elles ne changent pas si le service est modifié ensuite.</p>
-      </section>
-
-      <section class="card" aria-labelledby="r-need"><h2 class="t-h2 card-title" id="r-need">2. Votre besoin</h2>
+      <section class="card rq-card" aria-labelledby="r-need"><h2 class="t-h2 card-title" id="r-need">Votre besoin</h2>
         <div class="stack" style="display:grid;gap:16px">
           @foreach($service->clientInputs as $i => $label)
             @php($err = $errors->first('answers.'.$i))
@@ -39,21 +35,35 @@
         </div>
       </section>
 
-      <section class="card" aria-labelledby="r-sum"><h2 class="t-h2 card-title" id="r-sum">3. Ce qui se passera</h2>
-        <ol class="empty-steps">
-          <li><div><b>{{ $service->sellerName }} reçoit votre demande</b><span>Elle apparaît dans son espace freelance.</span></div></li>
-          <li><div><b>Il accepte ou refuse sous {{ config('freeci.orders.response_hours') }} h</b><span>En cas de refus, le motif vous est communiqué. Sans réponse, la demande expire.</span></div></li>
-          <li><div><b>Après acceptation, vous pouvez accéder au paiement lorsqu’il est disponible</b><span>Joignez auparavant les fichiers nécessaires depuis votre dossier. Le mode test ou réel est indiqué sur l’écran de paiement.</span></div></li>
-          <li><div><b>Le travail commence après paiement confirmé et brief complet</b><span>Aucune échéance de réalisation ne court avant.</span></div></li>
-        </ol>
-        <div class="field" style="margin-top:16px">
+      <section class="card rq-card" aria-labelledby="r-sum"><h2 class="t-h2 card-title" id="r-sum">Envoyer la demande</h2>
+        <div class="field">
           <label class="check" for="conditions"><input type="checkbox" id="conditions" name="conditions" value="1" @checked(old('conditions')) required> <span>J’ai lu et j’accepte les conditions de cette demande (version {{ config('freeci.orders.conditions_version') }}).</span></label>
           @error('conditions')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror
           <p class="muted small">Les conditions juridiques complètes restent à rédiger ; la version et la date de votre acceptation sont enregistrées.</p>
         </div>
-        <div class="row" style="margin-top:16px"><button class="btn btn-primary btn-lg" type="submit" data-once-label="Envoi en cours…">Envoyer la demande</button><a class="btn btn-secondary btn-lg" href="{{ route('services.show', $service->slug) }}">Annuler</a></div>
+        <div class="row"><button class="btn btn-primary btn-lg" type="submit" data-once-label="Envoi en cours…">Envoyer la demande</button><a class="btn btn-secondary btn-lg" href="{{ route('services.show', $service->slug) }}">Annuler</a></div>
       </section>
     </form>
+
+    <aside class="rq-side" aria-label="Le service demandé et la suite">
+      <section class="rq-sum" aria-labelledby="r-reminder">
+        @if($cover)<div class="im"><img src="{{ $cover }}" alt="" width="640" height="320"></div>@endif
+        <div class="b">
+          <div><p class="muted small">Le service demandé</p><h2 id="r-reminder">{{ $service->title }}</h2><p class="muted small">{{ $service->sellerName }} · version {{ $service->version }} du service, consultée maintenant</p></div>
+          <p class="rq-price"><x-fc.money :amount="$service->price" size="lg" /></p>
+          <ul class="rq-facts"><li><x-fc.icon name="clock" :size="20" /><span><b>{{ $service->deliveryDays }} {{ $service->deliveryDays > 1 ? 'jours' : 'jour' }}</b> après le départ</span></li><li><x-fc.icon name="pencil" :size="20" /><span><b>{{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}</b> {{ $service->revisionsIncluded > 1 ? 'incluses' : 'incluse' }}</span></li></ul>
+          <p class="rq-lock"><x-fc.icon name="lock" :size="18" /><span>Ces conditions sont <strong>figées</strong> dans votre commande au moment de l’envoi : elles ne changent pas si le service est modifié ensuite.</span></p>
+        </div>
+      </section>
+      <section class="rq-ok" aria-labelledby="r-next"><b id="r-next">Ce qui se passera</b>
+        <ol>
+          <li><span class="d">1</span><span><b>{{ $service->sellerName }} reçoit votre demande</b><br>Elle apparaît dans son espace freelance.</span></li>
+          <li><span class="d">2</span><span><b>Il accepte ou refuse sous {{ config('freeci.orders.response_hours') }} h</b><br>En cas de refus, le motif vous est communiqué. Sans réponse, la demande expire.</span></li>
+          <li><span class="d">3</span><span><b>Après acceptation, vous pouvez accéder au paiement lorsqu’il est disponible</b><br>Joignez auparavant les fichiers nécessaires depuis votre dossier. Le mode test ou réel est indiqué sur l’écran de paiement.</span></li>
+          <li><span class="d">4</span><span><b>Le travail commence après paiement confirmé et brief complet</b><br>Aucune échéance de réalisation ne court avant.</span></li>
+        </ol>
+      </section>
+    </aside>
   </div>
 </div>
 </x-layouts.public>

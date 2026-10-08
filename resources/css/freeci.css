@@ -1718,3 +1718,49 @@ a.kpi:hover { background: var(--marine-100); }
   .au-main { padding: 48px 24px; }
   .au-card { padding: 32px; }
 }
+
+/* Lot 56 : demande de service et paiement d'après la maquette. */
+.rq-wrap { padding-block: 16px 48px; }
+.rq-crumbs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .875rem; color: var(--ink-600); margin-bottom: 14px; }
+.rq-crumbs a { color: var(--info-700); }
+.rq-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; text-decoration: none; }
+.rq-hide { display: none; }
+@media (min-width: 768px) { .rq-back { display: none; } .rq-hide { display: inline; } }
+.rq-wrap h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 750; letter-spacing: -.03em; line-height: 1.15; overflow-wrap: anywhere; }
+.rq-lead { color: var(--ink-600); margin-top: 6px; }
+.rq-track { display: grid; grid-template-columns: repeat(4, 1fr); margin: 22px 0 24px; list-style: none; padding: 0; }
+.rq-track li { position: relative; display: grid; justify-items: center; gap: 8px; text-align: center; font-size: .875rem; color: var(--ink-600); }
+.rq-track li::before { content: ""; position: absolute; top: 16px; left: -50%; width: 100%; height: 3px; background: var(--line); }
+.rq-track li:first-child::before { display: none; }
+.rq-track li.done::before, .rq-track li.cur::before { background: var(--marine-700); }
+.rq-track .mk { position: relative; z-index: 1; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 3px solid var(--line); font-weight: 700; }
+.rq-track li.done .mk { background: var(--marine-700); border-color: var(--marine-700); color: #fff; }
+.rq-track li.cur .mk { border-color: var(--accent-500); color: var(--accent-700); box-shadow: 0 0 0 4px #fdeee3; }
+.rq-track li.cur { color: var(--ink-900); font-weight: 700; }
+.rq-track .lb { display: none; }
+.rq-track li.cur .lb { display: block; }
+@media (min-width: 640px) { .rq-track .lb { display: block; } }
+.rq-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.rq-main { display: grid; gap: 16px; min-width: 0; }
+.rq-card { padding: 22px; box-shadow: none; }
+.rq-side { display: grid; gap: 16px; min-width: 0; order: -1; }
+.rq-sum { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgb(16 45 75 / .08); }
+.rq-sum .im { aspect-ratio: 16 / 8; background: #eaf1f8; }
+.rq-sum .im img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rq-sum .b { padding: 18px; display: grid; gap: 12px; }
+.rq-sum h2 { font-size: 1.0625rem; font-weight: 700; overflow-wrap: anywhere; }
+.rq-price .price { font-size: 2rem; font-weight: 800; color: var(--accent-700); line-height: 1; }
+.rq-facts { list-style: none; margin: 0; padding: 12px 0; border-block: 1px solid var(--line); display: grid; gap: 10px; }
+.rq-facts li { display: flex; gap: 10px; align-items: center; }
+.rq-facts svg { color: var(--marine-700); flex: none; }
+.rq-lock { display: flex; gap: 8px; align-items: flex-start; font-size: .875rem; color: var(--ink-600); }
+.rq-lock svg { flex: none; color: var(--success-700); margin-top: 2px; }
+.rq-ok { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.rq-ok ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rq-ok li { display: flex; gap: 10px; font-size: .9375rem; color: var(--ink-600); }
+.rq-ok li .d { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #eaf1f8; color: var(--marine-900); display: grid; place-items: center; font-weight: 700; font-size: .8125rem; }
+.rq-ok li b { color: var(--ink-900); }
+.pm-choice { border: 2px solid var(--marine-900); border-radius: 12px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; background: #f7fafd; margin-bottom: 12px; }
+.pm-choice .lg { flex: none; width: 48px; height: 48px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; font-weight: 800; color: var(--marine-900); }
+.pm-due { color: var(--accent-700); }
+@media (min-width: 1024px) { .rq-grid { grid-template-columns: minmax(0, 1fr) 380px; } .rq-side { order: 0; position: sticky; top: 16px; } }

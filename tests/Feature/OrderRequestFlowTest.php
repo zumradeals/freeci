@@ -300,4 +300,10 @@ class OrderRequestFlowTest extends TestCase
         $this->assertTrue($order->is_demo);
         $this->actingAs($demoClient)->get("/commandes/{$order->reference}")->assertDontSee('Démonstration');
     }
+
+    public function test_request_page_shows_the_track_the_figed_summary_and_what_happens_next(): void
+    {
+        $this->actingAs($this->client)->get('/services/'.$this->service->slug.'/demande')->assertOk()->assertSee('Vous ne payez rien à cette étape')->assertSee('Votre demande')->assertSee('Réponse du freelance')
+            ->assertSee('Ce qui se passera')->assertSee('figées')->assertSee('Envoyer la demande')->assertSee('name="operation_key"', false)->assertSee('name="conditions"', false);
+    }
 }
