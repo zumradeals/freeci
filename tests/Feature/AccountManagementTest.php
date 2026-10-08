@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\AccountNoticeMail;
 use App\Modules\Accounts\Actions\AccountClosure;
+use App\Modules\Admin\Legal\LegalStructure;
 use App\Shared\TaskHeartbeat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -246,5 +247,16 @@ class AccountManagementTest extends TestCase
         $this->assertNotNull(DB::table('system_task_runs')->where('task', 'orders:expire')->value('last_failed_at'));
         $admin = $this->readyAdmin();
         $this->asAdmin($admin)->get('/admin/exploitation')->assertSee('Dernier passage en échec');
+    }
+
+    public function test_how_it_works_page_reads_steps_and_cards_from_the_administrable_text(): void
+    {
+        $page = $this->get('/informations/fonctionnement')->assertOk()->assertSee('Comment ça marche')->assertSee('Brouillon — texte non adopté')->assertSee('Accueil')
+            ->assertSee('Le parcours d’une commande')->assertSee('Choisir')->assertSee('Clôturer')->assertSee('Messagerie, assistance et litiges')->assertSee('Paiement')->assertSee('Je cherche un service');
+        $this->assertSame(5, substr_count($page->getContent(), '<span class="hw-num">'));
+
+        // Un texte qui n'a pas la forme attendue s'affiche tel quel (rien n'est perdu).
+        $this->assertNull(LegalStructure::parse('<h2>Seulement un titre</h2><p>Texte.</p>'));
+        $this->get('/informations/conditions')->assertOk()->assertSee('hw-tab', false)->assertDontSee('hw-num', false);
     }
 }

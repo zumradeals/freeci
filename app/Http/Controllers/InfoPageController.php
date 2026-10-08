@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Modules\Admin\Legal\LegalDefaults;
 use App\Modules\Admin\Legal\LegalPages;
+use App\Modules\Admin\Legal\LegalStructure;
 use Illuminate\View\View;
 
 /**
@@ -18,6 +19,8 @@ class InfoPageController extends Controller
     {
         abort_unless(isset(self::PAGES[$page]), 404);
 
-        return view('info.page', ['title' => self::PAGES[$page], 'slug' => $page, 'approved' => LegalPages::adopted($page), 'html' => LegalPages::render(LegalPages::publicBody($page))]);
+        $html = LegalPages::render(LegalPages::publicBody($page));
+
+        return view('info.page', ['title' => self::PAGES[$page], 'slug' => $page, 'approved' => LegalPages::adopted($page), 'html' => $html, 'structure' => $page === 'fonctionnement' ? LegalStructure::parse($html) : null]);
     }
 }

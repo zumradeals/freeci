@@ -10,7 +10,7 @@ namespace App\Modules\Admin\Legal;
 final class LegalDefaults
 {
     public const PAGES = [
-        'fonctionnement' => 'Comment fonctionne FreeCI',
+        'fonctionnement' => 'Comment ça marche',
         'aide' => 'Aide',
         'contact' => 'Contact',
         'conditions' => 'Conditions d’utilisation',

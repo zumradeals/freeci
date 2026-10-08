@@ -30,7 +30,7 @@ final class OperationsStatus
         'reviews:publish' => ['Publication des avis', 60], 'accounts:close' => ['Fermetures de comptes', 60],
     ];
 
-    public const PAGES = ['fonctionnement' => 'Comment fonctionne FreeCI', 'aide' => 'Aide', 'contact' => 'Contact', 'conditions' => 'Conditions d’utilisation', 'confidentialite' => 'Confidentialité', 'mentions-legales' => 'Mentions légales'];
+    public const PAGES = ['fonctionnement' => 'Comment ça marche', 'aide' => 'Aide', 'contact' => 'Contact', 'conditions' => 'Conditions d’utilisation', 'confidentialite' => 'Confidentialité', 'mentions-legales' => 'Mentions légales'];
 
     public function __invoke(): array
     {

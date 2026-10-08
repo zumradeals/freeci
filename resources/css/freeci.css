@@ -1408,3 +1408,37 @@ a.kpi:hover { background: var(--marine-100); }
 .profile-page .profile-about, .profile-page .profile-services, .profile-page .profile-reviews { gap: 8px; }
 .profile-page .section-head { margin-bottom: 4px; }
 @media (min-width: 1024px) { .sp-grid { grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; align-items: start; } .sp-aside { position: sticky; top: 16px; } .profile-page .sp-aside { display: block; } .sticky-buy { display: none; } }
+
+/* Lot 47 : pages d'information d'après la maquette (bandeau, onglets, étapes et cartes lues dans le texte administrable). */
+.info-page { min-width: 0; max-width: 100%; }
+.hw-h1 { font-size: clamp(1.75rem, 3.4vw, 2.5rem); font-weight: 750; letter-spacing: -.03em; line-height: 1.1; text-wrap: balance; }
+.hw-lead { max-width: 62ch; margin-top: 12px; color: var(--on-marine-2, #dbe5ee); font-size: 1.0625rem; line-height: 1.6; }
+.hw-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; }
+.hw-tab { white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink-900); text-decoration: none; }
+.hw-tab:hover { border-color: var(--marine-700); }
+.hw-tab.on { background: var(--marine-900); color: #fff; border-color: var(--marine-900); font-weight: 650; }
+.hw-wrap { padding-block: 24px 8px; }
+.info-page .info-body { display: block; }
+.info-page .info-body > * + * { margin-top: 16px; }
+.info-page .info-body .prose { max-width: 46rem; display: grid; gap: 12px; }
+.info-page .info-body .prose h2 { margin-top: 16px; font-size: 1.375rem; }
+.info-page .info-body .notice { max-width: none; }
+.hw-sec { margin-top: 28px; }
+.hw-h2 { font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em; margin-bottom: 16px; }
+.hw-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+.hw-steps li { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 18px; min-width: 0; }
+.hw-num { position: absolute; top: 14px; right: 14px; font-size: .8125rem; font-weight: 800; color: var(--accent-700); }
+.hw-ico { display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: #eaf1f8; color: var(--marine-900); }
+.hw-steps h3 { font-size: 1.125rem; font-weight: 700; margin: 14px 0 6px; }
+.hw-steps li > div, .hw-card-body { color: var(--ink-600); font-size: .9375rem; line-height: 1.6; overflow-wrap: anywhere; }
+.hw-card-body > * + * { margin-top: 8px; }
+.hw-cards { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-top: 32px; }
+.hw-card { box-shadow: none; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.hw-card h2 { font-size: 1.125rem; font-weight: 700; }
+.hw-note { background: #fff8f2; border-color: #f3c9a8; }
+.hw-ctas { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-top: 40px; padding-block: 24px; }
+.hw-cta-box { display: grid; gap: 8px; justify-items: start; align-content: start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.hw-cta-box h2 { font-size: 1.0625rem; font-weight: 700; }
+.hw-cta-box p { color: var(--ink-600); font-size: .9375rem; }
+@media (min-width: 640px) { .hw-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .hw-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); } .hw-cards, .hw-ctas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
