@@ -213,4 +213,28 @@ class DiscoveryTest extends TestCase
         $this->get('/freelances/awa-profil')->assertOk()->assertSee('Profil freelance')->assertSee('Accueil')->assertSee('2 services publiés')->assertSee("Dès <span class=\"price price-md\">30\u{202F}000", false)->assertSee('Dès 4 jours')
             ->assertSee('Vous avez un besoin précis ?')->assertSee('Avis publiés uniquement après une commande validée');
     }
+
+    public function test_my_missions_page_filters_orders_attention_first_and_offers_the_right_action(): void
+    {
+        $cat = Category::factory()->create(['slug' => 'mm', 'name' => 'Catégorie MM']);
+        $client = User::factory()->create();
+        $mk = function (string $title, string $status, ?int $days = 5) use ($cat, $client) {
+            $mid = (string) Str::uuid();
+            $vid = (string) Str::uuid();
+            DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => Str::slug($title).'-mm', 'status' => $status, 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => $title, 'description' => 'Description '.$title,
+                'budget_xof' => 30000, 'application_deadline' => now()->addDays($days)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
+        };
+        $mk('Mission ouverte MM', 'open');
+        $mk('Mission sélection MM', 'selection_ended', -1);
+        $mk('Mission close MM', 'closed');
+
+        $this->actingAs($client)->get('/espace/missions')->assertOk()->assertSee('Missions à traiter')->assertSee('Mission ouverte MM')->assertSee('Catégorie MM')->assertSee('J-5')
+            ->assertSeeInOrder(['Mission sélection MM', 'Mission ouverte MM']);
+        $this->actingAs($client)->get('/espace/missions?statut=ouvertes')->assertOk()->assertSee('Mission ouverte MM')->assertDontSee('Mission close MM');
+        $this->actingAs($client)->get('/espace/missions?statut=terminees')->assertOk()->assertSee('Mission close MM')->assertDontSee('Mission ouverte MM');
+        $this->actingAs($client)->get('/espace/missions?statut=a-traiter')->assertOk()->assertSee('Mission sélection MM')->assertDontSee('Mission ouverte MM');
+        $this->actingAs($client)->get('/espace/missions?statut=inconnu')->assertOk()->assertSee('Mission close MM');
+    }
 }

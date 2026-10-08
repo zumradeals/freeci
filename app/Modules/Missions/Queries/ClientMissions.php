@@ -29,8 +29,10 @@ final class ClientMissions
         $missions = Mission::query()->where('client_id', $client->getKey())->with(['publishedVersion'])->orderByDesc('updated_at')->get();
         $versions = MissionVersion::query()->whereIn('mission_id', $missions->pluck('id'))->whereIn('state', MissionVersion::OPEN)->get()->keyBy('mission_id');
         $counts = Proposal::query()->whereIn('mission_id', $missions->pluck('id'))->where('state', 'active')->selectRaw('mission_id, count(*) as n')->groupBy('mission_id')->pluck('n', 'mission_id');
+        $orders = DB::table('orders')->whereIn('mission_id', $missions->pluck('id'))->whereNotIn('state', ['cancelled', 'expired'])->orderBy('created_at')->pluck('reference', 'mission_id');
+        $categories = Category::query()->whereIn('id', $versions->pluck('category_id')->merge($missions->map(fn ($m) => $m->publishedVersion?->category_id))->filter()->unique())->pluck('name', 'id');
 
-        return $missions->map(function (Mission $m) use ($versions, $counts) {
+        return $missions->map(function (Mission $m) use ($versions, $counts, $orders, $categories) {
             $w = $versions->get($m->getKey());
             $live = $m->publishedVersion;
             $shown = $w ?? $live;
@@ -40,6 +42,8 @@ final class ClientMissions
                 'id' => $m->getKey(), 'title' => $shown?->title ?: 'Sans titre', 'status' => $label, 'tone' => $tone, 'icon' => $icon, 'note' => $note,
                 'budget' => $shown?->budget_xof ? Money::xof($shown->budget_xof) : null, 'deadline' => $live?->application_deadline ? Dates::format($live->application_deadline) : null,
                 'proposals' => (int) ($counts[$m->getKey()] ?? 0), 'needsAction' => $m->status === 'selection_ended' || $w?->state === 'changes_requested',
+                'state' => $m->status, 'workingState' => $w?->state, 'category' => $categories[$shown?->category_id] ?? null, 'orderReference' => in_array($m->status, ['reserved', 'awarded'], true) ? ($orders[$m->getKey()] ?? null) : null,
+                'daysLeft' => $m->status === 'open' && $live?->application_deadline ? max(0, (int) now()->startOfDay()->diffInDays($live->application_deadline->copy()->startOfDay(), false)) : null,
             ];
         })->all();
     }
