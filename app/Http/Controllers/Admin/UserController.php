@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $f = ['q' => (string) $request->query('q', ''), 'status' => (string) $request->query('statut', ''), 'role' => (string) $request->query('role', '')];
 
-        return view('admin.users.index', ['page' => $users->search($f, (int) config('freeci.admin.page_size')), 'f' => $f]);
+        return view('admin.users.index', ['page' => $users->search($f, (int) config('freeci.admin.page_size')), 'f' => $f, 'counts' => $users->counts()]);
     }
 
     public function show(string $id, UsersQuery $users): View

@@ -118,7 +118,7 @@ class AdminShowcaseTeamMailTest extends TestCase
         $second = User::factory()->create(['email' => 'second@example.test']);
         $base = ['email' => 'second@example.test', 'reason' => 'Désignation d’un second administrateur.', 'phrase' => $phrase, 'confirm' => '1'];
 
-        $this->asAdmin($this->admin)->get('/admin/equipe')->assertOk()->assertSee('Administrateurs')->assertSee('Un administrateur peut tout faire');
+        $this->asAdmin($this->admin)->get('/admin/equipe')->assertOk()->assertSee('Administrateurs')->assertSee('Un administrateur peut tout faire')->assertSee('tm-m', false)->assertSee('Ce que permet chaque habilitation');
         // phrase fausse, case non cochée, compte inconnu ou non vérifié : refus
         $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', ['phrase' => 'oui'] + $base)->assertSessionHas('error');
         $this->asAdmin($this->admin)->post('/admin/equipe/administrateurs', array_diff_key($base, ['confirm' => 1]))->assertSessionHasErrors('confirm');

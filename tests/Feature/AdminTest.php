@@ -223,6 +223,9 @@ class AdminTest extends TestCase
         $s = $v->service->fresh();
         $this->asAdmin($this->admin, recent: false)->post("/admin/moderation/en-ligne/service/{$s->id}/suspendre", ['reason' => 'Contenu contraire aux règles de la plateforme.'])->assertRedirect(route('admin.reauth'));
         $this->assertSame('published', $s->fresh()->status->value);
+        $this->asAdmin($this->admin)->get('/admin/utilisateurs')->assertOk()->assertSee('us-r', false)->assertSee('Adresse non vérifiée')->assertSee('Actifs');
+        $this->asAdmin($this->admin)->get('/admin/utilisateurs?statut=suspended')->assertOk()->assertSee('Aucun utilisateur ne correspond');
+        $this->asAdmin($this->admin)->get('/admin/utilisateurs/'.$this->client->id)->assertOk()->assertSee('us-stats', false)->assertSee('Suspendre le compte')->assertSee('Historique des suspensions');
         $this->asAdmin($this->admin, recent: false)->post('/admin/utilisateurs/'.$this->client->id.'/suspendre', ['reason' => 'Motif suffisamment long'])->assertRedirect(route('admin.reauth'));
         $this->assertNull($this->client->fresh()->suspended_at);
 

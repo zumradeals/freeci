@@ -15,6 +15,14 @@ final class UsersQuery
 {
     private const FINAL = ['cancelled', 'expired', 'closed'];
 
+    /** Compteurs des onglets (comptes réels, sans filtre de recherche). @return array{all: int, active: int, suspended: int, unverified: int} */
+    public function counts(): array
+    {
+        $r = DB::table('users')->selectRaw('count(*) as a, count(*) filter (where suspended_at is null) as b, count(*) filter (where suspended_at is not null) as c, count(*) filter (where email_verified_at is null) as d')->first();
+
+        return ['all' => (int) $r->a, 'active' => (int) $r->b, 'suspended' => (int) $r->c, 'unverified' => (int) $r->d];
+    }
+
     /** @param array{q?: ?string, status?: ?string, role?: ?string} $f */
     public function search(array $f, int $perPage): LengthAwarePaginator
     {
