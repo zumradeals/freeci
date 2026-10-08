@@ -2022,3 +2022,48 @@ a.kpi:hover { background: var(--marine-100); }
 .dl-ver, .dl-dec { min-width: 0; }
 #livraison-deliveries { display: grid; gap: 16px; }
 .dl-panel:not([hidden]) { display: grid; gap: 16px; }
+
+/* Lot 63 — pied de page */
+.ft{background:var(--marine-950,#0c2340);color:#d5e2ef;margin-top:48px}
+.ft a{color:#d5e2ef;text-decoration:none}
+.ft a:hover{color:#fff;text-decoration:underline}
+.ft-cta{background:linear-gradient(135deg,#17375e,#0f2a4a);border-bottom:1px solid rgba(255,255,255,.12)}
+.ft-cta .in{max-width:1180px;margin:0 auto;padding:28px 24px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ft-cta h2{color:#fff;font-size:1.375rem;font-weight:800;letter-spacing:-.02em;margin:0}
+.ft-cta p{margin:4px 0 0;color:#b9cde3}
+.ft-cta .acts{display:flex;gap:10px;flex-wrap:wrap}
+.ft-cta .b1{background:#e8590c;color:#fff;border-radius:10px;padding:12px 20px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
+.ft-cta .b2{border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;padding:12px 20px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
+.ft-main{max-width:1180px;margin:0 auto;padding:44px 24px 28px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
+.ft-brand{display:grid;gap:14px;align-content:start}
+.ft .logo{display:flex;gap:10px;align-items:center;color:#fff;font-weight:800;font-size:1.375rem}
+.ft .logo .x{width:36px;height:36px;border-radius:9px;background:#fff;color:#17375e;display:grid;place-items:center;font-style:normal}
+.ft .logo b{color:#ff8a4c}
+.ft-brand p{margin:0;color:#b9cde3;max-width:28em}
+.ft-facts{display:flex;gap:8px;flex-wrap:wrap}
+.ft-facts span{display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:.8125rem;color:#d5e2ef}
+.ft h2{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#8fb0d3;margin:0 0 10px;font-weight:700}
+.ft ul{list-style:none;margin:0;padding:0;display:grid}
+.ft li a{display:inline-flex;align-items:center;min-height:40px}
+.ft-bar{border-top:1px solid rgba(255,255,255,.12)}
+.ft-bar .in{max-width:1180px;margin:0 auto;padding:16px 24px;display:flex;gap:12px 24px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:.875rem;color:#9fb8d4}
+.ft-bar nav{display:flex;gap:6px 20px;flex-wrap:wrap}
+.ft-bar .tools{display:flex;gap:14px;align-items:center}
+.ft-top{display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 12px;color:#fff}
+
+.ft .logo { display: inline-flex; gap: 10px; align-items: center; }
+.ft .logo .wm { color: #fff; font-weight: 800; font-size: 1.375rem; }
+.ft .logo .wm b { color: #ff8a4c; }
+.ft .up { transform: rotate(-90deg); }
+.ft nav h2 { margin-bottom: 10px; }
+.ft-main > nav ul { display: grid; }
+.ft-cta .b1:hover, .ft-cta .b2:hover { text-decoration: none; filter: brightness(1.08); }
+.ft a:focus-visible { outline: 3px solid #ffb27d; outline-offset: 2px; }
+.ft .ft-cta h2 { color: #fff; font-size: 1.375rem; font-weight: 800; letter-spacing: -.02em; text-transform: none; margin: 0; }
+@media (max-width: 1023px) { .ft-main { grid-template-columns: 1fr 1fr; } .ft-brand { grid-column: 1 / -1; } }
+@media (max-width: 600px) {
+  .ft-cta .in { padding: 24px 16px; }
+  .ft-main { padding: 32px 16px 20px; gap: 24px 16px; }
+  .ft-bar .in { padding: 16px; }
+  .ft-cta .acts a { flex: 1; justify-content: center; text-align: center; }
+}

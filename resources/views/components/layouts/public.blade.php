@@ -4,7 +4,7 @@
 <head>
 @include('partials.head', ['title' => $title, 'description' => $description, 'robots' => $robots])
 </head>
-<body class="">
+<body class="" id="top">
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 @include('partials.sprite')
 <header class="site-header">
@@ -26,19 +26,29 @@
 @if(session('error'))<div class="container" style="padding-top:16px"><div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ session('error') }}</p></div></div>@endif
 {{ $slot }}
 </main>
-<footer class="site-footer">
-  <div class="container">
-    <div class="cols">
-      <div class="stack-sm">
-        <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
-        <p class="muted" style="max-width:32em">{{ config('freeci.home.tagline') ?: \App\Modules\Admin\Settings\AppSettings::default('home.tagline') }}</p>
-      </div>
-      @foreach(['footer_discover' => 'Découvrir', 'footer_help' => 'Aide', 'footer_info' => 'Informations'] as $area => $heading)
-      <div><h2>{{ $heading }}</h2><ul>
-        @foreach(\App\Modules\Admin\Navigation\MenuItems::links($area) as [$label, $url, $dest])<li><a href="{{ $url }}">{{ $label }}</a></li>@endforeach</ul></div>
-      @endforeach
+<footer class="ft">
+  @guest
+  <section class="ft-cta" aria-label="Commencer"><div class="in">
+    <div><h2>Un projet à confier, un talent à proposer ?</h2><p>Trouvez un service ou publiez le vôtre.</p></div>
+    <div class="acts"><a class="b1" href="{{ route('services.index') }}">Trouver un service</a><a class="b2" href="{{ route('register') }}">Proposer mes services</a></div>
+  </div></section>
+  @endguest
+  <div class="ft-main">
+    <div class="ft-brand">
+      <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="36" height="36" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
+      <p>{{ config('freeci.home.tagline') ?: \App\Modules\Admin\Settings\AppSettings::default('home.tagline') }}</p>
+      <div class="ft-facts"><span><x-fc.icon name="globe" :size="16" />Côte d’Ivoire</span><span><x-fc.icon name="card" :size="16" />Prix en FCFA</span><span><x-fc.icon name="shield" :size="16" />Fichiers contrôlés</span></div>
     </div>
+    @foreach(['footer_discover' => 'Découvrir', 'footer_help' => 'Aide', 'footer_info' => 'Informations'] as $area => $heading)
+    <nav aria-label="{{ $heading }}"><h2>{{ $heading }}</h2><ul>
+      @foreach(\App\Modules\Admin\Navigation\MenuItems::links($area) as [$label, $url, $dest])<li><a href="{{ $url }}">{{ $label }}</a></li>@endforeach</ul></nav>
+    @endforeach
   </div>
+  <div class="ft-bar"><div class="in">
+    <span>© {{ now()->year }} FreeCI. Tous droits réservés.</span>
+    <nav aria-label="Liens légaux"><a href="{{ route('info', 'conditions') }}">Conditions</a><a href="{{ route('info', 'confidentialite') }}">Confidentialité</a><a href="{{ route('info', 'mentions-legales') }}">Mentions légales</a></nav>
+    <a class="ft-top" href="#top"><x-fc.icon name="arrow-right" :size="14" class="up" />Haut de page</a>
+  </div></div>
 </footer>
 @include('partials.drawer')
 @livewireScripts

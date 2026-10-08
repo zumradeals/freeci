@@ -46,4 +46,11 @@ class ErrorPagesTest extends TestCase
         $this->assertStringContainsString('Le délai est dépassé.', $html);
         $this->assertStringContainsString('href="/commandes/X"', $html);
     }
+
+    public function test_public_footer_shows_the_call_to_action_to_guests_only_and_keeps_legal_links(): void
+    {
+        $this->get('/une-page-qui-n-existe-pas')->assertSee('class="ft"', false)->assertSee('Un projet à confier, un talent à proposer ?')->assertSee('Proposer mes services')
+            ->assertSee('Côte d’Ivoire')->assertSee('© '.now()->year.' FreeCI')->assertSee('Haut de page')->assertSee('Mentions légales');
+        $this->actingAs(User::factory()->create())->get('/services')->assertOk()->assertSee('class="ft"', false)->assertDontSee('Un projet à confier, un talent à proposer ?');
+    }
 }
