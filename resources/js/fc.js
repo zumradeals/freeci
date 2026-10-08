@@ -144,3 +144,25 @@
     document.querySelectorAll("form[data-once]").forEach(function (f) { f.dataset.sent = "0"; f.querySelectorAll("button[type=submit]").forEach(function (b) { b.disabled = false; b.removeAttribute("aria-busy"); }); });
   });
 })();
+
+/* Menus de filtres (Budget, Délai, Autres catégories) : un seul ouvert à la fois ; se ferment au clic à l'extérieur et avec Échap. */
+(function () {
+  var open = function () { return document.querySelectorAll("details.sd-pop[open]"); };
+  document.addEventListener("click", function (e) {
+    open().forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute("open"); });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    open().forEach(function (d) { d.removeAttribute("open"); var s = d.querySelector("summary"); if (s) s.focus(); });
+  });
+  document.addEventListener("toggle", function (e) {
+    var t = e.target;
+    if (!t.matches || !t.matches("details.sd-pop") || !t.open) return;
+    open().forEach(function (d) { if (d !== t) d.removeAttribute("open"); });
+  }, true);
+  /* Choisir une tranche prédéfinie referme le menu. */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("details.sd-pop .sd-pop-panel a");
+    if (a) { var d = a.closest("details"); setTimeout(function () { d.removeAttribute("open"); }, 0); }
+  });
+})();
