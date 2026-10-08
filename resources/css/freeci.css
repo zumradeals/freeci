@@ -1666,3 +1666,18 @@ a.kpi:hover { background: var(--marine-100); }
   .ms2-acts { grid-column: 2 / -1; }
 }
 @media (min-width: 900px) { .sx-metrics.sx-metrics-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Lot 54 : éditeur d'une mission d'après la maquette (mêmes composants que l'éditeur d'un service). */
+.editor-steps.ed-steps-3 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+@media (min-width: 640px) { .editor-steps.ed-steps-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ed-ck li.opt svg { color: var(--ink-600); flex: none; }
+.ed-ck li.opt { color: var(--ink-600); }
+.ed-tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ed-tl li { display: flex; gap: 12px; align-items: flex-start; }
+.ed-tl .d { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #eaf1f8; color: var(--marine-900); display: grid; place-items: center; font-weight: 700; font-size: .8125rem; }
+.ed-tl p { font-size: .9375rem; color: var(--ink-600); }
+.ed-tl b { color: var(--ink-900); }
+.mission-editor .card { box-shadow: none; }
+.mission-preview .defs > div { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mission-preview .defs dd { white-space: nowrap; text-align: right; }
+.mission-preview .card-head h2 { font-size: 1.125rem; }

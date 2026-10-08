@@ -512,4 +512,20 @@ class MissionFlowTest extends TestCase
         $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Reconfirmer votre proposition');
         $this->assertNotNull($v);
     }
+
+    public function test_mission_editor_shows_steps_counters_checklist_and_the_action_bar(): void
+    {
+        $this->actingAs($this->client)->post('/espace/missions', ['title' => 'Conversion de douze plans PDF en fichiers DWG', 'category_id' => $this->service->category_id])->assertRedirect();
+        $m = Mission::query()->orderByDesc('created_at')->orderByDesc('id')->firstOrFail();
+        $v = $m->versions()->first();
+        $this->actingAs($this->client)->post("/espace/missions/{$m->id}/modifier", $this->missionForm() + ['revision_no' => $v->revision_no])->assertRedirect();
+
+        $page = $this->actingAs($this->client)->get("/espace/missions/{$m->id}/modifier")->assertOk()->assertSee('Avant de publier')->assertSee('Après la publication')->assertSee('Enregistrer le brouillon')
+            ->assertSee('Continuer vers la modération')->assertSee('data-count="description"', false)->assertSee('Votre mission en résumé');
+        $html = $page->getContent();
+        $this->assertMatchesRegularExpression('/data-check="title" class="ok"/', $html);
+        $this->assertMatchesRegularExpression('/data-check="budget" class="ok"/', $html);
+        $this->assertMatchesRegularExpression('/data-check="deadline" class="ok"/', $html);
+        $this->assertMatchesRegularExpression('/data-check="inputs" data-optional class="ok"/', $html);
+    }
 }
