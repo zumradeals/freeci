@@ -143,7 +143,7 @@ class ReviewsTest extends TestCase
         $this->assertSame(['count' => 1, 'avg' => '4,0'], app(ReviewQueries::class)->forServices([$this->service->id])[$this->service->id]);
         $this->get('/services')->assertSee('4,0');                                                   // note réelle sur la carte du catalogue
         $profile = DB::table('freelance_profiles')->where('user_id', $this->freelancer->id)->value('slug');
-        $this->get("/freelances/{$profile}")->assertOk()->assertSee('Travail soigné')->assertSee('1 issu d’un service');
+        $this->get("/freelances/{$profile}")->assertOk()->assertSee('Travail soigné')->assertSee('Issus d’un service')->assertSee('1 avis');
         $this->assertTrue($page->isOk());
         // notification idempotente du freelance
         Artisan::call('freeci:reviews:publish');
@@ -226,7 +226,7 @@ class ReviewsTest extends TestCase
         $this->assertSame([2, '3,0', 1, '5,0', 1, '1,0'], [$p['count'], $p['avg'], $p['service']['count'], $p['service']['avg'], $p['mission']['count'], $p['mission']['avg']]);
         $this->get('/services/'.$this->service->slug)->assertSee('Excellent travail')->assertDontSee('Mission décevante');
         $slug = DB::table('freelance_profiles')->value('slug');
-        $this->get("/freelances/{$slug}")->assertSee('Excellent travail')->assertSee('Mission décevante')->assertSee('À la suite d’une mission')->assertSee('1 issu d’une mission');
+        $this->get("/freelances/{$slug}")->assertSee('Excellent travail')->assertSee('Mission décevante')->assertSee('À la suite d’une mission')->assertSee('Issus d’une mission')->assertSee('1 avis');
     }
 
     // ---------------------------------------------------------------- signalement et modération

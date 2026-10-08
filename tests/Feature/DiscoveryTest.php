@@ -203,4 +203,14 @@ class DiscoveryTest extends TestCase
             ->assertSee('Autres missions : BTP test')->assertSee('Mission détail 2')->assertSee('Mission détail 3')->assertSee('J-4')->assertSee('Se connecter pour proposer');
         $this->assertSame(2, substr_count($page->getContent(), 'class="card mission-card mc-new"'));
     }
+
+    public function test_profile_page_shows_the_identity_band_and_the_summary_card(): void
+    {
+        $profile = FreelanceProfile::factory()->create(['display_name' => 'Awa Profil', 'slug' => 'awa-profil', 'published_at' => now()]);
+        Service::factory()->create(['freelance_profile_id' => $profile->id, 'price_xof' => 30000, 'delivery_days' => 4]);
+        Service::factory()->create(['freelance_profile_id' => $profile->id, 'price_xof' => 50000, 'delivery_days' => 9]);
+
+        $this->get('/freelances/awa-profil')->assertOk()->assertSee('Profil freelance')->assertSee('Accueil')->assertSee('2 services publiés')->assertSee("Dès <span class=\"price price-md\">30\u{202F}000", false)->assertSee('Dès 4 jours')
+            ->assertSee('Vous avez un besoin précis ?')->assertSee('Avis publiés uniquement après une commande validée');
+    }
 }
