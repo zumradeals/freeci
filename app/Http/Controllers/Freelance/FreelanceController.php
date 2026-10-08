@@ -7,6 +7,7 @@ use App\Modules\Accounts\Actions\GetFreelanceProfile;
 use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Actions\SaveFreelanceProfile;
 use App\Modules\Catalog\Actions\ListFreelancerServices;
+use App\Modules\Finance\Queries\FreelancerEarnings;
 use App\Modules\Orders\Queries\FreelancerOverview;
 use App\Modules\Orders\Queries\ListOrders;
 use Illuminate\Http\RedirectResponse;
@@ -16,11 +17,11 @@ use Illuminate\View\View;
 /** Espace freelance minimal : demandes reçues, commandes, services (lecture seule), profil. */
 class FreelanceController extends Controller
 {
-    public function dashboard(Request $request, FreelancerOverview $overview, ListFreelancerServices $services, GetFreelanceProfile $profile): View
+    public function dashboard(Request $request, FreelancerOverview $overview, ListFreelancerServices $services, GetFreelanceProfile $profile, FreelancerEarnings $earnings): View
     {
         return view('freelance.dashboard', [
             'user' => $request->user(), 'o' => $overview($request->user()),
-            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'space' => 'freelancer',
+            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'revenue' => $earnings->overview($request->user(), 1)['totals']['real'], 'space' => 'freelancer',
         ]);
     }
 

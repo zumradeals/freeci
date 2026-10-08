@@ -505,6 +505,16 @@ class DeliveryCycleTest extends TestCase
 
     // ---------- tableaux de bord et dossier ----------
 
+    public function test_overviews_follow_the_spaces_layout_with_metrics_revenue_and_profile(): void
+    {
+        $this->inProgress();
+        $free = $this->actingAs($this->freelancer)->get('/freelance')->assertOk()->assertSee('Espace freelance')->assertSee('Nouveau service')->assertSee('Demandes à accepter')->assertSee('Services publiés')
+            ->assertSee('Revenus')->assertSee('Votre profil public')->assertSee('Voir mes revenus');
+        $this->assertSame(4, substr_count($free->getContent(), 'class="sx-metric '));
+        $client = $this->actingAs($this->client)->get('/espace')->assertOk()->assertSee('Espace client')->assertSee('Choisir un service')->assertSee('Besoin d’aide ?')->assertSee('Commandes récentes');
+        $this->assertSame(4, substr_count($client->getContent(), 'class="sx-metric '));
+    }
+
     public function test_dashboards_show_the_real_actions_and_due_dates(): void
     {
         $order = $this->inProgress();
