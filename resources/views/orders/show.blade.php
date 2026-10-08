@@ -46,13 +46,7 @@
       @endif
     </section>
 
-    {{-- Assistance et litige (lot 9) --}}
-    <section class="card" aria-labelledby="h-sup"><h2 class="t-h3" id="h-sup">Besoin d’aide ?</h2>
-      <div class="row mt-8"><a class="btn btn-secondary" href="{{ route('support.new', ['commande' => $d->reference]) }}"><x-fc.icon name="info" :size="18" />Contacter le support</a>
-        @if($d->supportCase)<a class="btn btn-secondary" href="{{ route('support.show', $d->supportCase) }}">Voir le dossier {{ $d->supportCase }}</a>@endif
-        @if(count($d->disputeKinds))<a class="btn btn-secondary" href="{{ route('orders.dispute', $d->reference) }}">{{ in_array('claim', $d->disputeKinds, true) ? 'Déposer une réclamation' : 'Litige ou annulation' }}</a>@endif</div>
-      <p class="muted small mt-8">Un litige suspend les actions de la commande ; rien n’est validé automatiquement.</p></section>
-
+    <div class="od-grid"><div class="od-main">
     {{-- Action attendue — calculée côté serveur, revérifiée à l'exécution --}}
     @if($closedOk)
       <section class="card card-accent-success" aria-labelledby="h-closed"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />Clôturée</p><h2 class="t-h2 mt-6" id="h-closed">Livraison v{{ $dl['latestVersion'] }} validée : commande clôturée</h2>
@@ -230,6 +224,23 @@
             @endforeach</ol></section>
         </div>
       </div>
+    </div>
+    </div>
+    <aside class="card od-sum" aria-label="Résumé de la commande">
+      <div><p class="muted small">Montant convenu</p><p class="od-price"><x-fc.money :amount="$d->price" /></p></div>
+      <dl>
+        @if($d->dueAt)<div><dt>Échéance</dt><dd>{{ \App\Shared\Dates::short($d->dueAt) }}</dd></div>@endif
+        @if(isset($dl['corrections']['included']))<div><dt>Corrections</dt><dd>{{ $dl['corrections']['remaining'] }} sur {{ $dl['corrections']['included'] }} restante{{ $dl['corrections']['remaining'] > 1 ? 's' : '' }}</dd></div>@endif
+        @if($d->payment)<div><dt>Paiement</dt><dd>{{ $d->payment['state'] === 'confirmed' ? 'Confirmé' : 'En attente' }}</dd></div>@endif
+      </dl>
+      <div class="od-party"><span class="avatar avatar-lg" aria-hidden="true">{{ mb_strtoupper(mb_substr($d->otherPartyName, 0, 1)) }}</span><div><b>{{ $d->otherPartyName }}</b><p class="muted small">{{ $d->otherPartyLabel }}</p></div></div>
+      <a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Écrire {{ $isF ? 'au client' : 'au freelance' }}</a>
+      <div class="od-help" aria-labelledby="h-sup"><b id="h-sup">Besoin d’aide ?</b>
+        <a href="{{ route('support.new', ['commande' => $d->reference]) }}"><x-fc.icon name="info" :size="18" />Contacter le support</a>
+        @if($d->supportCase)<a href="{{ route('support.show', $d->supportCase) }}"><x-fc.icon name="message" :size="18" />Voir le dossier {{ $d->supportCase }}</a>@endif
+        @if(count($d->disputeKinds))<a href="{{ route('orders.dispute', $d->reference) }}"><x-fc.icon name="flag" :size="18" />{{ in_array('claim', $d->disputeKinds, true) ? 'Déposer une réclamation' : 'Litige ou annulation' }}</a>@endif
+        <p class="muted small">Un litige suspend les actions de la commande ; rien n’est validé automatiquement.</p></div>
+    </aside>
     </div>
   </div>
 </x-layouts.account>

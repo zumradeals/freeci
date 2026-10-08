@@ -1468,3 +1468,46 @@ a.kpi:hover { background: var(--marine-100); }
 @media (min-width: 900px) { .sx-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; } }
 @media (min-width: 1100px) { .sx-split { grid-template-columns: minmax(0, 1fr) 340px; } }
 @media (max-width: 599px) { .sx-acts, .sx-acts .btn { width: 100%; } }
+
+/* Lot 49 : liste et détail d'une commande d'après la maquette. */
+.od-tabs { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 14px; }
+.od-tab { white-space: nowrap; min-height: 44px; display: inline-flex; gap: 8px; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink-900); text-decoration: none; }
+.od-tab:hover { border-color: var(--marine-700); }
+.od-tab.on { background: var(--marine-900); border-color: var(--marine-900); color: #fff; font-weight: 650; }
+.od-tab .n { background: #eaf1f8; color: var(--marine-900); border-radius: 999px; padding: 0 8px; font-size: .8125rem; font-weight: 700; }
+.od-tab.on .n { background: rgb(255 255 255 / .2); color: #fff; }
+.od-table { display: grid; }
+.od-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 14px 8px; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink-900); min-width: 0; }
+.od-row:hover { background: var(--marine-50); }
+.od-row.head { display: none; }
+.od-t { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.od-t small { color: var(--ink-600); }
+.od-who { display: flex; gap: 10px; align-items: center; grid-column: 1 / -1; min-width: 0; }
+.od-st { grid-column: 1 / -1; }
+.od-amt { font-weight: 750; white-space: nowrap; grid-row: 1; grid-column: 2; }
+.od-due { font-size: .875rem; color: var(--ink-600); grid-column: 1 / -1; }
+.od-due.u { color: var(--accent-700); font-weight: 700; }
+.od-ch { display: none; color: var(--ink-600); }
+@media (min-width: 1024px) {
+  .od-row, .od-row.head { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.3fr) 200px 130px minmax(0, 1.4fr) 20px; }
+  .od-row.head { display: grid; border-top: 0; font-size: .8125rem; color: var(--ink-600); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+  .od-row.head:hover { background: none; }
+  .od-who, .od-st, .od-due { grid-column: auto; }
+  .od-amt { grid-row: auto; grid-column: auto; }
+  .od-ch { display: block; }
+}
+.od-grid { display: grid; gap: 20px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+.od-main { display: grid; gap: 18px; min-width: 0; }
+.od-sum { display: grid; gap: 14px; box-shadow: 0 8px 24px rgb(16 45 75 / .08); }
+.od-sum dl { display: grid; gap: 12px; margin: 0; }
+.od-sum dl div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.od-sum dt { color: var(--ink-600); }
+.od-sum dd { font-weight: 700; text-align: right; margin: 0; }
+.od-price .price { font-size: 1.75rem; font-weight: 800; color: var(--accent-700); }
+.od-party { display: flex; gap: 12px; align-items: center; min-width: 0; overflow-wrap: anywhere; }
+.od-help { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.od-help a { display: flex; gap: 8px; align-items: center; }
+.action-card, .od-main > .card { box-shadow: none; }
+@media (min-width: 1100px) { .od-grid { grid-template-columns: minmax(0, 1fr) 340px; } .od-sum { position: sticky; top: 16px; } }
+.od-main .cols { display: block; }
+.od-main .tabs { margin-top: 4px; }

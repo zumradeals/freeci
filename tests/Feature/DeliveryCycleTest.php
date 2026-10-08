@@ -515,6 +515,25 @@ class DeliveryCycleTest extends TestCase
         $this->assertSame(4, substr_count($client->getContent(), 'class="sx-metric '));
     }
 
+    public function test_order_list_filters_by_what_is_expected_from_each_party_and_detail_shows_the_summary(): void
+    {
+        $order = $this->inProgress();
+        // En cours : le client attend, le freelance doit livrer
+        $this->actingAs($this->client)->get('/espace/commandes?statut=en-cours')->assertOk()->assertSee($order->reference)->assertSee('Statut');
+        $this->actingAs($this->client)->get('/espace/commandes?statut=a-traiter')->assertOk()->assertDontSee($order->reference)->assertSee('Aucune commande dans cette catégorie');
+        $this->actingAs($this->freelancer)->get('/freelance/commandes?statut=a-traiter')->assertOk()->assertSee($order->reference);
+
+        // Livrée : le client doit examiner, le freelance attend
+        $this->deliver($order);
+        $this->actingAs($this->client)->get('/espace/commandes?statut=a-traiter')->assertOk()->assertSee($order->reference)->assertSee('À examiner');
+        $this->actingAs($this->freelancer)->get('/freelance/commandes?statut=en-cours')->assertOk()->assertSee($order->reference);
+        $this->actingAs($this->client)->get('/espace/commandes?statut=terminees')->assertOk()->assertDontSee($order->reference);
+        $this->actingAs($this->client)->get('/espace/commandes?statut=inconnu')->assertOk()->assertSee($order->reference);      // valeur inconnue : toutes
+
+        $this->actingAs($this->client)->get('/commandes/'.$order->reference)->assertOk()->assertSee('Montant convenu')->assertSee('Besoin d’aide ?')->assertSee('Contacter le support')->assertSee('Écrire au freelance')
+            ->assertSee('Examiner la livraison v1');
+    }
+
     public function test_dashboards_show_the_real_actions_and_due_dates(): void
     {
         $order = $this->inProgress();

@@ -32,12 +32,17 @@ final class OrderCards
             default => '',
         };
 
+        $todo = $asFreelancer
+            ? [OrderState::AwaitingAcceptance, OrderState::InProgress, OrderState::RevisionRequested]
+            : [OrderState::AwaitingPayment, OrderState::AwaitingBrief, OrderState::Delivered];
+        $group = $o->state->isFinal() ? 'done' : (in_array($o->state, $todo, true) ? 'todo' : 'active');
+
         return new OrderCard(
             reference: $o->reference,
             title: $o->agreement->service_title,
             otherParty: $asFreelancer ? $o->client->name : $o->freelancer->name,
             amount: Money::xof($o->agreement->price_xof),
-            stateLabel: $o->state->label($asFreelancer), tone: $tone, icon: $icon, info: $info, isDemo: $o->is_demo, environment: $o->environment,
+            stateLabel: $o->state->label($asFreelancer), tone: $tone, icon: $icon, info: $info, isDemo: $o->is_demo, environment: $o->environment, group: $group,
         );
     }
 }

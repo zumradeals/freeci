@@ -18,5 +18,6 @@ final readonly class OrderCard
         public string $info,
         public bool $isDemo,
         public string $environment = 'legacy',      // test | live | legacy
+        public string $group = 'active',            // todo (action attendue de VOUS) | active (en cours, en attente de l'autre partie) | done (terminée)
     ) {}
 }
