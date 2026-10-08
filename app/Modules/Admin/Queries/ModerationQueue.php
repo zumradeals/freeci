@@ -28,7 +28,7 @@ final class ModerationQueue
         return DB::table('service_versions as v')->join('services as s', 's.id', '=', 'v.service_id')->join('freelance_profiles as p', 'p.id', '=', 's.freelance_profile_id')->join('users as u', 'u.id', '=', 'p.user_id')
             ->where('v.state', 'in_review')->orderBy('v.submitted_at')
             ->get(['v.id', 'v.title', 'v.number', 'v.submitted_at', 's.status', 'u.name as owner', 'u.id as owner_id'])
-            ->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'owner' => $r->owner, 'since' => Dates::format(Carbon::parse($r->submitted_at)), 'kind' => $r->status === 'published' || $r->status === 'suspended' ? 'Modification (v'.$r->number.')' : 'Première soumission', 'own' => $r->owner_id === $viewerId])->all();
+            ->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'owner' => $r->owner, 'since' => Dates::format(Carbon::parse($r->submitted_at)), 'ago' => Carbon::parse($r->submitted_at)->locale('fr')->diffForHumans(null, true), 'kind' => $r->status === 'published' || $r->status === 'suspended' ? 'Modification (v'.$r->number.')' : 'Première soumission', 'own' => $r->owner_id === $viewerId])->all();
     }
 
     /** @return list<array<string, mixed>> */
@@ -37,7 +37,7 @@ final class ModerationQueue
         return DB::table('mission_versions as v')->join('missions as m', 'm.id', '=', 'v.mission_id')->join('users as u', 'u.id', '=', 'm.client_id')
             ->where('v.state', 'in_review')->orderBy('v.submitted_at')
             ->get(['v.id', 'v.title', 'v.number', 'v.submitted_at', 'm.status', 'u.name as owner', 'u.id as owner_id'])
-            ->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'owner' => $r->owner, 'since' => Dates::format(Carbon::parse($r->submitted_at)), 'kind' => in_array($r->status, ['open', 'suspended', 'selection_ended', 'reserved', 'awarded'], true) ? 'Modification (v'.$r->number.')' : 'Première soumission', 'own' => $r->owner_id === $viewerId])->all();
+            ->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'owner' => $r->owner, 'since' => Dates::format(Carbon::parse($r->submitted_at)), 'ago' => Carbon::parse($r->submitted_at)->locale('fr')->diffForHumans(null, true), 'kind' => in_array($r->status, ['open', 'suspended', 'selection_ended', 'reserved', 'awarded'], true) ? 'Modification (v'.$r->number.')' : 'Première soumission', 'own' => $r->owner_id === $viewerId])->all();
     }
 
     /** Contenus en ligne ou suspendus, pour suspendre ou remettre en ligne. */

@@ -266,9 +266,9 @@ class AdminTest extends TestCase
     {
         $v = $this->serviceInReview();
         $mv = $this->missionInReview();
-        $this->asAdmin($this->admin)->get('/admin/moderation')->assertOk()->assertSee('Mise en plan 2D complète')->assertSee('Première soumission');
+        $this->asAdmin($this->admin)->get('/admin/moderation')->assertOk()->assertSee('Mise en plan 2D complète')->assertSee('Première soumission')->assertSee('md-r', false)->assertSee('depuis');
         $this->asAdmin($this->admin)->get('/admin/moderation?onglet=missions')->assertOk()->assertSee('Conversion de douze plans');
-        $this->asAdmin($this->admin)->get("/admin/moderation/services/{$v->id}")->assertOk()->assertSee('rien n’est encore public');
+        $this->asAdmin($this->admin)->get("/admin/moderation/services/{$v->id}")->assertOk()->assertSee('rien n’est encore public')->assertSee('md-dec', false)->assertSee('Approuver et publier');
 
         // refus : motif obligatoire, l'auteur est notifié
         $this->asAdmin($this->admin)->post("/admin/moderation/service/{$v->id}/refuser", ['reason' => 'court'])->assertSessionHasErrors('reason');
