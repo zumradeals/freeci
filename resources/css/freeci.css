@@ -1764,3 +1764,37 @@ a.kpi:hover { background: var(--marine-100); }
 .pm-choice .lg { flex: none; width: 48px; height: 48px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; font-weight: 800; color: var(--marine-900); }
 .pm-due { color: var(--accent-700); }
 @media (min-width: 1024px) { .rq-grid { grid-template-columns: minmax(0, 1fr) 380px; } .rq-side { order: 0; position: sticky; top: 16px; } }
+
+/* Lot 57 : propositions de missions d'après la maquette (liste, formulaire, propositions reçues, sélection). */
+.ed-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.ed-main { display: grid; gap: 16px; min-width: 0; }
+.ed-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 16px; min-width: 0; }
+.ed-card h2 { font-size: 1.25rem; font-weight: 750; }
+.ed-side { display: grid; gap: 16px; min-width: 0; align-content: start; }
+.ed-prev { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.ed-prev .k { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-700); }
+.rq-info { display: flex; gap: 10px; align-items: flex-start; background: #f3f7fb; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: .9375rem; color: var(--ink-600); }
+.rq-info svg { flex: none; color: var(--marine-700); margin-top: 2px; }
+.pr-row2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.pr-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.pr-amt { color: var(--accent-700); }
+.pr-form fieldset .check { border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; background: var(--surface); }
+.pr-form fieldset .check:has(input:checked) { border: 2px solid var(--marine-900); background: #f7fafd; padding: 13px; }
+.pr-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.pr-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.pr-card.sel { border-left: 5px solid var(--success-700); }
+.pr-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.pr-who { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.pr-who b { display: block; font-size: 1.0625rem; overflow-wrap: anywhere; }
+.pr-who small { color: var(--ink-600); }
+.pr-price .price { font-weight: 800; font-size: 1.375rem; color: var(--accent-700); }
+.pr-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0; border-block: 1px solid var(--line); }
+.pr-facts div { display: grid; gap: 2px; }
+.pr-facts small { color: var(--ink-600); font-size: .8125rem; }
+.pr-q { border-left: 3px solid var(--line); padding-left: 12px; color: var(--ink-600); overflow-wrap: anywhere; }
+.pr-meta { font-size: .8125rem; color: var(--ink-600); }
+.pr-acts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.pr-cmpbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: #eaf1f8; border: 1px solid #d5e2ef; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.pr-form-list { min-width: 0; }
+@media (min-width: 700px) { .pr-row2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .ed-grid { grid-template-columns: minmax(0, 1fr) 360px; } .ed-side { position: sticky; top: 16px; } }

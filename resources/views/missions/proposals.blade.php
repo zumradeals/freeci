@@ -1,8 +1,8 @@
 @php($crit = ['price' => 'Prix ferme', 'days' => 'Délai', 'revisions' => 'Corrections', 'deliverables' => 'Livrables', 'validUntil' => 'Valable jusqu’au', 'number' => 'Version'])
 <x-layouts.account title="Propositions" space="client">
   <div class="page-body">
-    <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('client.missions.show', $mission->getKey()) }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Retour à la mission</a><a class="hide-m" href="{{ route('client.missions') }}">Mes missions</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">Propositions</span></nav>
-    <h1 class="t-h1">Propositions reçues</h1><p class="muted">{{ $live?->title }} · {{ count($items) }} proposition{{ count($items) > 1 ? 's' : '' }} · triées par prix, sans classement de qualité.</p>
+    <nav class="ed-crumbs" aria-label="Fil d’Ariane"><a href="{{ route('client.missions') }}">Mes missions</a><span aria-hidden="true">/</span><a href="{{ route('client.missions.show', $mission->getKey()) }}">{{ $live?->title ?? 'Mission' }}</a><span aria-hidden="true">/</span><span aria-current="page">Propositions</span></nav>
+    <header class="sx-head"><div><p class="sx-kicker">Espace client</p><h1>Propositions reçues</h1><p class="muted">{{ $live?->title }} · {{ count($items) }} proposition{{ count($items) > 1 ? 's' : '' }} · triées par prix, sans classement de qualité.</p></div></header>
     @if(! $selectionOpen)<div class="notice tone-warning" role="note"><x-fc.icon name="warn" /><p>La sélection n’est pas possible dans l’état actuel de la mission ({{ ['reserved' => 'une proposition est déjà retenue', 'awarded' => 'mission attribuée', 'selection_ended' => 'sélection terminée : rouvrez la mission', 'closed' => 'mission fermée', 'expired' => 'mission expirée'][$mission->status] ?? 'mission non ouverte' }}).</p></div>@endif
     @if(count($compare) >= 2)
       <section class="card" aria-labelledby="h-cmp"><h2 class="t-h2 card-title" id="h-cmp">Comparaison</h2>
@@ -13,21 +13,24 @@
       </section>
     @endif
     @if(count($items))
-    <form method="get" action="{{ route('client.missions.proposals', $mission->getKey()) }}" class="stack-lg">
+    <form method="get" action="{{ route('client.missions.proposals', $mission->getKey()) }}" class="pr-form-list">
+      <div class="pr-cmpbar"><span>Cochez 2 ou 3 propositions pour les comparer côte à côte.</span><button class="btn btn-secondary" type="submit">Comparer la sélection (2 ou 3)</button></div>
+      <div class="pr-grid">
       @foreach($items as $i)
-        <article class="card" aria-labelledby="p-{{ $i['proposalId'] }}" style="{{ $i['selected'] ? 'border-left:4px solid var(--success-700)' : '' }}">
-          <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2 class="t-h3" id="p-{{ $i['proposalId'] }}">{{ $i['author'] }}</h2><p class="muted small">{{ $i['headline'] }}@if($i['profileSlug']) · <a href="{{ route('freelances.show', $i['profileSlug']) }}">Profil</a>@endif</p></div><x-fc.money :amount="$i['price']" /></div>
-          <ul class="facts-row" style="margin-top:10px"><li><x-fc.icon name="clock" /><span><b>{{ $i['days'] }} j</b><small>Délai</small></span></li><li><x-fc.icon name="pencil" /><span><b>{{ $i['revisions'] }}</b><small>Corrections</small></span></li><li><x-fc.icon name="package" /><span><b>{{ count($i['deliverables']) }}</b><small>Livrables</small></span></li></ul>
-          <p style="margin-top:8px">{{ $i['scope'] }}</p>
-          <p class="muted small" style="margin-top:6px">Version {{ $i['number'] }} · déposée le {{ $i['submittedAt'] }} · valable jusqu’au {{ $i['validUntil'] }} · livraison : {{ mb_strtolower($i['mode']) }}</p>
-          @if($i['message'])<p class="quote">« {{ $i['message'] }} »</p>@endif
+        <article class="pr-card {{ $i['selected'] ? 'sel' : '' }}" aria-labelledby="p-{{ $i['proposalId'] }}">
+          <div class="pr-top"><div class="pr-who"><span class="avatar avatar-lg" aria-hidden="true">{{ mb_strtoupper(mb_substr($i['author'], 0, 1)) }}</span><div><b id="p-{{ $i['proposalId'] }}">{{ $i['author'] }}</b><small>{{ $i['headline'] }}@if($i['profileSlug']) · <a href="{{ route('freelances.show', $i['profileSlug']) }}">Profil</a>@endif</small></div></div><span class="pr-price"><x-fc.money :amount="$i['price']" /></span></div>
+          <div class="pr-facts"><div><b>{{ $i['days'] }} j</b><small>Délai</small></div><div><b>{{ $i['revisions'] }}</b><small>Corrections</small></div><div><b>{{ count($i['deliverables']) }}</b><small>Livrables</small></div></div>
+          <p>{{ $i['scope'] }}</p>
+          @if($i['message'])<p class="pr-q">« {{ $i['message'] }} »</p>@endif
+          <p class="pr-meta">Version {{ $i['number'] }} · déposée le {{ $i['submittedAt'] }} · valable jusqu’au {{ $i['validUntil'] }} · livraison : {{ mb_strtolower($i['mode']) }}</p>
           @if(count($i['history']) > 1)<details class="fold inner"><summary><span>Versions précédentes ({{ count($i['history']) - 1 }})</span><x-fc.icon name="chev-down" class="chev" /></summary><div class="fold-body"><ul>@foreach($i['history'] as $h)<li>v{{ $h['number'] }} · {{ $h['price']->formatted() }} FCFA · {{ $h['days'] }} j · {{ $h['when'] }}</li>@endforeach</ul></div></details>@endif
-          @if($i['block'] && ! $i['selected'])<p class="note-line" style="margin-top:8px"><x-fc.icon name="warn" :size="16" /><span>{{ $i['block'] }}</span></p>@endif
-          <div class="row" style="margin-top:12px"><label class="check"><input type="checkbox" name="comparer[]" value="{{ $i['proposalId'] }}" @checked(collect($compare)->contains('proposalId', $i['proposalId']))> <span>Comparer<span class="sr-only"> {{ $i['author'] }}</span></span></label>
-            @if($i['selectable'])<a class="btn btn-primary" href="{{ route('client.missions.select', [$mission->getKey(), $i['versionId']]) }}">Retenir cette proposition<span class="sr-only"> de {{ $i['author'] }}</span></a>@elseif($i['selected'])<span class="badge tone-success"><x-fc.icon name="check-circle" :size="16" />Retenue</span>@endif <a class="btn btn-link" href="{{ route('messages.start.proposal', $i['proposalId']) }}">Poser une question<span class="sr-only"> à {{ $i['author'] }}</span></a></div>
+          @if($i['block'] && ! $i['selected'])<p class="note-line"><x-fc.icon name="warn" :size="16" /><span>{{ $i['block'] }}</span></p>@endif
+          <div class="pr-acts"><label class="check"><input type="checkbox" name="comparer[]" value="{{ $i['proposalId'] }}" @checked(collect($compare)->contains('proposalId', $i['proposalId']))> <span>Comparer<span class="sr-only"> {{ $i['author'] }}</span></span></label>
+            @if($i['selectable'])<a class="btn btn-primary" href="{{ route('client.missions.select', [$mission->getKey(), $i['versionId']]) }}">Retenir cette proposition<span class="sr-only"> de {{ $i['author'] }}</span></a>@elseif($i['selected'])<span class="badge tone-success"><x-fc.icon name="check-circle" :size="16" />Retenue</span>@endif
+            <a class="btn btn-link" href="{{ route('messages.start.proposal', $i['proposalId']) }}">Poser une question<span class="sr-only"> à {{ $i['author'] }}</span></a></div>
         </article>
       @endforeach
-      <div><button class="btn btn-secondary" type="submit">Comparer la sélection (2 ou 3)</button></div>
+      </div>
     </form>
     @else<div class="card empty"><span class="ico-lg"><x-fc.icon name="inbox" :size="26" /></span><p style="font-weight:600">Aucune proposition pour l’instant.</p><p class="muted" style="max-width:36em">Les freelances peuvent candidater jusqu’à la date limite. Vous êtes le seul, avec chaque auteur, à voir une proposition.</p></div>@endif
   </div>

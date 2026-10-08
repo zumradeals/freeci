@@ -207,3 +207,24 @@ document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = 
     paint();
   });
 })();
+
+/* Formulaire de proposition : résumé de l'offre en direct (indicatif, le serveur valide). */
+(function () {
+  var form = document.querySelector(".pr-form");
+  if (!form) return;
+  var $ = function (n) { return form.elements.namedItem(n); };
+  var set = function (k, v) { var el = form.querySelector("[data-pr-" + k + "]"); if (el) el.textContent = v; };
+  var plural = function (n, one, many) { return n + " " + (n > 1 ? many : one); };
+  var refresh = function () {
+    var price = Number(String($("price_xof").value).replace(/\D/g, "")) || 0;
+    var days = Number($("delivery_days").value) || 0;
+    var rev = Number($("revisions_included").value) || 0;
+    var val = Number($("validity_days").value) || 0;
+    set("price", price > 0 ? new Intl.NumberFormat("fr-FR").format(price) + " FCFA" : "à renseigner");
+    set("days", days > 0 ? plural(days, "jour", "jours") : "à renseigner");
+    set("rev", plural(rev, "correction", "corrections"));
+    set("valid", val > 0 ? plural(val, "jour", "jours") : "à renseigner");
+  };
+  form.addEventListener("input", refresh);
+  refresh();
+})();

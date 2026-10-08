@@ -15,7 +15,7 @@ final class FreelancerProposals
     /** @return list<array<string, mixed>> */
     public function list(User $freelancer): array
     {
-        return Proposal::query()->where('freelancer_id', $freelancer->getKey())->with('mission.publishedVersion')->orderByDesc('updated_at')->get()->map(function (Proposal $p) {
+        return Proposal::query()->where('freelancer_id', $freelancer->getKey())->with('mission.publishedVersion.category')->orderByDesc('updated_at')->get()->map(function (Proposal $p) {
             $v = ProposalVersion::query()->where('proposal_id', $p->getKey())->orderByDesc('number')->first();
             $live = $p->mission->publishedVersion;
             $stale = $p->state === 'active' && $live !== null && $v->mission_version_id !== $live->getKey();
@@ -29,7 +29,7 @@ final class FreelancerProposals
                 default => ['En attente du choix du client', 'info'],
             };
 
-            return ['id' => $p->getKey(), 'missionTitle' => $live?->title ?? 'Mission', 'missionSlug' => $p->mission->slug, 'state' => $p->state, 'label' => $label, 'tone' => $tone, 'number' => $v->number,
+            return ['id' => $p->getKey(), 'missionTitle' => $live?->title ?? 'Mission', 'missionSlug' => $p->mission->slug, 'category' => $live?->category?->name, 'state' => $p->state, 'label' => $label, 'tone' => $tone, 'number' => $v->number,
                 'price' => Money::xof($v->price_xof), 'days' => $v->delivery_days, 'validUntil' => Dates::format($v->valid_until), 'stale' => $stale,
                 'missionOpen' => $p->mission->status === 'open' && $live !== null && $live->application_deadline->gt(now())];
         })->all();

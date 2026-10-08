@@ -528,4 +528,18 @@ class MissionFlowTest extends TestCase
         $this->assertMatchesRegularExpression('/data-check="deadline" class="ok"/', $html);
         $this->assertMatchesRegularExpression('/data-check="inputs" data-optional class="ok"/', $html);
     }
+
+    public function test_proposal_pages_follow_the_new_layout_with_filters_cards_and_the_selection_side_panel(): void
+    {
+        $m = $this->openMission();
+        $this->propose($m)->assertRedirect();
+        $this->propose($m, $this->other, ['price_xof' => '95000'])->assertRedirect();
+        $pv = $this->latest($m, $this->freelancer);
+
+        $this->actingAs($this->freelancer)->get('/freelance/propositions')->assertOk()->assertSee('Mes propositions')->assertSee('Propositions envoyées')->assertSee('Réviser')->assertSee('Voir la mission');
+        $this->actingAs($this->freelancer)->get('/freelance/propositions?statut=retenues')->assertOk()->assertSee('Aucune proposition dans cette catégorie');
+        $this->actingAs($this->freelancer)->get("/missions/{$m->fresh()->slug}/proposition")->assertOk()->assertSee('Votre offre')->assertSee('Votre proposition en résumé')->assertSee('accord figé');
+        $this->actingAs($this->client)->get("/espace/missions/{$m->id}/propositions")->assertOk()->assertSee('Propositions reçues')->assertSee('Comparer la sélection (2 ou 3)')->assertSee('Retenir cette proposition');
+        $this->actingAs($this->client)->get("/espace/missions/{$m->id}/propositions/{$pv->id}/choisir")->assertOk()->assertSee('Ce qui va se passer')->assertSee('Conditions que vous acceptez')->assertSee('une seule');
+    }
 }
