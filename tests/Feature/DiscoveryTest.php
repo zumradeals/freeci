@@ -159,4 +159,23 @@ class DiscoveryTest extends TestCase
         $this->assertSame(2, $page->total());
         $this->assertSame(['Mission courte'], $page->pluck('title')->all());
     }
+
+    public function test_missions_page_follows_the_services_layout_and_pages_by_nine(): void
+    {
+        $cat = Category::factory()->create(['slug' => 'trad']);
+        $client = User::factory()->create();
+        foreach (range(1, 11) as $n) {
+            $mid = (string) Str::uuid();
+            $vid = (string) Str::uuid();
+            DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => 'mission-'.$n, 'status' => 'open', 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => 'Mission numéro '.$n, 'description' => 'Description '.$n,
+                'budget_xof' => 10000 * $n, 'application_deadline' => now()->addDays($n)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
+        }
+        $page = $this->get('/missions')->assertOk()->assertSee('Trouvez votre prochain projet.')->assertSee('Accueil')->assertSee('Tout voir')->assertSee('11 missions ouvertes')
+            ->assertSee('Vous avez un savoir-faire à proposer ?')->assertSee('Page 1 sur 2')->assertSee('J-1');
+        $this->assertSame(9, substr_count($page->getContent(), 'class="card mission-card mc-new"'));
+        $this->get('/missions?page=2')->assertOk()->assertSee('Page 2 sur 2');
+        $this->get('/missions?budget_min=50000&budget_max=150000&tri=budget-croissant')->assertOk()->assertSee('Mission numéro 5')->assertDontSee('Mission numéro 4');
+    }
 }

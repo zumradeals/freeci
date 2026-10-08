@@ -166,3 +166,9 @@
     if (a) { var d = a.closest("details"); setTimeout(function () { d.removeAttribute("open"); }, 0); }
   });
 })();
+
+/* Formulaires de catalogue sans Livewire : changer le tri recharge la liste. */
+document.addEventListener("change", function (e) {
+  var f = e.target.closest && e.target.closest("form[data-autosubmit]");
+  if (f && e.target.matches("select")) f.submit();
+});

@@ -1292,3 +1292,18 @@ a.kpi:hover { background: var(--marine-100); }
 }
 @media (min-width: 1200px) { .service-directory .service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; } }
 @media (max-width: 599px) { .sd-filter-row > * { flex: 1 1 calc(50% - 10px); } .sd-filter-row .sd-filter { width: 100%; justify-content: space-between; } .sd-sort { margin-left: 0; flex-basis: 100%; } .sd-pop-panel { position: static; margin-top: 6px; } .sd-cta .btn { width: 100%; } }
+
+/* Lot 42 : page Missions d'après la maquette (même bandeau et mêmes filtres que Services ; cartes de mission sur 3 colonnes). */
+.mission-directory .mg-new { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-top: 12px; }
+.mc-new { display: flex; flex-direction: column; gap: 12px; box-shadow: none; min-width: 0; }
+.mc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mc-left { font-size: .75rem; font-weight: 700; color: var(--accent-700); background: #fdeee3; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.mc-new h2 a { color: var(--ink-900); text-decoration: none; overflow-wrap: anywhere; }
+.mc-new h2 a:hover { text-decoration: underline; }
+.mc-new .mission-excerpt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-600); overflow-wrap: anywhere; }
+.mc-new .mission-card-bottom { margin-top: auto; display: grid; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.mc-new .mission-facts { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mc-budget { font-weight: 750; font-size: 1.25rem; color: var(--accent-700); }
+.mc-new .btn { width: 100%; }
+@media (min-width: 700px) { .mission-directory .mg-new { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .mission-directory .mg-new { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; } }

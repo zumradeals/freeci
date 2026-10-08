@@ -62,7 +62,7 @@ final class PublicMissions
 
         return $query->paginate($perPage)->withQueryString()->through(fn ($r) => [
             'slug' => $r->slug, 'title' => $r->title, 'excerpt' => mb_substr($r->description, 0, 220).(mb_strlen($r->description) > 220 ? '…' : ''), 'budget' => Money::xof((int) $r->budget_xof),
-            'deadline' => Dates::format(Carbon::parse($r->application_deadline)), 'category' => $r->category, 'isDemo' => (bool) $r->is_demo,
+            'deadline' => Dates::format(Carbon::parse($r->application_deadline)), 'daysLeft' => max(0, (int) now()->startOfDay()->diffInDays(Carbon::parse($r->application_deadline)->startOfDay(), false)), 'category' => $r->category, 'isDemo' => (bool) $r->is_demo,
         ]);
     }
 
