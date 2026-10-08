@@ -10,6 +10,7 @@ use App\Modules\Catalog\Exceptions\ServiceStateConflict;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Catalog\Models\ServiceVersion;
+use App\Modules\Catalog\Support\ImageProcessor;
 use App\Modules\Catalog\Support\PrivateContact;
 use App\Modules\Catalog\Support\ServiceHistory;
 use App\Modules\Catalog\Support\ServiceRules;
@@ -151,6 +152,9 @@ final class ServiceAuthoring
                 throw ValidationException::withMessages(['profile' => 'Publiez d’abord votre profil : il s’affiche avec vos services.']);
             }
             ServiceRules::validate(collect(ServiceRules::FIELDS)->mapWithKeys(fn ($f) => [$f => $v->{$f}])->all(), strict: true);
+            if (count($v->images) < 1 && ImageProcessor::available()) {
+                throw ValidationException::withMessages(['images' => 'Ajoutez une image de couverture : elle s’affiche sur la carte de votre service dans le catalogue.']);
+            }
             foreach ($v->images as $img) {
                 if (isset($img['id']) && mb_strlen(trim((string) ($img['alt'] ?? ''))) < 3) {
                     throw ValidationException::withMessages(['images' => 'Décrivez chaque image (texte alternatif d’au moins 3 caractères) : il est lu par les lecteurs d’écran.']);

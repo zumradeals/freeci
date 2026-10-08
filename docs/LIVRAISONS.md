@@ -78,3 +78,5 @@ Validation : compilation Blade via PHP WASM, build Vite et `git diff --check` r�
 ### 2026-10-08 — Accueil moderne approuvé
 
 Hero illustré, recherche, catégories compactes et parcours harmonisé. Données réelles et textes administrables conservés. Aucune migration ni nouvelle variable ; paiement inchangé. Compilation et rendu responsive vérifiés, limites détaillées dans `docs/35-accueil-moderne.md`.
+
+| **40 — page Services harmonisée, couverture obligatoire** | Page Services alignée sur l'accueil et l'annuaire (surtitre, filtres `talent-filters`, cartes) ; image de couverture obligatoire à la soumission d'un service (message dans l'éditeur ; règle non appliquée seulement si le traitement d'images est indisponible) ; accueil : garantie « Prix, délai et périmètre figés » rétablie et exemple concret sous le suivi ; 335 tests passent, 0 débordement à 360 et 1280 px | aucune | aucune |

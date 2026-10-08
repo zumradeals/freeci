@@ -1,6 +1,6 @@
-<div class="container catalog">
+<div class="container catalog service-directory">
   <header class="catalog-head">
-    <h1 class="t-h1">Services</h1>
+    <p class="eyebrow">Des prestations à prix et délai annoncés</p><h1 class="t-h1">Services</h1><p class="muted">Comparez, puis envoyez votre demande au freelance de votre choix.</p>
     <p class="muted" role="status" aria-live="polite">
       @if($results->total() === 0) Aucun service ne correspond.
       @else {{ $results->total() }} {{ $results->total() > 1 ? 'services publiés' : 'service publié' }}@if($criteria->hasFilters()) correspondant à votre recherche @endif
@@ -8,7 +8,7 @@
     </p>
   </header>
 
-  <form class="catalog-filters card" method="get" action="{{ route('services.index') }}" role="search" wire:submit.prevent>
+  <form class="catalog-filters card talent-filters" method="get" action="{{ route('services.index') }}" role="search" wire:submit.prevent>
     <div class="field">
       <label for="cq">Recherche</label>
       <div class="search-field"><x-fc.icon name="search" :size="22" /><input class="input" id="cq" name="q" type="search" wire:model.live.debounce.400ms="q" placeholder="Un plan, un logo, un site web" autocomplete="off" maxlength="100"></div>
@@ -31,6 +31,7 @@
         <option value="mieux-notes">Mieux notés (moyenne des avis publiés)</option>
       </select>
     </div>
+    <div class="talent-search-submit"><button class="btn btn-primary" type="submit">Rechercher</button></div>
     <details class="more-filters" @if($criteria->priceMin || $criteria->priceMax || $criteria->delayMax || $criteria->skill) open @endif>
       <summary>Plus de filtres : prix, délai, compétence</summary>
       <div class="more-grid">
@@ -42,7 +43,6 @@
       </div>
     </details>
     @if($criteria->sort === 'mieux-notes')<p class="muted small" style="grid-column:1/-1">Règle du tri : moyenne des avis publiés issus de ce service, puis nombre d’avis ; les services sans avis sont placés en dernier.</p>@endif
-    <div class="catalog-submit"><button class="btn btn-primary" type="submit">Rechercher</button></div>
   </form>
 
   @if($criteria->hasFilters())
@@ -58,7 +58,7 @@
   @endif
 
   @if($results->total() > 0)
-    <div class="svc-grid" wire:loading.class="is-loading">
+    <div class="svc-grid service-grid" wire:loading.class="is-loading">
       @foreach($results as $service)<x-fc.service-card :service="$service" :level="2" wire:key="svc-{{ $service->slug }}" />@endforeach
     </div>
     @if($results->hasPages())

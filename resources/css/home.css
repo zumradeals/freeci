@@ -71,3 +71,7 @@
 @media (min-width: 1024px) { .home-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 32px; } .home-hero { padding-block: 44px 32px; } .home-categories { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } .home-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 639px) { .home-hero { padding-block: 32px 20px; } .home-hero h1 { max-width: 17ch; } .home-tracker { padding: 14px; margin-top: -16px; } .home-tracker ol { gap: 6px; } .home-tracker li:not(:last-child)::after { right: -7px; } .home-way { padding: 20px; gap: 12px; } .home-way .btn { width: 100%; } .home-freelance .btn { width: 100%; } }
 @media (max-width: 389px) { .home-search-box { flex-direction: column; } .home-search-box .btn { min-height: 44px; } }
+
+.home-tracker li.is-now { color: var(--accent-700); font-weight: 650; }
+.home-tracker li.is-now svg { color: var(--accent-700); }
+.home-tracker-example { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: .8125rem; line-height: 1.45; color: var(--ink-600); }

@@ -57,6 +57,7 @@ class AdminTest extends TestCase
             'scope' => str_repeat('Un logement jusqu’à 120 m², relevés fournis par le client. ', 4), 'price_xof' => '45000', 'delivery_days' => '6', 'revisions_included' => '2',
             'deliverables' => 'Un plan PDF', 'delivery_mode' => 'message', 'revision_no' => $v->revision_no,
         ])->assertRedirect();
+        $v->fresh()->forceFill(['images' => [['id' => (string) Str::uuid(), 'alt' => 'Plan d’étage coté', 'caption' => '']]])->save();
         $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/soumettre", ['revision_no' => $v->fresh()->revision_no])->assertRedirect();
 
         return $s->versions()->where('state', 'in_review')->firstOrFail();
@@ -315,6 +316,7 @@ class AdminTest extends TestCase
             'title' => $v->title, 'category_id' => $this->service->category_id, 'summary' => 'Plans cotés au format PDF et DWG à partir de vos relevés.', 'scope' => str_repeat('Un logement jusqu’à 120 m², relevés fournis. ', 5),
             'price_xof' => '45000', 'delivery_days' => '6', 'revisions_included' => '2', 'deliverables' => 'Un plan PDF', 'delivery_mode' => 'message', 'revision_no' => $v->revision_no,
         ])->assertRedirect();
+        $v->fresh()->forceFill(['images' => [['id' => (string) Str::uuid(), 'alt' => 'Plan d’étage coté', 'caption' => '']]])->save();
         $this->actingAs($this->admin)->post("/freelance/services/{$s->id}/soumettre", ['revision_no' => $v->fresh()->revision_no])->assertRedirect();
 
         $this->asAdmin($this->admin)->post("/admin/moderation/service/{$v->id}/approuver")->assertRedirect()->assertSessionHas('error');

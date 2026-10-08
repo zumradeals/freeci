@@ -1240,3 +1240,10 @@ a.kpi:hover { background: var(--marine-100); }
 @media (min-width: 1024px) { .catalog-filters.talent-filters { grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1.3fr) auto; } }
 @media (min-width: 1200px) { .talent-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 599px) { .profile-identity { align-items: flex-start; gap: 12px; } .profile-identity .avatar { width: 56px; height: 56px; font-size: 1rem; } .profile-actions, .profile-actions > *, .profile-actions .btn { width: 100%; } .profile-actions .btn { white-space: normal; text-align: center; } }
+
+/* Lot 40 : page Services alignée sur l'accueil (même présentation des cartes et des filtres que l'annuaire des freelances) */
+.service-directory .catalog-head .eyebrow { color: var(--accent-700); margin-bottom: 4px; }
+.service-directory .catalog-head .muted + .muted { margin-top: 4px; }
+.service-directory .svc { box-shadow: none; }
+.service-directory .svc .price { color: var(--accent-700); }
+.service-directory .service-grid { margin-top: 20px; }

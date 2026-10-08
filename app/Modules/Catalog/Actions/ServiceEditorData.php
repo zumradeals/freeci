@@ -67,6 +67,9 @@ final class ServiceEditorData
         if ($service->freelanceProfile->published_at === null) {
             $problems['profile'] = 'Votre profil n’est pas publié : publiez-le d’abord (il s’affiche avec vos services).';
         }
+        if (count($v->images) < 1 && ImageProcessor::available()) {
+            $problems['images'] = 'Ajoutez une image de couverture : elle s’affiche sur la carte de votre service dans le catalogue.';
+        }
         foreach ($v->images as $img) {
             if (isset($img['id']) && mb_strlen(trim((string) ($img['alt'] ?? ''))) < 3) {
                 $problems['images'] = 'Décrivez chaque image (texte alternatif).';

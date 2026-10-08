@@ -12,6 +12,7 @@ use App\Modules\Catalog\Models\FreelanceProfile;
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Catalog\Models\ServiceVersion;
 use App\Modules\Catalog\Moderation\ServiceModeration;
+use App\Modules\Catalog\Support\ImageProcessor;
 use App\Modules\Orders\Models\Delivery;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +20,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\Support\OrderFixtures;
 use Tests\TestCase;
 
@@ -65,9 +67,18 @@ class ServiceManagementTest extends TestCase
         return $service->refresh();
     }
 
+    /** L’image de couverture est obligatoire : on en attache une (sans passer par le téléversement) quand le test ne la teste pas. */
+    private function withCover(ServiceVersion $v): void
+    {
+        if (count($v->images) < 1) {
+            $v->forceFill(['images' => [['id' => (string) Str::uuid(), 'alt' => 'Plan d’étage coté', 'caption' => '']]])->save();
+        }
+    }
+
     private function submit(Service $s, ?User $owner = null)
     {
         $v = $s->versions()->whereIn('state', ServiceVersion::OPEN)->firstOrFail();
+        $this->withCover($v);
 
         return $this->actingAs($owner ?? $this->freelancer)->post("/freelance/services/{$s->id}/soumettre", ['revision_no' => $v->revision_no]);
     }
@@ -593,5 +604,26 @@ class ServiceManagementTest extends TestCase
         $this->submit($s)->assertSessionHasErrors('profile');
         $this->assertSame('draft', $s->versions()->first()->state);
         $this->actingAs($this->freelancer)->get("/freelance/services/{$s->id}/modifier")->assertOk()->assertSee('Votre profil n’est pas publié');
+    }
+
+    public function test_a_service_cannot_be_submitted_without_a_cover_image(): void
+    {
+        if (! ImageProcessor::available()) {
+            $this->markTestSkipped('Traitement d’images indisponible : la règle n’est pas appliquée.');
+        }
+        $s = $this->draft();
+        $v = $s->versions()->first();
+        $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/soumettre", ['revision_no' => $v->revision_no])->assertSessionHasErrors('images');
+        $this->assertSame('draft', $v->fresh()->state);
+
+        $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/modifier", $this->form() + [
+            'revision_no' => $v->revision_no, 'image' => $this->pngUpload(), 'alt' => 'Image de couverture',
+        ]);
+        $this->submit($s)->assertRedirect()->assertSessionHas('status');
+    }
+
+    public function test_services_page_follows_the_home_visual_language(): void
+    {
+        $this->get('/services')->assertOk()->assertSee('service-directory', false)->assertSee('talent-filters', false)->assertSee('Des prestations à prix et délai annoncés');
     }
 }

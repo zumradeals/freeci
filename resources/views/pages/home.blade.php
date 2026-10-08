@@ -31,13 +31,14 @@
     <div class="home-hero-visual">
       <img class="home-work-image" src="{{ asset('images/home/creative-work-1200.webp') }}" srcset="{{ asset('images/home/creative-work-640.webp') }} 640w, {{ asset('images/home/creative-work-1200.webp') }} 1200w" sizes="(min-width: 1024px) 48vw, (min-width: 640px) 70vw, 92vw" width="1200" height="800" alt="" fetchpriority="high">
       <aside class="home-tracker" aria-labelledby="h-tracker"><h2 id="h-tracker">Votre projet, étape par étape</h2>
-        <ol>@foreach(['clipboard' => 'Accord', 'card' => 'Paiement', 'package' => 'Livraison', 'check-circle' => 'Validation'] as $icon => $label)<li><x-fc.icon :name="$icon" :size="26" /><span>{{ $label }}</span></li>@endforeach</ol>
+        <ol>@foreach(['clipboard' => 'Accord', 'card' => 'Paiement', 'package' => 'Livraison', 'check-circle' => 'Validation'] as $icon => $label)<li @if($icon === 'package') class="is-now" aria-current="step" @endif><x-fc.icon :name="$icon" :size="26" /><span>{{ $label }}</span></li>@endforeach</ol>
+        <p class="home-tracker-example">Exemple : plans en DWG, 35 000 FCFA. Le travail démarre une fois le paiement confirmé ; rien n’est validé à votre place.</p>
       </aside>
     </div>
   </div>
 </section>
 <section class="home-trust" aria-label="Vos repères sur FreeCI"><div class="container"><ul>
-  <li><x-fc.icon name="clipboard" :size="28" /><div><h2>Un accord clair</h2><p>Un prix et un périmètre convenus.</p></div></li>
+  <li><x-fc.icon name="clipboard" :size="28" /><div><h2>Un accord clair</h2><p>Prix, délai et périmètre figés dès l’accord : ils ne changent plus.</p></div></li>
   <li><x-fc.icon name="message" :size="28" /><div><h2>Un suivi au même endroit</h2><p>Vos échanges et livraisons dans un seul dossier.</p></div></li>
   <li><x-fc.icon name="check-circle" :size="28" /><div><h2>Vous validez la livraison</h2><p>Vous examinez le travail avant de décider.</p></div></li>
 </ul></div></section>

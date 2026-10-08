@@ -62,7 +62,9 @@
               @else<span>{{ $img['alt'] }} <small class="muted">(image d’exemple existante)</small></span>@endif</span></div>
           @endforeach
           @if(! $imagesEnabled)<p class="note-line mt-12"><x-fc.icon name="info" :size="16" /><span>Le dépôt d’images est <strong>désactivé</strong> sur cette installation (extension GD absente). Vous pouvez soumettre le service sans image.</span></p>
-          @elseif(count($images) < $L['images_max'])
+          @elseif(count($images) < 1)<p class="note-line mt-12" role="note"><x-fc.icon name="info" :size="16" /><span><strong>Une image de couverture est obligatoire</strong> pour envoyer le service en validation : c’est elle qui s’affiche sur la carte du catalogue.</span></p>
+          @endif
+          @if($imagesEnabled && count($images) < $L['images_max'])
             <div style="display:grid;gap:12px;margin-top:16px"><div class="field"><label for="f-image">Ajouter une image</label><input class="input" id="f-image" type="file" name="image" accept="image/jpeg,image/png,image/webp"></div>
               <div class="field"><label for="f-alt">Que montre cette image ?</label><input class="input" id="f-alt" name="alt" maxlength="160" value="{{ old('alt') }}" placeholder="Ex. : photo ancienne avant et après restauration"></div>
               @error('image')<p class="field-error">{{ $message }}</p>@enderror @error('alt')<p class="field-error">{{ $message }}</p>@enderror

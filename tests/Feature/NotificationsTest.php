@@ -123,6 +123,7 @@ class NotificationsTest extends TestCase
         $v = $s->versions()->first();
         $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/modifier", ['title' => $v->title, 'category_id' => $this->service->category_id, 'summary' => 'Plans cotés au format PDF et DWG à partir de vos relevés.',
             'scope' => str_repeat('Un logement jusqu’à 120 m², relevés fournis par le client. ', 4), 'price_xof' => '45000', 'delivery_days' => '6', 'revisions_included' => '2', 'deliverables' => 'Un plan PDF', 'delivery_mode' => 'message', 'revision_no' => $v->revision_no])->assertRedirect();
+        $v->fresh()->forceFill(['images' => [['id' => (string) Str::uuid(), 'alt' => 'Plan d’étage coté', 'caption' => '']]])->save();
         $this->actingAs($this->freelancer)->post("/freelance/services/{$s->id}/soumettre", ['revision_no' => $v->fresh()->revision_no])->assertRedirect();
         app(ServiceModeration::class)->requestChanges($admin, $v->id, 'Précisez les formats de fichiers remis.');
         $this->assertSame(1, $this->mine($this->freelancer, 'moderation_decision')->count());
