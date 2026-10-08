@@ -626,4 +626,13 @@ class ServiceManagementTest extends TestCase
     {
         $this->get('/services')->assertOk()->assertSee('service-directory', false)->assertSee('Un savoir-faire pour chaque projet.')->assertSee('Tout voir')->assertSee('Budget')->assertSee('Vous avez un besoin sur mesure ?')->assertSee('Publier une mission');
     }
+
+    public function test_my_services_page_filters_by_state_shows_the_thumbnail_and_puts_attention_first(): void
+    {
+        $draft = $this->draft();
+        $this->actingAs($this->freelancer)->get('/freelance/services')->assertOk()->assertSee('Mes services')->assertSee('Brouillons')->assertSee('Continuer')->assertSee('Pas encore d’image de couverture');
+        $this->actingAs($this->freelancer)->get('/freelance/services?statut=retires')->assertOk()->assertSee('Aucun service dans cette catégorie');
+        $this->actingAs($this->freelancer)->get('/freelance/services?statut=brouillons')->assertOk()->assertSee($draft->title);
+        $this->actingAs($this->freelancer)->get('/freelance/services?statut=inconnu')->assertOk()->assertSee($draft->title);
+    }
 }

@@ -6,12 +6,13 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Catalog\Models\ServiceVersion;
+use App\Modules\Catalog\Support\ImageUrls;
 use App\Shared\Money;
 
 /** « Mes services » : uniquement les services du propriétaire, avec états lisibles et actions réellement disponibles (revérifiées côté serveur). */
 final class ListFreelancerServices
 {
-    public function __construct(private ServiceAuthoring $authoring) {}
+    public function __construct(private ServiceAuthoring $authoring, private ServiceEditorData $editor) {}
 
     /** @return list<array<string, mixed>> */
     public function __invoke(User $freelancer): array
@@ -22,7 +23,7 @@ final class ListFreelancerServices
         }
         $versions = ServiceVersion::query()->whereIn('service_id', $services->pluck('id'))->whereIn('state', [...ServiceVersion::OPEN, 'published'])->get()->groupBy('service_id');
 
-        return $services->map(function (Service $s) use ($versions) {
+        return $services->map(function (Service $s) use ($versions, $freelancer) {
             $all = $versions->get($s->getKey(), collect());
             $working = $all->first(fn ($v) => in_array($v->state, ServiceVersion::OPEN, true));
             $live = $all->firstWhere('state', 'published');
@@ -32,6 +33,8 @@ final class ListFreelancerServices
             return [
                 'id' => $s->getKey(), 'title' => $shown?->title ?: $s->title, 'slug' => $s->slug, 'category' => $s->category->name,
                 'price' => $shown?->price_xof ? Money::xof($shown->price_xof) : null,
+                'thumb' => ImageUrls::present($shown?->images ?? [])[0]['card'] ?? null, 'deliveryDays' => $shown?->delivery_days ?: null,
+                'toComplete' => $working?->state === 'draft' ? count($this->editor->submissionProblems($freelancer, $s->getKey())) : 0,
                 'status' => $label, 'tone' => $tone, 'icon' => $icon, 'note' => $note,
                 'published' => $s->status === ServiceStatus::Published, 'working' => $working?->state, 'workingNumber' => $working?->number, 'liveNumber' => $live?->number,
                 'canEdit' => $working !== null && $working->isEditable(), 'canPreview' => $working !== null,
