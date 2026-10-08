@@ -635,4 +635,15 @@ class ServiceManagementTest extends TestCase
         $this->actingAs($this->freelancer)->get('/freelance/services?statut=brouillons')->assertOk()->assertSee($draft->title);
         $this->actingAs($this->freelancer)->get('/freelance/services?statut=inconnu')->assertOk()->assertSee($draft->title);
     }
+
+    public function test_editor_shows_the_checklist_counters_and_the_action_bar(): void
+    {
+        $s = $this->draft();
+        $page = $this->actingAs($this->freelancer)->get("/freelance/services/{$s->id}/modifier")->assertOk()->assertSee('Avant de soumettre')->assertSee('Enregistrer le brouillon')->assertSee('Vérifier et envoyer pour validation')
+            ->assertSee('data-count="summary"', false)->assertSee('Image de couverture');
+        // Brouillon complet sauf l'image : la couverture est le seul point à compléter.
+        $this->assertMatchesRegularExpression('/data-check="cover" class="no"/', $page->getContent());
+        $this->assertMatchesRegularExpression('/data-check="title" class="ok"/', $page->getContent());
+        $this->assertMatchesRegularExpression('/data-check="offer" class="ok"/', $page->getContent());
+    }
 }

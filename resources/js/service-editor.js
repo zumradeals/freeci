@@ -19,6 +19,7 @@ if (form) {
         const final = form.querySelector('[data-editor-final]');
         if (final) final.hidden = current !== panels.length - 1;
         form.querySelector('[data-editor-progress]').textContent = `Étape ${current + 1} sur ${panels.length}`;
+        form.querySelectorAll('[data-editor-final]').forEach(button => { button.hidden = current !== panels.length - 1; });
         history.replaceState(null, '', `#${panels[current].dataset.editorPanel}`);
         if (focus) {
             const heading = panels[current].querySelector('h2');
@@ -30,12 +31,57 @@ if (form) {
     form.querySelector('[data-editor-prev]').addEventListener('click', () => show(current - 1, true));
     form.querySelector('[data-editor-next]').addEventListener('click', () => show(current + 1, true));
     form.querySelector('.editor-steps').hidden = false;
-    form.querySelector('.editor-pagination').hidden = false;
+    form.querySelector('.editor-pagination')?.removeAttribute('hidden');
+    form.querySelectorAll('[data-editor-prev], [data-editor-next]').forEach(button => { button.hidden = false; });
     const invalid = panels.findIndex(panel => panel.querySelector('.field-error'));
     const fragment = panels.findIndex(panel => `#${panel.dataset.editorPanel}` === location.hash);
     show(invalid >= 0 ? invalid : Math.max(0, fragment));
 
     const value = name => form.elements.namedItem(name)?.value || '';
+    const L = JSON.parse(form.dataset.limits || '{}');
+    const len = text => text.trim().length;
+    const within = (n, range) => Array.isArray(range) && n >= range[0] && n <= range[1];
+    const digits = text => Number(String(text).replace(/\D/g, '')) || 0;
+    const lineCount = text => text.split(/\r?\n/).map(t => t.trim()).filter(Boolean).length;
+    const evaluate = () => ({
+        title: within(len(value('title')), L.title) && value('category_id') !== '',
+        summary: within(len(value('summary')), L.summary),
+        scope: within(len(value('scope')), L.scope),
+        offer: within(digits(value('price_xof')), L.price_xof) && within(digits(value('delivery_days')), L.delivery_days) && within(Number(value('revisions_included')) || 0, L.revisions),
+        deliverables: lineCount(value('deliverables')) >= 1,
+        cover: !L.images_enabled || Number(L.image_count) >= 1,
+        profile: !!L.profile_ok,
+    });
+    const refreshChecks = () => {
+        const state = evaluate();
+        const keys = Object.keys(state);
+        form.querySelectorAll('[data-count]').forEach(el => {
+            const n = len(value(el.dataset.count));
+            el.textContent = `${n} / ${new Intl.NumberFormat('fr-FR').format(Number(el.dataset.max))}`;
+            el.classList.toggle('over', n > Number(el.dataset.max));
+        });
+        let done = 0;
+        form.querySelectorAll('[data-check]').forEach(li => {
+            const ok = !!state[li.dataset.check];
+            if (ok) done += 1;
+            li.classList.toggle('ok', ok);
+            li.classList.toggle('no', !ok);
+            const sr = li.querySelector('[data-ck-sr]');
+            if (sr) sr.textContent = ok ? ' : complet' : ' : à compléter';
+            li.querySelector('use')?.setAttribute('href', ok ? '#i-check-circle' : '#i-warn');
+        });
+        const count = form.querySelector('[data-ck-count]');
+        if (count) count.textContent = String(done);
+        const bar = form.querySelector('[data-ck-bar]');
+        if (bar) bar.style.width = `${Math.round(done / keys.length * 100)}%`;
+        steps.forEach(step => {
+            const missing = (step.dataset.stepKeys || '').split(',').filter(k => k && !state[k]).length;
+            step.classList.toggle('is-done', missing === 0);
+            step.classList.toggle('is-todo', missing > 0);
+            const status = step.querySelector('[data-step-status]');
+            if (status) status.textContent = missing === 0 ? 'Complet' : `${missing} point${missing > 1 ? 's' : ''} à compléter`;
+        });
+    };
     const preview = () => {
         const text = (key, content) => { form.querySelector(`[data-preview-${key}]`).textContent = content; };
         text('title', value('title') || 'Le titre de votre service');
@@ -53,9 +99,10 @@ if (form) {
         }
     };
     preview();
+    refreshChecks();
     let dirty = false;
-    form.addEventListener('input', () => { dirty = true; preview(); });
-    form.addEventListener('change', () => { dirty = true; preview(); });
+    form.addEventListener('input', () => { dirty = true; preview(); refreshChecks(); });
+    form.addEventListener('change', () => { dirty = true; preview(); refreshChecks(); });
     form.addEventListener('submit', () => { dirty = false; });
     window.addEventListener('beforeunload', event => {
         if (dirty) { event.preventDefault(); event.returnValue = ''; }

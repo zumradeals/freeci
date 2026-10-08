@@ -4,37 +4,51 @@
   $lines = fn ($a) => implode("\n", $a ?? []);
   $err = fn ($k) => $errors->first($k);
   $mode = old('delivery_mode', $v->delivery_requires_files ? 'files' : 'message');
+  $len = fn ($t) => mb_strlen(trim((string) $t));
+  $within = fn ($n, $r) => $n >= $r[0] && $n <= $r[1];
+  $num = fn ($t) => (int) preg_replace('/\D/', '', (string) $t);
+  $linesCount = fn ($t) => count(array_filter(array_map('trim', preg_split('/\R/u', (string) $t) ?: [])));
+  $checks = [
+    'title' => ['Titre et catégorie', $within($len($val('title', $v->title)), $L['title']) && (string) old('category_id', $v->category_id) !== ''],
+    'summary' => ['Résumé', $within($len($val('summary', $v->summary)), $L['summary'])],
+    'scope' => ['Description du périmètre', $within($len($val('scope', $v->scope)), $L['scope'])],
+    'offer' => ['Prix, délai et retouches', $within($num($val('price_xof', $v->price_xof)), $L['price_xof']) && $within($num($val('delivery_days', $v->delivery_days)), $L['delivery_days']) && $within((int) $val('revisions_included', $v->revisions_included), $L['revisions'])],
+    'deliverables' => ['Ce que le client reçoit', $linesCount(old('deliverables', $lines($v->deliverables))) >= 1],
+    'cover' => ['Image de couverture', ! $imagesEnabled || count($images) >= 1],
+    'profile' => ['Profil publié', (bool) $profilePublished],
+  ];
+  $doneCount = collect($checks)->filter(fn ($c) => $c[1])->count();
 @endphp
 <x-layouts.account :title="'Modifier : '.($v->title ?: 'service')" space="freelancer">
   <div class="page-body">
-    <nav class="crumbs" aria-label="Fil d’Ariane"><a class="back-m" href="{{ route('freelance.services') }}"><x-fc.icon name="arrow-right" :size="16" class="flip" />Mes services</a><a class="hide-m" href="{{ route('freelance.services') }}">Mes services</a><span class="sep hide-m" aria-hidden="true">›</span><span class="hide-m" aria-current="page">{{ $v->title ?: 'Nouveau service' }}</span></nav>
-    <header class="page-head"><div class="row-top"><div><p class="eyebrow">Version {{ $v->number }} · {{ ['draft' => 'brouillon', 'changes_requested' => 'à corriger', 'in_review' => 'en contrôle'][$v->state] }}</p><h1 class="t-h1">{{ $v->title ?: 'Nouveau service' }}</h1></div>
-      <a class="btn btn-secondary" href="{{ route('freelance.services.preview', $service->getKey()) }}" target="_blank" rel="noopener">Aperçu enregistré ↗</a></div></header>
+    <nav class="ed-crumbs" aria-label="Fil d’Ariane"><a href="{{ route('freelance.services') }}">Mes services</a><span aria-hidden="true">/</span><span aria-current="page">{{ $v->title ?: 'Nouveau service' }}</span></nav>
+    <header class="sx-head"><div><p class="sx-kicker">Version {{ $v->number }} · {{ ['draft' => 'brouillon', 'changes_requested' => 'à corriger', 'in_review' => 'en contrôle'][$v->state] }}</p><h1>{{ $v->title ?: 'Nouveau service' }}</h1><p class="muted">Enregistrez à tout moment : votre brouillon reste invisible du public.</p></div>
+      <div class="sx-acts"><a class="btn btn-secondary" href="{{ route('freelance.services.preview', $service->getKey()) }}" target="_blank" rel="noopener">Aperçu enregistré ↗</a></div></header>
 
-    @if($v->state === 'changes_requested')<div class="notice tone-warning" role="note"><x-fc.icon name="warn" /><div><p><strong>La modération demande une correction.</strong></p><p class="quote mt-6">« {{ $v->decision_note }} »</p><p class="mt-6">Corrigez puis soumettez de nouveau.</p></div></div>
+    @if($v->state === 'changes_requested')<div class="notice tone-warning ed-banner" role="note"><x-fc.icon name="warn" /><div><p><strong>La modération demande une correction.</strong></p><p class="quote mt-6">« {{ $v->decision_note }} »</p><p class="mt-6">Corrigez puis soumettez de nouveau.</p></div></div>
     @elseif($v->state === 'in_review')<div class="notice tone-info" role="note"><x-fc.icon name="clock" /><p><strong>Cette version est en contrôle : elle n’est pas modifiable.</strong> <a href="{{ route('freelance.services.confirm', [$service->getKey(), 'retirer-soumission']) }}">Retirer la soumission</a> pour la modifier.</p></div>
     @elseif($live)<div class="notice tone-info" role="note"><x-fc.icon name="info" /><p>La <strong>version publiée (v{{ $live->number }})</strong> reste en ligne tant que celle-ci n’est pas approuvée. Les commandes déjà passées gardent leur accord.</p></div>
     @else<div class="notice tone-info" role="note"><x-fc.icon name="lock" /><p>Brouillon <strong>invisible du public</strong> : il ne devient visible qu’après approbation par la modération.</p></div>@endif
     @unless($profilePublished)<div class="notice tone-warning" role="note"><x-fc.icon name="warn" /><p>Votre profil n’est pas publié : il faut le publier pour soumettre ce service. <a href="{{ route('freelance.profile') }}">Compléter mon profil</a></p></div>@endunless
     @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Vos saisies sont conservées.</p></div>@endif
 
-    <form method="post" action="{{ route('freelance.services.update', $service->getKey()) }}" enctype="multipart/form-data" id="service-editor" class="service-editor" data-service-editor data-once novalidate>@csrf
+    <form method="post" action="{{ route('freelance.services.update', $service->getKey()) }}" enctype="multipart/form-data" id="service-editor" class="service-editor" data-service-editor data-limits="{{ json_encode($L + ['profile_ok' => (bool) $profilePublished, 'images_enabled' => (bool) $imagesEnabled, 'image_count' => count($images)]) }}" data-once novalidate>@csrf
       <input type="hidden" name="revision_no" value="{{ old('revision_no', $v->revision_no) }}">
       <input type="hidden" name="editor_form" value="1">
-      <nav class="editor-steps" aria-label="Étapes de création" hidden>
-        @foreach(['presentation' => 'Présentation', 'offre' => 'Votre offre', 'images' => 'Images', 'besoin' => 'Avant de publier'] as $step => $label)
-        <button class="btn btn-secondary" type="button" data-editor-go="{{ $step }}" aria-controls="editor-{{ $step }}"><span>{{ $loop->iteration }}</span> {{ $label }}</button>
+      <nav class="editor-steps ed-steps" aria-label="Étapes de création" hidden>
+        @foreach(['presentation' => ['Présentation', ['title', 'summary', 'scope']], 'offre' => ['Votre offre', ['offer', 'deliverables']], 'images' => ['Images', ['cover']], 'besoin' => ['Avant de publier', ['profile']]] as $step => [$label, $keys])
+        <button class="ed-step" type="button" data-editor-go="{{ $step }}" data-step-keys="{{ implode(',', $keys) }}" aria-controls="editor-{{ $step }}"><span class="num">{{ $loop->iteration }}</span><span class="lbl"><b>{{ $label }}</b><small data-step-status>&nbsp;</small></span></button>
         @endforeach
       </nav>
       <div class="editor-layout"><div class="editor-main">
       <fieldset class="fieldset-bare" @disabled(! $editable)>
         <section class="card" id="editor-presentation" data-editor-panel="presentation" aria-labelledby="h-ess"><h2 class="t-h2 card-title" id="h-ess">Présentez votre service</h2><div class="fields">
-          <x-fc.field name="title" label="Que proposez-vous ?" :value="$v->title" :hint="$L['title'][0].' à '.$L['title'][1].' caractères.'" />
+          <x-fc.field name="title" label="Que proposez-vous ?" :value="$v->title" :hint="$L['title'][0].' à '.$L['title'][1].' caractères.'" /><span class="ed-cnt" data-count="title" data-max="{{ $L['title'][1] }}">{{ $len($val('title', $v->title)) }} / {{ $L['title'][1] }}</span>
           <div class="field"><label for="f-category_id">Catégorie</label><select class="select" id="f-category_id" name="category_id" required @if($err('category_id')) aria-invalid="true" aria-describedby="e-category_id" @endif>@foreach($categories as $c)<option value="{{ $c->id }}" @selected(old('category_id', $v->category_id) === $c->id)>{{ $c->name }}</option>@endforeach</select>@if($err('category_id'))<p class="field-error" id="e-category_id"><x-fc.icon name="error" :size="16" />{{ $err('category_id') }}</p>@endif</div>
           <div class="field"><label for="f-summary">Résumé</label><p class="hint" id="h-summary">{{ $L['summary'][0] }} à {{ $L['summary'][1] }} caractères. Affiché sur les cartes du catalogue.</p>
-            <textarea class="textarea" id="f-summary" name="summary" rows="3" maxlength="{{ $L['summary'][1] + 100 }}" aria-describedby="h-summary @if($err('summary')) e-summary @endif" @if($err('summary')) aria-invalid="true" @endif>{{ $val('summary', $v->summary) }}</textarea>@if($err('summary'))<p class="field-error" id="e-summary"><x-fc.icon name="error" :size="16" />{{ $err('summary') }}</p>@endif</div>
+            <textarea class="textarea" id="f-summary" name="summary" rows="3" maxlength="{{ $L['summary'][1] + 100 }}" aria-describedby="h-summary @if($err('summary')) e-summary @endif" @if($err('summary')) aria-invalid="true" @endif>{{ $val('summary', $v->summary) }}</textarea><span class="ed-cnt" data-count="summary" data-max="{{ $L['summary'][1] }}">{{ $len($val('summary', $v->summary)) }} / {{ $L['summary'][1] }}</span>@if($err('summary'))<p class="field-error" id="e-summary"><x-fc.icon name="error" :size="16" />{{ $err('summary') }}</p>@endif</div>
           <div class="field"><label for="f-scope">Décrivez votre prestation</label><p class="hint" id="h-scope">{{ $L['scope'][0] }} à {{ $L['scope'][1] }} caractères : ce qui est inclus, les limites. Aucune adresse e-mail ni numéro de téléphone.</p>
-            <textarea class="textarea" id="f-scope" name="scope" rows="5" aria-describedby="h-scope @if($err('scope')) e-scope @endif" @if($err('scope')) aria-invalid="true" @endif>{{ $val('scope', $v->scope) }}</textarea>@if($err('scope'))<p class="field-error" id="e-scope"><x-fc.icon name="error" :size="16" />{{ $err('scope') }}</p>@endif</div>
+            <textarea class="textarea" id="f-scope" name="scope" rows="5" aria-describedby="h-scope @if($err('scope')) e-scope @endif" @if($err('scope')) aria-invalid="true" @endif>{{ $val('scope', $v->scope) }}</textarea><span class="ed-cnt" data-count="scope" data-max="{{ $L['scope'][1] }}">{{ $len($val('scope', $v->scope)) }} / {{ number_format($L['scope'][1], 0, ',', ' ') }}</span>@if($err('scope'))<p class="field-error" id="e-scope"><x-fc.icon name="error" :size="16" />{{ $err('scope') }}</p>@endif</div>
         </div></section>
 
         <section class="card" id="editor-offre" data-editor-panel="offre" aria-labelledby="h-off"><h2 class="t-h2 card-title" id="h-off">L’offre</h2><div class="fields">
@@ -85,14 +99,19 @@
         </div></section>
 
       </fieldset>
-      <div class="editor-pagination" hidden><button type="button" class="btn btn-secondary" data-editor-prev>Précédent</button><p class="hint" data-editor-progress aria-live="polite"></p><button type="button" class="btn btn-primary" data-editor-next>Continuer</button></div>
       @if($editable)
-      <p class="hint">Vous pouvez enregistrer votre brouillon à tout moment. Votre service sera publié après validation par l’administration.</p>
-      <div class="row row-gap"><button class="btn btn-secondary btn-lg" type="submit" name="intent" value="save" data-once-label="Enregistrement…">Enregistrer le brouillon</button>
-        <button class="btn btn-primary btn-lg" type="submit" name="intent" value="submit" data-editor-final data-once-label="Vérification…">Vérifier et envoyer pour validation</button></div>
+      <div class="ed-bar editor-pagination">
+        <p class="hint" data-editor-progress aria-live="polite">Votre service sera publié après validation par l’administration.</p>
+        <div class="r"><button type="button" class="btn btn-secondary" data-editor-prev hidden>Précédent</button>
+          <button class="btn btn-secondary" type="submit" name="intent" value="save" data-once-label="Enregistrement…">Enregistrer le brouillon</button>
+          <button type="button" class="btn btn-primary" data-editor-next hidden>Suivant</button>
+          <button class="btn btn-primary" type="submit" name="intent" value="submit" data-editor-final data-once-label="Vérification…">Vérifier et envoyer pour validation</button></div>
+      </div>
+      @else
+      <div class="ed-bar editor-pagination" hidden><p class="hint" data-editor-progress aria-live="polite"></p><div class="r"><button type="button" class="btn btn-secondary" data-editor-prev>Précédent</button><button type="button" class="btn btn-primary" data-editor-next>Suivant</button></div></div>
       @endif
       </div>
-      <aside class="editor-preview card" aria-label="Aperçu de la carte du service">
+      <div class="editor-side"><aside class="editor-preview card" aria-label="Aperçu de la carte du service">
         <p class="eyebrow">Votre vitrine</p>
         <div class="editor-cover"><img data-preview-image src="{{ $images[0]['card'] ?? '' }}" alt="Image principale du service" @if(empty($images)) hidden @endif><p data-preview-empty @if(count($images)) hidden @endif>Ajoutez une image pour présenter votre travail.</p></div>
         <p class="muted small" data-preview-category></p>
@@ -100,7 +119,12 @@
         <p class="muted" data-preview-summary>{{ $val('summary', $v->summary) }}</p>
         <div class="row row-between"><strong data-preview-price></strong><span class="small" data-preview-delay></span></div>
         <p class="hint">Aperçu de vos saisies. Enregistrez pour les conserver.</p>
-      </aside></div>
+      </aside>
+      <div class="ed-ck" data-checklist>
+        <h3>Avant de soumettre : <span data-ck-count>{{ $doneCount }}</span> sur {{ count($checks) }}</h3>
+        <div class="ed-meter" aria-hidden="true"><i data-ck-bar style="width: {{ (int) round($doneCount / count($checks) * 100) }}%"></i></div>
+        <ul>@foreach($checks as $key => [$label, $ok])<li data-check="{{ $key }}" class="{{ $ok ? 'ok' : 'no' }}"><x-fc.icon :name="$ok ? 'check-circle' : 'warn'" :size="18" /><span>{{ $label }}</span><span class="sr-only" data-ck-sr>{{ $ok ? ' : complet' : ' : à compléter' }}</span></li>@endforeach</ul>
+      </div></div></div>
     </form>
 
     @if(count($history))<section class="card form-card mt-24" aria-labelledby="h-hist"><h2 class="t-h2 card-title" id="h-hist">Historique</h2>

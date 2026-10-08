@@ -1605,3 +1605,42 @@ a.kpi:hover { background: var(--marine-100); }
 .sv-info { display: flex; gap: 10px; align-items: flex-start; background: #f3f7fb; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; color: var(--ink-600); margin-top: 16px; }
 .sv-info svg { flex: none; color: var(--marine-700); margin-top: 2px; }
 @media (min-width: 700px) { .sv-card { grid-template-columns: 200px minmax(0, 1fr); gap: 20px; } .sv-thumb { max-width: none; } }
+
+/* Lot 52 : éditeur d'un service d'après la maquette (étapes en cartes, compteurs, liste « Avant de soumettre », barre d'actions). */
+.ed-crumbs { display: flex; gap: 8px; font-size: .875rem; color: var(--ink-600); margin-bottom: 10px; }
+.ed-crumbs a { color: var(--info-700); }
+.ed-banner { border: 1px solid #f3c9a8; border-left: 5px solid var(--accent-500); background: #fffaf6; border-radius: 12px; }
+.editor-steps.ed-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ed-step { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink-900); text-align: left; cursor: pointer; font: inherit; min-height: 64px; }
+.ed-step:hover { border-color: var(--marine-700); }
+.ed-step .num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--line-strong); font-weight: 700; font-size: .875rem; flex: none; }
+.ed-step .lbl { display: grid; min-width: 0; }
+.ed-step small { color: var(--ink-600); }
+.ed-step.is-done .num { background: var(--marine-700); border-color: var(--marine-700); color: #fff; }
+.ed-step.is-todo .num { background: #fdeee3; border-color: var(--accent-500); color: var(--accent-700); }
+.ed-step[aria-current="step"] { border-color: var(--marine-900); box-shadow: inset 0 0 0 1px var(--marine-900); }
+.service-editor .card { padding: 22px; box-shadow: none; }
+.service-editor .card-title { font-size: 1.25rem; }
+.ed-cnt { display: block; text-align: right; font-size: .8125rem; color: var(--ink-600); margin-top: 4px; }
+.ed-cnt.over { color: var(--accent-700); font-weight: 700; }
+.ed-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 8px 24px rgb(16 45 75 / .12); }
+.ed-bar .hint { margin: 0; }
+.ed-bar .r { display: flex; gap: 10px; flex-wrap: wrap; }
+.editor-side { display: grid; gap: 16px; min-width: 0; align-content: start; }
+@media (min-width: 1100px) { .editor-side { position: sticky; top: 24px; } .editor-side .editor-preview { position: static; } .editor-steps.ed-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ed-ck { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.ed-ck h3 { font-size: 1rem; font-weight: 700; }
+.ed-ck ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ed-ck li { display: flex; gap: 10px; align-items: flex-start; font-size: .9375rem; }
+.ed-ck li.ok svg { color: var(--success-700); flex: none; }
+.ed-ck li.no svg { color: var(--accent-700); flex: none; }
+.ed-ck li.no { font-weight: 600; }
+.ed-meter { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.ed-meter i { display: block; height: 100%; background: var(--marine-700); transition: width .2s; }
+@media (max-width: 599px) { .ed-bar { position: static; } .ed-bar .r, .ed-bar .r .btn { width: 100%; } }
+.editor-steps .ed-step[aria-current="step"] { background: var(--surface); color: var(--ink-900); border-color: var(--marine-900); }
+.ed-step { min-width: 0; }
+.ed-step .lbl b, .ed-step .lbl small { overflow-wrap: anywhere; }
+@media (max-width: 599px) { .ed-step { padding: 10px; gap: 8px; } }
+.ed-step { white-space: normal; overflow: hidden; }
+.ed-step .lbl { flex: 1 1 0; min-width: 0; }
