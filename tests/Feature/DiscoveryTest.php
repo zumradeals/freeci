@@ -169,7 +169,7 @@ class DiscoveryTest extends TestCase
             $vid = (string) Str::uuid();
             DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => 'mission-'.$n, 'status' => 'open', 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => 'Mission numéro '.$n, 'description' => 'Description '.$n,
-                'budget_xof' => 10000 * $n, 'application_deadline' => now()->addDays($n)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                'budget_xof' => 10000 * $n, 'application_deadline' => now()->addDays($n)->setTime(12, 0), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
         }
         $page = $this->get('/missions')->assertOk()->assertSee('Trouvez votre prochain projet.')->assertSee('Accueil')->assertSee('Tout voir')->assertSee('11 missions ouvertes')
@@ -196,7 +196,7 @@ class DiscoveryTest extends TestCase
             $slugs[$n] = 'detail-'.$n;
             DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => $slugs[$n], 'status' => 'open', 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => 'Mission détail '.$n, 'description' => 'Besoin '.$n,
-                'budget_xof' => 20000 * $n, 'application_deadline' => now()->addDays(3 + $n)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                'budget_xof' => 20000 * $n, 'application_deadline' => now()->addDays(3 + $n)->setTime(12, 0), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
         }
         $page = $this->get('/missions/'.$slugs[1])->assertOk()->assertSee('Accueil')->assertSee('Budget du client')->assertSee('Comment ça se passe')->assertSee('Seul le client voit votre proposition')
@@ -223,7 +223,7 @@ class DiscoveryTest extends TestCase
             $vid = (string) Str::uuid();
             DB::table('missions')->insert(['id' => $mid, 'client_id' => $client->id, 'slug' => Str::slug($title).'-mm', 'status' => $status, 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('mission_versions')->insert(['id' => $vid, 'mission_id' => $mid, 'number' => 1, 'state' => 'published', 'category_id' => $cat->id, 'title' => $title, 'description' => 'Description '.$title,
-                'budget_xof' => 30000, 'application_deadline' => now()->addDays($days)->addHours(2), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                'budget_xof' => 30000, 'application_deadline' => now()->addDays($days)->setTime(12, 0), 'published_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             DB::table('missions')->where('id', $mid)->update(['published_version_id' => $vid]);
         };
         $mk('Mission ouverte MM', 'open');
