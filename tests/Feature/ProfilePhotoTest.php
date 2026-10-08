@@ -206,4 +206,17 @@ class ProfilePhotoTest extends TestCase
         $this->expectException(QueryException::class);
         DB::table('profile_photos')->insert(['id' => (string) Str::uuid(), 'user_id' => $this->freelancer->id, 'state' => 'active', 'mime' => 'image/webp', 'sha256' => str_repeat('a', 64), 'created_at' => now()]);
     }
+
+    public function test_the_photo_is_shown_in_orders_and_messages_to_the_other_party(): void
+    {
+        $o = $this->placeOrder();
+        $this->upload($this->client);
+        $cp = $this->active($this->client);
+        $this->upload($this->freelancer);
+        $fp = $this->active($this->freelancer);
+        $this->actingAs($this->freelancer)->get("/commandes/{$o->reference}")->assertOk()->assertSee("/photos/{$cp->id}/large", false);
+        $this->actingAs($this->client)->get("/commandes/{$o->reference}")->assertOk()->assertSee("/photos/{$fp->id}/large", false);
+        $this->actingAs($this->freelancer)->get('/freelance/commandes')->assertOk()->assertSee("/photos/{$cp->id}/small", false);
+        $this->actingAs($this->client)->get('/espace/commandes')->assertOk()->assertSee("/photos/{$fp->id}/small", false);
+    }
 }

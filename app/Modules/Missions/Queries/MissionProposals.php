@@ -42,7 +42,7 @@ final class MissionProposals
             };
 
             return [
-                'proposalId' => $p->getKey(), 'versionId' => $v->getKey(), 'number' => $v->number, 'author' => $p->freelancer->freelanceProfile?->display_name ?? $p->freelancer->name,
+                'proposalId' => $p->getKey(), 'versionId' => $v->getKey(), 'number' => $v->number, 'author' => $p->freelancer->freelanceProfile?->display_name ?? $p->freelancer->name, 'authorId' => (string) $p->freelancer_id,
                 'headline' => $p->freelancer->freelanceProfile?->headline, 'profileSlug' => $p->freelancer->freelanceProfile?->published_at ? $p->freelancer->freelanceProfile->slug : null,
                 'price' => Money::xof($v->price_xof), 'priceXof' => $v->price_xof, 'days' => $v->delivery_days, 'revisions' => $v->revisions_included, 'deliverables' => $v->deliverables,
                 'scope' => $v->scope, 'mode' => $v->delivery_mode === 'files' ? 'Au moins un fichier contrôlé' : 'Par message seul', 'message' => $v->message,

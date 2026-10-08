@@ -58,4 +58,11 @@ class ErrorPagesTest extends TestCase
     {
         $this->get('/')->assertOk()->assertSee('class="ft"', false)->assertDontSee('Un projet à confier, un talent à proposer ?');
     }
+
+    public function test_the_mail_test_command_refuses_drivers_that_send_nothing_and_bad_addresses(): void
+    {
+        config(['mail.default' => 'log']);
+        $this->artisan('freeci:mail:test', ['to' => 'moi@exemple.ci'])->expectsOutputToContain('rien n\'a été envoyé')->assertFailed();
+        $this->artisan('freeci:mail:test', ['to' => 'pas-une-adresse'])->expectsOutputToContain('Adresse invalide')->assertExitCode(2);
+    }
 }

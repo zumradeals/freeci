@@ -233,7 +233,7 @@
         @if(isset($dl['corrections']['included']))<div><dt>Corrections</dt><dd>{{ $dl['corrections']['remaining'] }} sur {{ $dl['corrections']['included'] }} restante{{ $dl['corrections']['remaining'] > 1 ? 's' : '' }}</dd></div>@endif
         @if($d->payment)<div><dt>Paiement</dt><dd>{{ $d->payment['state'] === 'confirmed' ? 'Confirmé' : 'En attente' }}</dd></div>@endif
       </dl>
-      <div class="od-party"><span class="avatar avatar-lg" aria-hidden="true">{{ mb_strtoupper(mb_substr($d->otherPartyName, 0, 1)) }}</span><div><b>{{ $d->otherPartyName }}</b><p class="muted small">{{ $d->otherPartyLabel }}</p></div></div>
+      <div class="od-party"><x-fc.avatar :name="$d->otherPartyName" :user="$d->otherPartyId" size="lg" /><div><b>{{ $d->otherPartyName }}</b><p class="muted small">{{ $d->otherPartyLabel }}</p></div></div>
       <a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Écrire {{ $isF ? 'au client' : 'au freelance' }}</a>
       <div class="od-help" aria-labelledby="h-sup"><b id="h-sup">Besoin d’aide ?</b>
         <a href="{{ route('support.new', ['commande' => $d->reference]) }}"><x-fc.icon name="info" :size="18" />Contacter le support</a>

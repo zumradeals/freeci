@@ -4,7 +4,7 @@
     <section class="ms-conv" aria-labelledby="h-conv">
       <header class="ms-ch">
         <a class="ms-back" href="{{ route('messages.index', array_filter(['espace' => $space === 'freelancer' ? 'freelance' : null])) }}" aria-label="Retour aux messages"><x-fc.icon name="arrow-right" :size="20" class="flip" /></a>
-        <span class="avatar avatar-lg" aria-hidden="true">{{ mb_strtoupper(mb_substr($t['with'], 0, 1)) }}</span>
+        <x-fc.avatar :name="$t['with']" :user="$t['withId']" size="lg" />
         <div><h1 class="t-h3" id="h-conv">{{ $t['with'] }}</h1><small>{{ $t['context'] }}</small></div>
         @if($t['orderReference'])<a class="btn btn-secondary" href="{{ route('orders.show', $t['orderReference']) }}">Ouvrir la commande<span class="sr-only"> {{ $t['orderReference'] }}</span></a>@endif
         @if($t['iBlocked'])<form method="post" action="{{ route('messages.unblock', $t['id']) }}" data-once>@csrf<button class="btn btn-link" type="submit">Débloquer ce contact</button></form>

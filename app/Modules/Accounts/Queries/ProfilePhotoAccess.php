@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Qui peut lire une photo de profil. Photo ACTIVE seulement :
  *  - publique si la personne a un profil freelance publié ;
- *  - sinon (client, freelance non publié) : elle-même, une personne avec qui elle a une commande, et les administrateurs/le support.
+ *  - sinon (client, freelance non publié) : elle-même, une personne avec qui elle a une commande ou une conversation, et les administrateurs/le support.
  * Une photo retirée par l'administration n'est lisible que par le personnel habilité, tant que le fichier est conservé.
  */
 final class ProfilePhotoAccess
@@ -49,7 +49,11 @@ final class ProfilePhotoAccess
         }
         $v = $viewer->getKey();
 
-        return $v === $ownerId || $viewer->isStaff()
-            || DB::table('orders')->where(fn ($q) => $q->where('client_id', $v)->where('freelancer_id', $ownerId))->orWhere(fn ($q) => $q->where('client_id', $ownerId)->where('freelancer_id', $v))->exists();
+        if ($v === $ownerId || $viewer->isStaff()) {
+            return true;
+        }
+        $between = fn ($table) => DB::table($table)->where(fn ($q) => $q->where('client_id', $v)->where('freelancer_id', $ownerId))->orWhere(fn ($q) => $q->where('client_id', $ownerId)->where('freelancer_id', $v))->exists();
+
+        return $between('orders') || $between('conversations');         // une commande ou une conversation en commun
     }
 }

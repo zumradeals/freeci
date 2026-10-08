@@ -73,6 +73,7 @@ final readonly class OrderDossier
         public ?string $missionId = null,
         public int $messageUnread = 0,
         public ?string $supportCase = null,              // dossier de litige / annulation en cours (référence)
+        public string $otherPartyId = '',
         public array $disputeKinds = [],                 // ce que la partie peut demander (dispute | cancellation | claim)
     ) {}
 }

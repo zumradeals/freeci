@@ -14,7 +14,7 @@
   <div class="ms-items">
     @forelse($shown as $c)
       <a class="ms-item {{ $current === $c['id'] ? 'on' : '' }} {{ $c['unread'] > 0 ? 'unread' : '' }}" href="{{ route('messages.show', $q(['conversation' => $c['id']])) }}" @if($current === $c['id']) aria-current="page" @endif>
-        <span class="avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($c['with'], 0, 1)) }}</span>
+        <x-fc.avatar :name="$c['with']" :user="$c['withId']" />
         <span class="ms-name">{{ $c['with'] }}</span><span class="ms-when">{{ $c['when'] }}</span>
         <span class="ms-snip">{{ $c['snippet'] }}</span><span>@if($c['unread'] > 0)<span class="ms-n" aria-label="{{ $c['unread'] }} non lu{{ $c['unread'] > 1 ? 's' : '' }}">{{ $c['unread'] }}</span>@endif</span>
         <span class="ms-ctx">{{ $c['kind'] }} · {{ $c['context'] }}@if($c['linkedOrder']) · rattachée à la commande @endif</span>

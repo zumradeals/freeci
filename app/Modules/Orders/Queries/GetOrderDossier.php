@@ -134,7 +134,7 @@ final class GetOrderDossier
             reference: $order->reference, version: $order->row_version, perspective: $perspective,
             stateValue: $order->state->value, stateLabel: $order->state->label($isFreelancer), tone: $tone, icon: $icon,
             isDemo: $order->is_demo, environment: $order->environment, title: $a->service_title, categoryName: $a->category_name,
-            otherPartyLabel: $isFreelancer ? 'Client' : 'Freelance', otherPartyName: $isFreelancer ? $order->client->name : $order->freelancer->name,
+            otherPartyLabel: $isFreelancer ? 'Client' : 'Freelance', otherPartyName: $isFreelancer ? $order->client->name : $order->freelancer->name, otherPartyId: (string) ($isFreelancer ? $order->client_id : $order->freelancer_id),
             clientName: $order->client->name, freelancerName: $order->freelancer->name,
             price: Money::xof($a->price_xof), deliveryDays: $a->delivery_days, revisionsIncluded: $a->revisions_included,
             scope: $a->scope, deliverables: $a->deliverables, exclusions: $a->exclusions,

@@ -50,7 +50,7 @@
 | Réf. | Chantier | Dépendances | Points à cadrer |
 |---|---|---|---|
 | F-01 | **Photo de profil** (spécification détaillée au §5) — **livrée au lot 67 (maquette approuvée)** | Module d'image existant | **Politique de confidentialité à valider par le porteur avant l'ouverture publique** |
-| F-02 | **E-mails opérationnels** : configuration serveur, confirmation de compte, notifications, test de bout en bout | Choix d'un fournisseur d'envoi (Q2) | Aucune donnée sensible dans les e-mails (déjà la règle) |
+| F-02 | **E-mails opérationnels** : configuration serveur, confirmation de compte, notifications, test de bout en bout — **guide et commande d'essai livrés (`docs/37-courrier.md`, `freeci:mail:test`) ; reste le choix du fournisseur (Q2) et la configuration du serveur par le porteur** | Choix d'un fournisseur d'envoi (Q2) | Aucune donnée sensible dans les e-mails (déjà la règle) |
 | F-03 | **Paiement réel et versements Mobile Money** (Orange, MTN, Moov, Wave) | Compte et clés fournisseur ; texte juridique ; décision du porteur | Séparation test / réel conservée ; reversement jamais confirmé sans preuve |
 | F-04 | **Reçus et factures PDF** (client et freelance), numérotation, mentions légales | F-03 pour les montants réels ; mentions à fournir | Conformité fiscale à confirmer (Q4) |
 | F-05 | **Notifications WhatsApp / SMS** (invitation à consulter l'application, sans contenu) | Choix du fournisseur et du coût (Q3) | Consentement et désinscription |

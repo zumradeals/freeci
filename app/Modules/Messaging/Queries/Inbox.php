@@ -51,7 +51,7 @@ final class Inbox
                 $last = Message::query()->find($c->last_message_id);
 
                 return [
-                    'id' => $c->getKey(), 'with' => $other->name, 'context' => $c->context_title, 'kind' => $kinds[$c->kind], 'unread' => $this->unreadCount($c, $u),
+                    'id' => $c->getKey(), 'with' => $other->name, 'withId' => (string) $other->getKey(), 'context' => $c->context_title, 'kind' => $kinds[$c->kind], 'unread' => $this->unreadCount($c, $u),
                     'when' => $c->last_message_at ? Dates::short($c->last_message_at) : '', 'snippet' => $last ? ($last->sender_id === $u->getKey() ? 'Vous : ' : '').mb_substr($last->body !== '' ? $last->body : '(pièce jointe)', 0, 90) : '',
                     'linkedOrder' => $c->order_id !== null,
                 ];
@@ -86,7 +86,7 @@ final class Inbox
         $iBlocked = ContactBlock::query()->where('blocker_id', $u->getKey())->where('blocked_id', $other->getKey())->exists();
 
         return [
-            'id' => $c->getKey(), 'with' => $other->name, 'context' => $c->context_title, 'kind' => $c->kind, 'orderReference' => $order?->reference, 'orderActive' => ConversationRules::essential($c),
+            'id' => $c->getKey(), 'with' => $other->name, 'withId' => (string) $other->getKey(), 'context' => $c->context_title, 'kind' => $c->kind, 'orderReference' => $order?->reference, 'orderActive' => ConversationRules::essential($c),
             'lastId' => (int) $c->last_message_id, 'olderBefore' => $older ? (int) $rows->first()->id : null, 'unreadFrom' => $unreadFrom,
             'canSend' => ConversationRules::canSend($c), 'iBlocked' => $iBlocked, 'blockedByOther' => ! $iBlocked && ConversationRules::blockedBetween($c->client_id, $c->freelancer_id),
             'messages' => $rows->map(function (Message $m) use ($u, $files, $unreadFrom) {

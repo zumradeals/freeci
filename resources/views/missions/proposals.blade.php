@@ -18,7 +18,7 @@
       <div class="pr-grid">
       @foreach($items as $i)
         <article class="pr-card {{ $i['selected'] ? 'sel' : '' }}" aria-labelledby="p-{{ $i['proposalId'] }}">
-          <div class="pr-top"><div class="pr-who"><span class="avatar avatar-lg" aria-hidden="true">{{ mb_strtoupper(mb_substr($i['author'], 0, 1)) }}</span><div><b id="p-{{ $i['proposalId'] }}">{{ $i['author'] }}</b><small>{{ $i['headline'] }}@if($i['profileSlug']) · <a href="{{ route('freelances.show', $i['profileSlug']) }}">Profil</a>@endif</small></div></div><span class="pr-price"><x-fc.money :amount="$i['price']" /></span></div>
+          <div class="pr-top"><div class="pr-who"><x-fc.avatar :name="$i['author']" :user="$i['authorId']" size="lg" /><div><b id="p-{{ $i['proposalId'] }}">{{ $i['author'] }}</b><small>{{ $i['headline'] }}@if($i['profileSlug']) · <a href="{{ route('freelances.show', $i['profileSlug']) }}">Profil</a>@endif</small></div></div><span class="pr-price"><x-fc.money :amount="$i['price']" /></span></div>
           <div class="pr-facts"><div><b>{{ $i['days'] }} j</b><small>Délai</small></div><div><b>{{ $i['revisions'] }}</b><small>Corrections</small></div><div><b>{{ count($i['deliverables']) }}</b><small>Livrables</small></div></div>
           <p>{{ $i['scope'] }}</p>
           @if($i['message'])<p class="pr-q">« {{ $i['message'] }} »</p>@endif
