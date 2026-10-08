@@ -355,4 +355,10 @@ class MessagingTest extends TestCase
         }
         $this->fail('La route d’envoi devrait être limitée.');
     }
+
+    public function test_messages_follow_the_two_pane_layout_with_unread_filter_and_the_permanent_reminder(): void
+    {
+        $this->actingAs($this->client)->get('/espace/messages')->assertOk()->assertSee('Sélectionnez une conversation')->assertSee('Non lues')->assertSee('Aucune conversation pour l’instant');
+        $this->actingAs($this->client)->get('/espace/messages?filtre=non-lues')->assertOk()->assertSee('Aucune conversation non lue');
+    }
 }

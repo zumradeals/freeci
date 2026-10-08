@@ -44,7 +44,7 @@ class MessageController extends Controller
             abort(404);
         }
 
-        return view('messages.show', ['t' => $t, 'operationKey' => (string) Str::uuid(), 'space' => $this->space($request)]);
+        return view('messages.show', ['t' => $t, 'operationKey' => (string) Str::uuid(), 'space' => $this->space($request), 'conversations' => $this->inbox->list($request->user()), 'blocked' => $this->inbox->blockedContacts($request->user())]);
     }
 
     public function store(Request $request, string $conversation, ScanBriefFile $scan): RedirectResponse

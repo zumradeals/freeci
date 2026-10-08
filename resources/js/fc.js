@@ -172,3 +172,6 @@ document.addEventListener("change", function (e) {
   var f = e.target.closest && e.target.closest("form[data-autosubmit]");
   if (f && e.target.matches("select")) f.submit();
 });
+
+/* Conversation : on ouvre sur le dernier message. */
+document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = t.scrollHeight; });
