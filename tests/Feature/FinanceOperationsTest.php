@@ -614,6 +614,8 @@ class FinanceOperationsTest extends TestCase
         $o = $this->paid();
         $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertOk()->assertSee('À venir')->assertSee('Disponible ne signifie pas versé');
         $page = $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Montants de test')->assertSee('aucun argent réel');
+        $page->assertSee('fn-flow', false)->assertSee('fn-test', false)->assertSee('fn-table', false)->assertSee('sx-head', false);
+        $this->actingAs($this->client)->get('/espace/finances')->assertOk()->assertSee('Paiements réels')->assertSee('fn-flow-3', false)->assertSee('fn-table', false);
         $this->validated($o);
         $this->actingAs($this->freelancer)->get('/freelance/revenus')->assertSee('Disponible')->assertSee('31')->assertSee('Coordonnées à compléter');
         $this->actingAs($this->freelancer)->post('/freelance/revenus/destination', ['method' => 'mobile_money', 'holder' => 'Kader Freelance', 'destination' => '+2250700000000'])->assertRedirect()->assertSessionHas('status');

@@ -1798,3 +1798,44 @@ a.kpi:hover { background: var(--marine-100); }
 .pr-form-list { min-width: 0; }
 @media (min-width: 700px) { .pr-row2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1100px) { .ed-grid { grid-template-columns: minmax(0, 1fr) 360px; } .ed-side { position: sticky; top: 16px; } }
+
+/* Lot 58 : revenus et paiements d'après la maquette (mêmes montants, mêmes règles ; présentation seule). */
+.fn-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.fn-head h2 { font-size: 1.25rem; font-weight: 750; }
+.fn-flow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.fn-m { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 4px; min-width: 0; }
+.fn-m dt { color: var(--ink-600); font-size: .875rem; font-weight: 600; }
+.fn-m dd { margin: 0; }
+.fn-m .v { font-size: 1.375rem; font-weight: 800; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.fn-m .h { color: var(--ink-600); font-size: .8125rem; }
+.fn-m.hot { border-color: #f3c9a8; background: #fff8f2; }
+.fn-m.hot .v { color: var(--accent-700); }
+.fn-sub { display: flex; gap: 6px 12px; align-items: center; flex-wrap: wrap; color: var(--ink-600); font-size: .9375rem; }
+.fn-sub b { color: var(--ink-900); }
+.fn-test { border: 2px dashed var(--line-strong); border-radius: 14px; padding: 16px; background: #fafbfd; display: grid; gap: 10px; }
+.fn-test h2 { font-size: 1.0625rem; font-weight: 700; }
+.fn-testrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.fn-testrow div { display: grid; }
+.fn-testrow dt { font-weight: 700; }
+.fn-testrow dd { margin: 0; color: var(--ink-600); }
+.fn-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.fn-guide { align-content: start; }
+.fn-table { display: grid; }
+.fn-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; align-items: center; padding: 14px 8px; border-top: 1px solid var(--line); min-width: 0; }
+.fn-row.head { display: none; }
+.fn-row > :first-child { grid-column: 1 / -1; overflow-wrap: anywhere; }
+.fn-row small { display: block; color: var(--ink-600); }
+.fn-row .r { font-weight: 700; }
+.fn-row .r[data-label]::before { content: attr(data-label) " : "; font-weight: 500; color: var(--ink-600); font-size: .8125rem; display: block; }
+.fn-row .part { color: var(--accent-700); font-size: 1.0625rem; }
+.fn-why { grid-column: 1 / -1; font-size: .875rem; color: var(--ink-600); background: #f7f9fc; border-radius: 8px; padding: 8px 12px; display: grid; gap: 4px; }
+@media (min-width: 700px) { .fn-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); } .fn-flow.fn-flow-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .fn-testrow { grid-template-columns: repeat(4, minmax(0, 1fr)); } .fn-testrow.fn-testrow-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) {
+  .fn-split { grid-template-columns: minmax(0, 1fr) 360px; }
+  .fn-row { grid-template-columns: minmax(0, 2fr) 170px 140px 140px 140px; }
+  .fn-row.c { grid-template-columns: minmax(0, 2fr) 150px 170px 190px; }
+  .fn-row.head { display: grid; border-top: 0; font-size: .8125rem; color: var(--ink-600); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+  .fn-row > :first-child { grid-column: auto; }
+  .fn-row .r { text-align: right; white-space: nowrap; }
+  .fn-row .r[data-label]::before { display: none; }
+}

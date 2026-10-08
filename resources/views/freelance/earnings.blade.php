@@ -8,31 +8,32 @@
 @endphp
 <x-layouts.account title="Revenus" space="freelancer">
   <div class="page-body">
-    <header class="page-head"><div class="row-top"><div><p class="eyebrow">Espace freelance</p><h1 class="t-h1">Mes revenus</h1><p class="lead">Suivez vos gains et préparez vos versements.</p></div></div></header>
+    <header class="sx-head"><div><p class="sx-kicker">Espace freelance</p><h1>Mes revenus</h1><p class="muted">Suivez vos gains et préparez vos versements.</p></div></header>
 
-    <section class="card panel" aria-labelledby="real-earnings-title">
-      <div class="card-head"><h2 class="t-h2" id="real-earnings-title">Revenus réels</h2><span class="muted small">Après commission</span></div>
-      <dl class="metrics">
-        @foreach($cats as $k => $label)
-          <div class="metric {{ $k === 'available' ? 'metric-featured' : '' }}"><dt>{{ $label }}</dt><dd>{{ $m($d['totals']['real'][$k]) }}</dd><dd class="metric-hint">{{ $hints[$k] }}</dd></div>
+    <section class="ed-card" aria-labelledby="real-earnings-title">
+      <div class="fn-head"><h2 id="real-earnings-title">Revenus réels</h2><span class="muted small">Après commission</span></div>
+      <dl class="fn-flow">
+        @foreach(['upcoming', 'available', 'processing', 'paid'] as $k)
+          <div class="fn-m {{ $k === 'available' ? 'hot' : '' }}"><dt>{{ $cats[$k] }}</dt><dd class="v">{{ $m($d['totals']['real'][$k]) }}</dd><dd class="h">{{ $hints[$k] }}</dd></div>
         @endforeach
       </dl>
+      <p class="fn-sub"><span>{{ $cats['blocked'] }} : <b>{{ $m($d['totals']['real']['blocked']) }}</b> ({{ mb_strtolower($hints['blocked']) }})</span><span aria-hidden="true">·</span><span><b>Disponible ne signifie pas versé.</b> La commission appliquée est celle convenue lors de la commande.</span></p>
       @if(array_sum($d['totals']['real']) === 0)<p class="muted small">Vous n’avez pas encore de revenus réels.@if($hasTest) Vos commandes de test sont présentées séparément ci-dessous.@endif</p>@endif
     </section>
 
     @if($hasTest)
-      <section class="card panel metrics-dashed" aria-labelledby="test-earnings-title">
-        <div class="card-head"><h2 class="t-h2" id="test-earnings-title">Montants de test</h2><span class="tag-demo">Aucun argent réel</span></div>
-        <dl class="metrics">
-          @foreach($cats as $k => $label)<div class="metric"><dt>{{ $label }}</dt><dd>{{ $m($d['totals']['test'][$k]) }}</dd></div>@endforeach
+      <section class="fn-test" aria-labelledby="test-earnings-title">
+        <div class="fn-head"><h2 id="test-earnings-title">Montants de test</h2><span class="tag-demo">Aucun argent réel</span></div>
+        <dl class="fn-testrow">
+          @foreach(['upcoming', 'available', 'processing', 'paid'] as $k)<div><dt>{{ $cats[$k] }}</dt><dd>{{ $m($d['totals']['test'][$k]) }}</dd></div>@endforeach
         </dl>
         <p class="muted small">Ces montants servent à tester le parcours. Ils ne peuvent pas être versés en argent réel.</p>
       </section>
     @endif
 
-    <div class="split">
-      <section class="card panel stack" aria-labelledby="beneficiary-title">
-        <div><h2 class="t-h2" id="beneficiary-title">Où recevoir mes versements ?</h2><p class="muted">Indiquez votre compte Mobile Money ou vos coordonnées bancaires.</p></div>
+    <div class="fn-split">
+      <section class="ed-card" aria-labelledby="beneficiary-title">
+        <div><h2 id="beneficiary-title">Où recevoir mes versements ?</h2><p class="muted">Indiquez votre compte Mobile Money ou vos coordonnées bancaires.</p></div>
         @if($beneficiary)
           <div class="notice tone-{{ $verified ? 'success' : 'info' }}"><x-fc.icon name="info" /><div><strong>{{ $verified ? 'Coordonnées vérifiées' : 'Coordonnées en attente de vérification' }}</strong><p>{{ ['mobile_money' => 'Mobile Money', 'bank_transfer' => 'Virement bancaire', 'other' => 'Autre moyen'][$beneficiary['method']] }} · {{ $beneficiary['holder'] }}</p><p class="small">{{ $verified ? 'L’administrateur peut préparer vos versements éligibles.' : 'L’administrateur doit les vérifier avant tout versement.' }}</p></div></div>
         @else
@@ -47,27 +48,39 @@
           <div class="span-all"><button class="btn btn-primary" type="submit">{{ $beneficiary ? 'Remplacer mes coordonnées' : 'Enregistrer mes coordonnées' }}</button></div>
         </form>
       </section>
-      <aside class="card panel guide stack" aria-labelledby="payout-guide-title">
-        <h2 class="t-h2" id="payout-guide-title">Comment recevoir mes gains ?</h2>
-        <ol><li><strong>La prestation est validée.</strong><p class="muted small">Le client valide votre livraison. Son silence ne déclenche aucun versement.</p></li><li><strong>Vos coordonnées sont vérifiées.</strong><p class="muted small">Complétez le formulaire pour permettre à l’administrateur de vérifier le compte destinataire.</p></li><li><strong>L’administrateur traite le versement.</strong><p class="muted small">Il vérifie les éventuels blocages et valide l’opération. Suivez son état sur cette page.</p></li></ol>
+      <aside class="ed-ck fn-guide" aria-labelledby="payout-guide-title">
+        <h3 id="payout-guide-title">Comment recevoir mes gains ?</h3>
+        <ol class="ed-tl"><li><strong>La prestation est validée.</strong><p class="muted small">Le client valide votre livraison. Son silence ne déclenche aucun versement.</p></li><li><strong>Vos coordonnées sont vérifiées.</strong><p class="muted small">Complétez le formulaire pour permettre à l’administrateur de vérifier le compte destinataire.</p></li><li><strong>L’administrateur traite le versement.</strong><p class="muted small">Il vérifie les éventuels blocages et valide l’opération. Suivez son état sur cette page.</p></li></ol>
         <p class="muted small"><strong>Disponible ne signifie pas versé.</strong> La commission appliquée est celle convenue lors de la commande.</p>
       </aside>
     </div>
 
-    <section class="card panel" aria-labelledby="orders-title">
-      <h2 class="t-h2" id="orders-title">Détail par commande</h2><p class="muted small">Les totaux couvrent tout votre historique. Le détail est affiché par pages de 20 commandes.</p>
-      @forelse($d['rows'] as $r)
-        <article class="record">
-          <div class="record-head"><div><a class="record-link" href="{{ route('orders.show', $r['reference']) }}">{{ $r['title'] }}</a><p class="muted small">{{ $r['reference'] }} @if($r['bucket'] === 'test')<span class="tag-demo">Test — aucun argent réel</span>@endif</p></div><span class="badge">{{ $r['cat'] === 'unknown' ? 'Montant à vérifier' : $cats[$r['cat']] }}</span></div>
-          <dl class="record-amounts"><div><dt>Payé par le client</dt><dd>{{ $m($r['paid']) }}</dd></div>@if($r['refunded'] > 0)<div><dt>Remboursé</dt><dd>{{ $m($r['refunded']) }}</dd></div>@endif @if($r['due'] !== null)<div><dt>Commission ({{ $r['bp'] / 100 }} %)</dt><dd>{{ $m((int) $r['commission']) }}</dd></div><div><dt>Votre part{{ $r['bucket'] === 'test' ? ' de test' : '' }}</dt><dd><strong>{{ $m((int) $r['due']) }}</strong></dd></div>@endif</dl>
-          @if($r['state_label'])<p class="small">{{ $r['state_label'] }}</p>@endif
-          @if($r['cat'] === 'unknown')<p class="muted small">Le taux de commission de cette ancienne commande n’est pas défini. Contactez l’assistance pour vérifier le montant.</p>
-          @elseif($r['cat'] !== 'paid' && $r['cat'] !== 'processing')
-            @if($r['cat'] === 'available' && !$verified)<p class="muted small">{{ $beneficiary ? 'Versement en attente de la vérification de vos coordonnées par l’administrateur.' : 'Complétez vos coordonnées ci-dessus pour préparer le versement.' }}</p>@endif
-            @if(count($r['reasons']))<ul class="note-list muted small">@foreach($r['reasons'] as $x)@unless($r['cat'] === 'available' && !$verified && $x === \App\Modules\Finance\Support\PayoutEligibility::REASONS['beneficiary_missing'])<li>{{ $x }}</li>@endunless@endforeach</ul>@endif
+    <section class="ed-card" aria-labelledby="orders-title">
+      <h2 id="orders-title">Détail par commande</h2><p class="muted small">Les totaux couvrent tout votre historique. Le détail est affiché par pages de 20 commandes.</p>
+      @if(count($d['rows']))
+      <div class="fn-table"><div class="fn-row head" aria-hidden="true"><span>Commande</span><span>Statut</span><span class="r">Payé par le client</span><span class="r">Commission</span><span class="r">Votre part</span></div>
+      @foreach($d['rows'] as $r)
+        <div class="fn-row">
+          <div><a class="record-link" href="{{ route('orders.show', $r['reference']) }}">{{ $r['title'] }}</a><small>{{ $r['reference'] }} @if($r['bucket'] === 'test')<span class="tag-demo">Test — aucun argent réel</span>@endif</small></div>
+          <div><span class="badge">{{ $r['cat'] === 'unknown' ? 'Montant à vérifier' : $cats[$r['cat']] }}</span></div>
+          <div class="r" data-label="Payé par le client">{{ $m($r['paid']) }}@if($r['refunded'] > 0)<small>dont remboursé : {{ $m($r['refunded']) }}</small>@endif</div>
+          <div class="r" data-label="Commission">@if($r['due'] !== null)−{{ $m((int) $r['commission']) }}<small>({{ $r['bp'] / 100 }} %)</small>@else —@endif</div>
+          <div class="r part" data-label="Votre part{{ $r['bucket'] === 'test' ? ' de test' : '' }}">@if($r['due'] !== null){{ $m((int) $r['due']) }}@else —@endif</div>
+          @php($why = collect($r['reasons'])->reject(fn ($x) => $r['cat'] === 'available' && ! $verified && $x === \App\Modules\Finance\Support\PayoutEligibility::REASONS['beneficiary_missing'])->all())
+          @if($r['state_label'] || $r['cat'] === 'unknown' || ($r['cat'] === 'available' && ! $verified) || (count($why) && $r['cat'] !== 'paid' && $r['cat'] !== 'processing'))
+          <div class="fn-why">
+            @if($r['state_label'])<p>{{ $r['state_label'] }}</p>@endif
+            @if($r['cat'] === 'unknown')<p>Le taux de commission de cette ancienne commande n’est pas défini. Contactez l’assistance pour vérifier le montant.</p>
+            @elseif($r['cat'] !== 'paid' && $r['cat'] !== 'processing')
+              @if($r['cat'] === 'available' && ! $verified)<p>{{ $beneficiary ? 'Versement en attente de la vérification de vos coordonnées par l’administrateur.' : 'Complétez vos coordonnées ci-dessus pour préparer le versement.' }}</p>@endif
+              @if(count($why))<ul class="note-list">@foreach($why as $x)<li>{{ $x }}</li>@endforeach</ul>@endif
+            @endif
+          </div>
           @endif
-        </article>
-      @empty<p class="muted empty-note">Aucune commande payée pour l’instant. Retrouvez ici le détail de vos gains dès votre première commande payée.</p>@endforelse
+        </div>
+      @endforeach
+      </div>
+      @else<p class="muted empty-note">Aucune commande payée pour l’instant. Retrouvez ici le détail de vos gains dès votre première commande payée.</p>@endif
       @include('partials.finance-pagination', ['pagination' => $d['pagination']])
     </section>
   </div>
