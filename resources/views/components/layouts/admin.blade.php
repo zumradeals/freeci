@@ -11,7 +11,7 @@
   <div class="container bar">
     <a class="logo" href="{{ route('home') }}" aria-label="FreeCI, accueil"><svg width="32" height="32" aria-hidden="true" focusable="false"><use href="#logo-mark"/></svg><span class="wm">Free<b>CI</b></span></a>
     <a class="cat-link" href="{{ route('services.index') }}"><x-fc.icon name="search" />Catalogue</a>
-    <a class="account-chip" href="{{ route('admin.home') }}" aria-current="page"><span class="avatar" aria-hidden="true">{{ auth()->user()->initials() }}</span><span>{{ auth()->user()->name }}<small>Administration</small></span></a>
+    <a class="account-chip" href="{{ route('admin.home') }}" aria-current="page"><x-fc.avatar :name="auth()->user()->name" :user="auth()->id()" /><span>{{ auth()->user()->name }}<small>Administration</small></span></a>
     <button class="menu-btn" type="button" data-open="drawer" aria-haspopup="dialog"><x-fc.icon name="menu" :size="22" /><span>Menu</span></button>
   </div>
 </header>

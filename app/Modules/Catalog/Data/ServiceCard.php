@@ -23,12 +23,13 @@ final readonly class ServiceCard
         public int $ratingCount = 0,                // avis PUBLIÉS issus de ce service (jamais d'une mission) ; 0 = aucune note affichée
         public ?string $ratingAvg = null,
         public bool $favorited = false,             // état pour l'utilisateur connecté seulement (favoris privés)
+        public string $sellerUserId = '',           // pour la photo de profil du vendeur
     ) {}
 
     /** Complète la carte avec des données réelles (avis publiés, favori de l'utilisateur) : rien n'est inventé quand elles manquent. */
     public function withExtras(?array $stats, bool $favorited): self
     {
         return new self($this->slug, $this->title, $this->categoryName, $this->sellerName, $this->sellerInitials, $this->sellerHeadline, $this->deliveryDays, $this->price, $this->imageSrc, $this->imageAlt,
-            $this->isDemo, $this->id, (int) ($stats['count'] ?? 0), $stats['avg'] ?? null, $favorited);
+            $this->isDemo, $this->id, (int) ($stats['count'] ?? 0), $stats['avg'] ?? null, $favorited, $this->sellerUserId);
     }
 }

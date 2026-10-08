@@ -31,7 +31,7 @@ final class SearchFreelancers
 
         $query = DB::table('freelance_profiles as p')->whereNotNull('p.published_at')->whereNotNull('p.slug')
             ->whereNotExists(fn ($x) => $x->select(DB::raw(1))->from('users')->whereColumn('users.id', 'p.user_id')->whereNotNull('users.suspended_at'))
-            ->select('p.id', 'p.slug', 'p.display_name', 'p.headline', 'p.city', 'p.skills', 'p.is_demo')
+            ->select('p.id', 'p.user_id', 'p.slug', 'p.display_name', 'p.headline', 'p.city', 'p.skills', 'p.is_demo')
             ->selectRaw("(select count(*) from services s where s.freelance_profile_id = p.id and s.status = 'published' and s.published_at is not null and s.published_at <= now()) as services_count")
             ->selectRaw("(select min(s.price_xof) from services s where s.freelance_profile_id = p.id and s.status = 'published' and s.published_at is not null and s.published_at <= now()) as min_price");
 
@@ -69,7 +69,7 @@ final class SearchFreelancers
         $marked = $this->favorites->marked($viewer, 'freelance', $ids);
 
         return $p->through(fn ($r) => [
-            'id' => $r->id, 'slug' => $r->slug, 'name' => $r->display_name, 'initials' => ServiceProjection::initials($r->display_name), 'headline' => $r->headline, 'city' => $r->city,
+            'id' => $r->id, 'userId' => (string) $r->user_id, 'slug' => $r->slug, 'name' => $r->display_name, 'initials' => ServiceProjection::initials($r->display_name), 'headline' => $r->headline, 'city' => $r->city,
             'skills' => array_slice(json_decode($r->skills ?? '[]', true) ?: [], 0, 5), 'servicesCount' => (int) $r->services_count, 'minPrice' => $r->min_price !== null ? Money::xof((int) $r->min_price) : null, 'isDemo' => (bool) $r->is_demo,
             'ratingCount' => $stats[$r->id]['count'] ?? 0, 'ratingAvg' => $stats[$r->id]['avg'] ?? null, 'favorited' => isset($marked[$r->id]),
         ]);

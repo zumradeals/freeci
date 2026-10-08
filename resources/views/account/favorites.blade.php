@@ -9,7 +9,7 @@
       <article class="ac-fc {{ $i['available'] ? '' : 'off' }}">
         <div class="ac-th">
           @if($i['available'] && $i['kind'] === 'service' && $i['card']->imageSrc)<img src="{{ $i['card']->imageSrc }}" alt="{{ $i['card']->imageAlt }}" width="640" height="480" loading="lazy">
-          @elseif($i['available'] && $i['kind'] === 'freelance')<span class="avatar avatar-xl" aria-hidden="true">{{ $i['profile']['initials'] }}</span>
+          @elseif($i['available'] && $i['kind'] === 'freelance')<x-fc.avatar :name="$i['profile']['name']" :user="$i['profile']['userId']" size="xl" />
           @else<x-fc.icon :name="$i['available'] ? 'package' : 'lock'" :size="32" />@endif
         </div>
         <div class="ac-fb">

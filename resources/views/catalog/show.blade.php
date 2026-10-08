@@ -12,7 +12,7 @@
       <p class="eyebrow cat-eyebrow sp-cat">{{ $service->categoryName }}@if($service->isDemo) · <span class="tag-demo">Exemple fictif</span>@endif</p>
       <h1 class="t-h1">{{ $service->title }}</h1>
       <div class="sp-meta">
-        @if($service->sellerSlug)<a class="sp-seller" href="{{ route('freelances.show', $service->sellerSlug) }}">@else<span class="sp-seller">@endif<span class="avatar" aria-hidden="true">{{ $service->sellerInitials }}</span><span><b>{{ $service->sellerName }}</b><small>{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</small></span>@if($service->sellerSlug)</a>@else</span>@endif
+        @if($service->sellerSlug)<a class="sp-seller" href="{{ route('freelances.show', $service->sellerSlug) }}">@else<span class="sp-seller">@endif<x-fc.avatar :name="$service->sellerName" :user="$service->sellerUserId" /><span><b>{{ $service->sellerName }}</b><small>{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</small></span>@if($service->sellerSlug)</a>@else</span>@endif
         @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /> <a class="small" href="#avis">Voir les avis</a></p>@endif
         @if($service->id !== '')<span class="sp-fav"><x-fc.fav-button-inline kind="service" :slug="$service->slug" :on="$service->favorited" /></span>@endif
       </div>
@@ -51,7 +51,7 @@
           <section class="card sp-box" aria-labelledby="s4"><h2 id="s4"><x-fc.icon name="clipboard" /> Ce que vous devez fournir</h2><ul class="checklist need">@foreach($service->clientInputs as $d)<li><x-fc.icon name="clipboard" /><span>{{ $d }}</span></li>@endforeach</ul></section>
         </div>
         <section aria-labelledby="s5"><h2 class="t-h2" id="s5">À propos du freelance</h2>
-          <div class="card vendor"><div class="top"><span class="avatar avatar-lg" aria-hidden="true">{{ $service->sellerInitials }}</span>
+          <div class="card vendor"><div class="top"><x-fc.avatar :name="$service->sellerName" :user="$service->sellerUserId" size="lg" />
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
             @if($service->sellerSlug)<p style="margin-top:8px"><a class="btn btn-secondary" href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
             </div></section>

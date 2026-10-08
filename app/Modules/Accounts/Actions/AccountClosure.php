@@ -118,6 +118,7 @@ final class AccountClosure
             DB::table('favorites')->where('kind', 'freelance')->where('target_id', $profile)->delete();
         }
         DB::table('favorites')->where('user_id', $id)->delete();
+        app(ProfilePhotos::class)->purgeAll($id);                // photo de profil : fichiers effacés
         DB::table('app_notifications')->where('user_id', $id)->delete();
         DB::table('notification_preferences')->where('user_id', $id)->delete();
         DB::table('contact_blocks')->where('blocker_id', $id)->orWhere('blocked_id', $id)->delete();

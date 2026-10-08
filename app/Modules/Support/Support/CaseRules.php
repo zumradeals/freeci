@@ -39,7 +39,7 @@ final class CaseRules
         return $out;
     }
 
-    public const REPORT_REASONS = ['fraud' => 'Fraude ou arnaque', 'abuse' => 'Propos abusifs ou harcèlement', 'illegal' => 'Contenu illicite', 'private_contact' => 'Échange de coordonnées pour contourner la plateforme', 'false_info' => 'Informations fausses ou trompeuses', 'other' => 'Autre'];
+    public const REPORT_REASONS = ['photo' => 'Photo de profil inappropriée', 'fraud' => 'Fraude ou arnaque', 'abuse' => 'Propos abusifs ou harcèlement', 'illegal' => 'Contenu illicite', 'private_contact' => 'Échange de coordonnées pour contourner la plateforme', 'false_info' => 'Informations fausses ou trompeuses', 'other' => 'Autre'];
 
     public const TARGETS = ['profile' => 'Profil', 'service' => 'Service', 'mission' => 'Mission', 'message' => 'Message', 'review' => 'Avis', 'reply' => 'Réponse à un avis'];
 

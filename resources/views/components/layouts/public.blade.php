@@ -16,7 +16,7 @@
       <a class="btn btn-secondary header-cta" href="{{ route('register') }}">Créer un compte</a>
     @endguest
     @auth
-      <a class="account-chip" href="{{ route('account.dashboard') }}"><span class="avatar" aria-hidden="true">{{ auth()->user()->initials() }}</span><span>{{ auth()->user()->name }}<small>Espace client</small></span></a>
+      <a class="account-chip" href="{{ route('account.dashboard') }}"><x-fc.avatar :name="auth()->user()->name" :user="auth()->id()" /><span>{{ auth()->user()->name }}<small>Espace client</small></span></a>
     @endauth
     <button class="menu-btn" type="button" data-open="drawer" aria-haspopup="dialog"><x-fc.icon name="menu" :size="22" /><span>Menu</span></button>
   </div>

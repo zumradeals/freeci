@@ -56,7 +56,7 @@ class AssistanceController extends Controller
     {
         abort_unless(isset(CaseRules::TARGETS[$type]), 404);
 
-        return view('support.report', ['type' => $type, 'id' => $id, 'typeLabel' => CaseRules::TARGETS[$type], 'reasons' => CaseRules::REPORT_REASONS, 'key' => (string) Str::uuid()]);
+        return view('support.report', ['type' => $type, 'id' => $id, 'typeLabel' => CaseRules::TARGETS[$type], 'reasons' => $type === 'profile' ? CaseRules::REPORT_REASONS : array_diff_key(CaseRules::REPORT_REASONS, ['photo' => true]), 'key' => (string) Str::uuid()]);
     }
 
     public function report(Request $request, OpenCase $open, string $type, string $id): RedirectResponse

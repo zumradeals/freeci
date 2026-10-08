@@ -54,7 +54,15 @@ final class UsersQuery
             ->map(fn ($h) => ['action' => $h->action === 'suspended' ? 'Suspendu' : 'Réactivé', 'reason' => $h->reason, 'actor' => $h->actor, 'when' => Dates::format(Carbon::parse($h->created_at))])->all();
         $admin = DB::table('staff_grants')->where('user_id', $id)->where('capability', 'administrator')->whereNull('revoked_at')->where(fn ($y) => $y->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
 
+        $photos = DB::table('profile_photos')->leftJoin('users as a', 'a.id', '=', 'profile_photos.removed_by')->where('profile_photos.user_id', $id)->orderByDesc('profile_photos.created_at')->limit(20)
+            ->get(['profile_photos.id', 'profile_photos.state', 'profile_photos.created_at', 'profile_photos.ended_at', 'profile_photos.removal_reason', 'a.name as remover']);
+        $photoLabels = ['active' => 'Photo en ligne', 'replaced' => 'Photo remplacée', 'deleted' => 'Photo supprimée par la personne', 'removed' => 'Photo retirée par l’administration', 'closed' => 'Photo effacée (compte fermé)'];
+        $photoHistory = $photos->map(fn ($p) => ['what' => $photoLabels[$p->state] ?? $p->state, 'when' => Dates::format(Carbon::parse($p->state === 'active' ? $p->created_at : ($p->ended_at ?? $p->created_at))),
+            'reason' => $p->removal_reason, 'by' => $p->remover])->all();
+        $active = $photos->firstWhere('state', 'active');
+
         return [
+            'photo' => $active === null ? null : ['id' => $active->id, 'since' => Dates::format(Carbon::parse($active->created_at))], 'photoHistory' => $photoHistory,
             'id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'verifiedAt' => $u->email_verified_at === null ? null : Dates::format(Carbon::parse($u->email_verified_at)),
             'suspended' => $u->suspended_at !== null, 'suspendedAt' => $u->suspended_at === null ? null : Dates::format(Carbon::parse($u->suspended_at)),
             'since' => Dates::format(Carbon::parse($u->created_at)), 'demo' => (bool) $u->is_demo, 'admin' => $admin, 'mfa' => $u->two_factor_confirmed_at !== null,

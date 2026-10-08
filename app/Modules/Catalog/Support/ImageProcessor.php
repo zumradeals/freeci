@@ -22,6 +22,21 @@ final class ImageProcessor
     /** @return array{large: string, card: string, width: int, height: int, mime: string, sha256: string} */
     public function process(UploadedFile $file): array
     {
+        [$src, $w, $h] = $this->load($file, (int) config('freeci.catalog.image_min_width'));
+        try {
+            $large = $this->encode($this->fit($src, $w, $h, 1600, 1600));
+            $card = $this->encode($this->cover($src, $w, $h, 640, 427));
+        } finally {
+            imagedestroy($src);
+        }
+        $size = getimagesizefromstring($large);
+
+        return ['large' => $large, 'card' => $card, 'width' => $size[0], 'height' => $size[1], 'mime' => 'image/webp', 'sha256' => hash('sha256', $large)];
+    }
+
+    /** Contrôles communs : taille, extension, type réel, image décodable, dimensions. @return array{0: \GdImage, 1: int, 2: int} */
+    private function load(UploadedFile $file, int $minWidth, bool $square = false): array
+    {
         if (! self::available()) {
             throw new FileRejected('Le dépôt d’images est désactivé sur cette installation (extension GD absente).');
         }
@@ -47,22 +62,34 @@ final class ImageProcessor
             throw new FileRejected('Image illisible.');
         }
         [$w, $h] = $info;
-        if ($w < $c['image_min_width'] || $w * $h > $c['image_max_pixels']) {
-            throw new FileRejected('Dimensions non acceptées : largeur minimale '.$c['image_min_width'].' px, au plus '.number_format($c['image_max_pixels'] / 1000000, 0).' millions de pixels.');
+        if (($square ? min($w, $h) : $w) < $minWidth || $w * $h > $c['image_max_pixels']) {
+            throw new FileRejected('Dimensions non acceptées : '.($square ? 'au moins '.$minWidth.' px de côté' : 'largeur minimale '.$minWidth.' px').', au plus '.number_format($c['image_max_pixels'] / 1000000, 0).' millions de pixels.');
         }
         $src = @imagecreatefromstring((string) file_get_contents($path));
         if ($src === false) {
             throw new FileRejected('Image illisible.');
         }
+
+        return [$src, $w, $h];
+    }
+
+    /**
+     * Photo de profil : mêmes contrôles que les images de service (type réel, décodable, dimensions bornées), puis RÉENCODAGE en WebP
+     * carré (recadrage centré) : grande taille 512 px et petite 128 px. L'original n'est jamais conservé : métadonnées (dont la position) retirées.
+     *
+     * @return array{large: string, small: string, mime: string, sha256: string}
+     */
+    public function square(UploadedFile $file): array
+    {
+        [$src, $w, $h] = $this->load($file, 200, true);
         try {
-            $large = $this->encode($this->fit($src, $w, $h, 1600, 1600));
-            $card = $this->encode($this->cover($src, $w, $h, 640, 427));
+            $large = $this->encode($this->cover($src, $w, $h, 512, 512));
+            $small = $this->encode($this->cover($src, $w, $h, 128, 128));
         } finally {
             imagedestroy($src);
         }
-        $size = getimagesizefromstring($large);
 
-        return ['large' => $large, 'card' => $card, 'width' => $size[0], 'height' => $size[1], 'mime' => 'image/webp', 'sha256' => hash('sha256', $large)];
+        return ['large' => $large, 'small' => $small, 'mime' => 'image/webp', 'sha256' => hash('sha256', $large)];
     }
 
     private function canvas(int $w, int $h): \GdImage

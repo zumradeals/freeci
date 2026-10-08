@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Admin\Actions\ManageAccounts;
+use App\Modules\Admin\Actions\RemoveProfilePhoto;
 use App\Modules\Admin\Queries\UsersQuery;
 use App\Modules\Catalog\Exceptions\ModerationDenied;
 use Illuminate\Http\RedirectResponse;
@@ -40,5 +41,18 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.show', $id)->with('status', $action === 'suspendre'
             ? 'Compte suspendu : plus de nouvelle activité. Ses commandes et obligations en cours ne sont pas affectées.' : 'Compte réactivé.');
+    }
+
+    /** Retrait de la photo de profil (sensible : confirmation récente exigée par la route ; motif obligatoire, journal d'audit). */
+    public function removePhoto(Request $request, string $id, RemoveProfilePhoto $remove): RedirectResponse
+    {
+        $reason = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']])['reason'];
+        try {
+            $remove($request->user(), $id, $reason);
+        } catch (ModerationDenied|\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.users.show', $id)->with('status', 'Photo retirée : la personne en est informée avec le motif.');
     }
 }

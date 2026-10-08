@@ -25,7 +25,7 @@ final class OperationsStatus
 {
     /** tâche => [libellé, minutes attendues entre deux passages] */
     public const TASKS = [
-        'orders:expire' => ['Expiration des demandes et paiements', 5], 'files:scan' => ['Contrôle des fichiers', 5], 'media:prune' => ['Nettoyage des images', 1440],
+        'orders:expire' => ['Expiration des demandes et paiements', 5], 'files:scan' => ['Contrôle des fichiers', 5], 'media:prune' => ['Nettoyage des images', 1440], 'photos:purge' => ['Effacement des photos retirées', 1440],
         'notifications:retry' => ['Reprise des courriels', 10], 'payments:reconcile' => ['Rapprochement des paiements', 5], 'finance:reconcile' => ['Rapprochement des remboursements', 5],
         'reviews:publish' => ['Publication des avis', 60], 'accounts:close' => ['Fermetures de comptes', 60],
     ];

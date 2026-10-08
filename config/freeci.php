@@ -120,6 +120,7 @@ return [
 
     // Gestion du compte (lot 13). Valeurs PROVISOIRES, non approuvées par le porteur : voir docs/21.
     'account' => [
+        'removed_photo_days' => 30,                                               // conservation d'une photo retirée par l'administration (Q7), puis effacement
         'closure_grace_days' => (int) env('FREECI_CLOSURE_GRACE_DAYS', 14),     // délai de réflexion avant anonymisation : PROVISOIRE
         'email_change_minutes' => 60,
         'export_per_day' => 5,

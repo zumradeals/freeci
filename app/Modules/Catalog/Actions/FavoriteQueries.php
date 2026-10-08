@@ -39,7 +39,7 @@ final class FavoriteQueries
             if ($r->kind === 'freelance' && isset($profiles[$r->target_id])) {
                 $p = $profiles[$r->target_id];
                 $base['available'] = true;
-                $base['profile'] = ['slug' => $p->slug, 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city];
+                $base['profile'] = ['userId' => (string) $p->user_id, 'slug' => $p->slug, 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city];
             }
 
             return $base;

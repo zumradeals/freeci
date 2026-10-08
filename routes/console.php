@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Schedule;
 TaskHeartbeat::watch(Schedule::command('freeci:orders:expire')->everyFiveMinutes()->withoutOverlapping(), 'orders:expire');
 TaskHeartbeat::watch(Schedule::command('freeci:files:scan')->everyFiveMinutes()->withoutOverlapping(), 'files:scan');
 TaskHeartbeat::watch(Schedule::command('freeci:media:prune')->daily(), 'media:prune');
+TaskHeartbeat::watch(Schedule::command('freeci:photos:purge')->daily(), 'photos:purge');
 // Courriels de notification : relance des envois restés en attente ; vidage de la file par le planificateur SEULEMENT si demandé
 // (FREECI_QUEUE_VIA_SCHEDULER=true), sinon un processus « queue:work » dédié est recommandé (deploy/freeci-queue.service.example).
 TaskHeartbeat::watch(Schedule::command('freeci:notifications:retry --stale')->everyTenMinutes()->withoutOverlapping(), 'notifications:retry');

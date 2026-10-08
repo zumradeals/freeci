@@ -2,6 +2,12 @@
   <div class="page-body">
     <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $activation ? 'Espace client' : 'Espace freelance' }}</p><h1 class="t-h1">{{ $activation ? 'Activer l’espace freelance' : 'Votre profil' }}</h1></div></div></header>
     <div class="cols"><div class="stack-lg">
+    @unless($activation)
+    <section class="card form-card" aria-labelledby="h-photo"><h2 class="t-h2 card-title" id="h-photo">Photo de profil</h2>
+      <p class="muted">Votre photo est <strong>publique</strong> dès son enregistrement (une fois votre profil publié) : elle apparaît sur votre profil, vos services et vos messages. Elle peut être signalée et retirée par l’équipe, avec un motif.</p>
+      @include('account._photo')
+      <ul class="ph-tips" style="margin-top:12px"><li><x-fc.icon name="check" :size="16" />Votre visage, bien cadré, sur fond simple</li><li><x-fc.icon name="check" :size="16" />Une photo récente et nette</li><li class="no"><x-fc.icon name="close" :size="16" />Pas de coordonnées, de logo trompeur ni de photo d’une autre personne</li></ul></section>
+    @endunless
     <div class="card form-card">
       <p class="muted">{{ $activation ? 'Activez l’espace freelance pour recevoir des demandes de prestation. Trois informations suffisent ; vous complèterez le reste ensuite.' : 'Les informations de cette section sont publiques une fois votre profil publié.' }}</p>
       @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Vos saisies sont conservées.</p></div>@endif

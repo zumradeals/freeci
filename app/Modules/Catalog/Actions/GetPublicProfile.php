@@ -21,7 +21,7 @@ final class GetPublicProfile
             ->map(fn (Service $s) => ServiceProjection::card($s))->all();
 
         return [
-            'id' => (string) $p->getKey(), 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city, 'bio' => $p->bio,
+            'id' => (string) $p->getKey(), 'userId' => (string) $p->user_id, 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city, 'bio' => $p->bio,
             'skills' => $p->skills ?? [], 'isDemo' => $p->is_demo, 'services' => $services,
         ];
     }

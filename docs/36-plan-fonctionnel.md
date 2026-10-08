@@ -12,6 +12,8 @@
 | Réf. | Décision | Source |
 |---|---|---|
 | DEC-F01 | **Photo de profil** : publication **immédiate**, **signalement** possible par tout utilisateur connecté, et un bouton **« Retirer la photo »** pour l'administrateur, avec **motif** obligatoire et **trace dans le journal d'audit**. | Échange du porteur |
+| DEC-F03 | **Q1 : la photo de profil est facultative aussi pour les clients** (mêmes règles ; visible seulement des personnes en commande avec eux et de l'équipe tant qu'ils n'ont pas de profil freelance publié). | Échange du porteur |
+| DEC-F04 | **Q7 : une photo retirée par l'administration est conservée 30 jours, ou tant qu'un dossier d'assistance est ouvert sur le profil, puis effacée.** | Échange du porteur |
 | DEC-F02 | **Création et suppression de comptes, services ou autres contenus par l'administrateur : abandonnées pour le moment.** Aucun développement, aucune maquette. Le sujet pourra être rouvert par le porteur. | Échange du porteur |
 
 ---
@@ -47,7 +49,7 @@
 
 | Réf. | Chantier | Dépendances | Points à cadrer |
 |---|---|---|---|
-| F-01 | **Photo de profil** (spécification détaillée au §5) | Module d'image existant | Politique de confidentialité à valider |
+| F-01 | **Photo de profil** (spécification détaillée au §5) — **livrée au lot 67 (maquette approuvée)** | Module d'image existant | **Politique de confidentialité à valider par le porteur avant l'ouverture publique** |
 | F-02 | **E-mails opérationnels** : configuration serveur, confirmation de compte, notifications, test de bout en bout | Choix d'un fournisseur d'envoi (Q2) | Aucune donnée sensible dans les e-mails (déjà la règle) |
 | F-03 | **Paiement réel et versements Mobile Money** (Orange, MTN, Moov, Wave) | Compte et clés fournisseur ; texte juridique ; décision du porteur | Séparation test / réel conservée ; reversement jamais confirmé sans preuve |
 | F-04 | **Reçus et factures PDF** (client et freelance), numérotation, mentions légales | F-03 pour les montants réels ; mentions à fournir | Conformité fiscale à confirmer (Q4) |
@@ -121,13 +123,13 @@ Un chantier ne commence qu'après : sa **maquette approuvée** si l'interface ch
 
 | Réf. | Question | Recommandation |
 |---|---|---|
-| Q1 | Photo de profil facultative aussi pour les clients ? | Oui, facultative, mêmes règles |
+| Q1 | Photo de profil facultative aussi pour les clients ? | **Tranché : oui (DEC-F03)** |
 | Q2 | Fournisseur d'envoi d'e-mails ? | À choisir selon coût et délivrabilité en Côte d'Ivoire |
 | Q3 | WhatsApp ou SMS comme premier canal mobile ? | WhatsApp s'il est accessible via fournisseur agréé ; sinon SMS |
 | Q4 | Mentions et numérotation exigées pour les reçus et factures ? | À faire confirmer par un conseil fiscal avant F-04 |
 | Q5 | Niveau de vérification d'identité souhaité et conservation des pièces ? | Téléphone d'abord ; pièce d'identité plus tard, si nécessaire |
 | Q6 | Règles de découpage et de paiement par jalons ? | À cadrer avec les règles financières existantes avant toute maquette |
-| Q7 | Durée de conservation d'une photo retirée ? | Courte (par exemple 30 jours), ou celle d'un litige en cours |
+| Q7 | Durée de conservation d'une photo retirée ? | **Tranché : 30 jours ou dossier ouvert (DEC-F04)** |
 | Q8 | Blocage du dépôt de photo après retrait ? | Non : s'appuyer sur la suspension du compte |
 
 ---

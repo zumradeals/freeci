@@ -11,7 +11,7 @@
   <div class="container">
     <nav class="sd-crumbs" aria-label="Fil d’Ariane"><a href="{{ url('/') }}">Accueil</a><span aria-hidden="true">/</span><a href="{{ route('freelances.index') }}">Freelances</a><span aria-hidden="true">/</span><span aria-current="page">{{ $p['name'] }}</span></nav>
     <div class="pf-id">
-      <span class="avatar avatar-xl pf-avatar" aria-hidden="true">{{ $p['initials'] }}</span>
+      <x-fc.avatar :name="$p['name']" :user="$p['userId']" size="xl" class="pf-avatar" :alt="'Photo de '.$p['name']" />
       <div class="pf-id-text"><p class="pf-kicker">Profil freelance</p><h1 id="pf-name">{{ $p['name'] }}</h1><p class="pf-headline">{{ $p['headline'] }}</p>
         <p class="pf-meta">@if($p['city'])<span><x-fc.icon name="pin" :size="16" /> {{ $p['city'] }}</span>@endif @if($p['rating'])<span><x-fc.rating :avg="$p['rating']['avg']" :count="$p['rating']['count']" /></span>@endif <span>{{ $countLabel }}</span></p></div>
       <div class="pf-actions">@if($count)<a class="btn btn-accent btn-lg" href="#h-svcs">Voir les services</a>@endif<span class="pf-fav"><x-fc.fav-button-inline kind="freelance" :slug="$slug" :on="$p['favorited']" /></span></div>

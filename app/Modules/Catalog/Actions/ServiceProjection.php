@@ -29,6 +29,7 @@ final class ServiceProjection
             imageAlt: $image['alt'] ?? null,
             isDemo: $s->is_demo,
             id: (string) $s->getKey(),
+            sellerUserId: (string) $profile->user_id,
         );
     }
 

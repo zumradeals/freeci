@@ -7,6 +7,7 @@ use App\Integrations\FileScan\FileScanner;
 use App\Integrations\FileScan\UnavailableScanner;
 use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\PaymentProvider;
+use App\Modules\Accounts\Queries\ProfilePhotoIds;
 use App\Modules\Admin\Settings\AppSettings;
 use App\Modules\Catalog\Models\ServiceEvent;
 use App\Modules\Finance\Support\FinancialPayoutExecution;
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(ProfilePhotoIds::class);       // mémo par requête (photos de profil)
         // Une seule passerelle : Genius Pay, dans l'environnement du mode configuré (sandbox | live).
         $this->app->bind(PaymentProvider::class, fn () => app(PaymentGateways::class)->active());
         // Un reversement n'est « exécuté » que s'il est confirmé ou en cours chez un prestataire (lot 11).

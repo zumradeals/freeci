@@ -5,7 +5,9 @@
 
     <div class="ac-grid"><div class="ac-main">
     <section class="ed-card" aria-labelledby="h-info"><h2 id="h-info">Informations personnelles</h2>
-      <div class="ac-id"><span class="ac-av" aria-hidden="true">{{ auth()->user()->initials() }}</span><div><b>{{ auth()->user()->name }}</b><p class="muted small">{{ auth()->user()->email }} <span class="badge tone-{{ auth()->user()->emailVerified() ? 'success' : 'warning' }}">{{ auth()->user()->emailVerified() ? 'Vérifiée' : 'Non vérifiée' }}</span></p></div></div>
+      @include('account._photo')
+      <p class="muted small">Facultative. Votre photo n’est visible que des personnes avec qui vous avez une commande et de l’équipe ; elle devient publique si vous publiez un profil freelance.</p>
+      <div class="ac-id"><div><b>{{ auth()->user()->name }}</b><p class="muted small">{{ auth()->user()->email }} <span class="badge tone-{{ auth()->user()->emailVerified() ? 'success' : 'warning' }}">{{ auth()->user()->emailVerified() ? 'Vérifiée' : 'Non vérifiée' }}</span></p></div></div>
       <form method="post" action="{{ route('account.name') }}" class="stack-sm">@csrf
         <div class="field"><label for="name">Nom</label><input class="input" id="name" name="name" value="{{ old('name', auth()->user()->name) }}" minlength="2" maxlength="100" required autocomplete="name"></div>
         <p class="muted small">Le nom affiché publiquement d’un freelance se règle dans son profil.</p>
