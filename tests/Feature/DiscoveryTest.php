@@ -178,4 +178,10 @@ class DiscoveryTest extends TestCase
         $this->get('/missions?page=2')->assertOk()->assertSee('Page 2 sur 2');
         $this->get('/missions?budget_min=50000&budget_max=150000&tri=budget-croissant')->assertOk()->assertSee('Mission numéro 5')->assertDontSee('Mission numéro 4');
     }
+
+    public function test_freelances_page_follows_the_services_layout_with_a_minimum_price(): void
+    {
+        $this->get('/freelances')->assertOk()->assertSee('Trouvez le talent qu’il vous faut.')->assertSee('Tout voir')->assertSee('Prix d’un service')->assertSee('Vous ne trouvez pas le bon profil ?')->assertSee('Publier une mission');
+        $this->get('/freelances?prix_max=1000')->assertSee('Aucun freelance ne correspond')->assertSee('Tout effacer');
+    }
 }

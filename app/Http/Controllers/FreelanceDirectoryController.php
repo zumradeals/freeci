@@ -19,6 +19,6 @@ class FreelanceDirectoryController extends Controller
         ];
         $results = $search($f['q'], $f['categorie'], $f['competence'], $f['prix_max'], $f['delai_max'], $f['tri'], max(1, (int) $request->query('page', 1)), $request->user())->withQueryString();
 
-        return view('catalog.freelances', ['results' => $results, 'f' => $f, 'categories' => $categories(), 'skills' => $skills()]);
+        return view('catalog.freelances', ['results' => $results, 'f' => $f, 'categories' => $categories->withServiceCounts(), 'skills' => $skills()]);
     }
 }

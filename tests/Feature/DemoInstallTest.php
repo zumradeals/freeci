@@ -81,7 +81,7 @@ class DemoInstallTest extends TestCase
     {
         $this->asAdmin($this->admin)->post('/admin/exploitation/demo/installer', ['phrase' => 'INSTALLER LA DEMO'])->assertSessionHas('status');
         $this->app['auth']->forgetGuards();
-        $this->get('/freelances')->assertOk()->assertSee('9 profils publiés')->assertSee('Kader Soro')->assertSee('Voir le profil');
+        $this->get('/freelances')->assertOk()->assertSee('9 freelances')->assertSee('Kader Soro')->assertSee('Voir le profil');
         $this->get('/freelances/kader-soro-demo')->assertOk()->assertSee('Présentation')->assertSee('AutoCAD')->assertSee('profil d’exemple');
     }
 }
