@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Finance\Actions\Beneficiaries;
 use App\Modules\Finance\Actions\FinancialOperations;
@@ -79,16 +80,17 @@ class RecetteFinance extends Command
         }
 
         $service = Service::query()->where('slug', self::SERVICE)->firstOrFail();
-        $reopen = null;
-        if (! $service->accepts_requests) {
+        $restore = null;
+        $published = $service->status === ServiceStatus::Published && $service->published_at !== null && $service->published_at <= now();
+        if (! $service->accepts_requests || ! $published) {
             if (! $this->option('open-requests')) {
-                $this->error('Le service de recette refuse les demandes. Relancez avec --open-requests (valeur rétablie à la fin) ou ouvrez-le vous-même.');
+                $this->error('Le service de recette n\'est pas ouvert aux demandes (publié : '.($published ? 'oui' : 'NON, état « '.$service->status->value.' »').' ; demandes : '.($service->accepts_requests ? 'oui' : 'NON').'). Relancez avec --open-requests : il est rouvert pour la recette, puis remis EXACTEMENT dans son état d\'origine.');
 
                 return self::FAILURE;
             }
-            DB::table('services')->where('id', $service->getKey())->update(['accepts_requests' => true]);
-            $reopen = $service->getKey();
-            $this->warn('Demandes du service de recette ouvertes temporairement à '.now()->format('H:i:s').'.');
+            $restore = ['id' => $service->getKey(), 'accepts_requests' => $service->accepts_requests, 'status' => $service->status->value, 'published_at' => $service->published_at];
+            DB::table('services')->where('id', $service->getKey())->update(['accepts_requests' => true, 'status' => 'published', 'published_at' => $published ? $service->published_at : now()->subDay()]);
+            $this->warn('Service de recette rouvert temporairement à '.now()->format('H:i:s').' (état d\'origine : '.$restore['status'].').');
         }
         $startedAt = now();
 
@@ -105,9 +107,9 @@ class RecetteFinance extends Command
             }
             $this->journal($startedAt);
         } finally {
-            if ($reopen !== null) {
-                DB::table('services')->where('id', $reopen)->update(['accepts_requests' => false]);
-                $this->warn('Demandes du service de recette refermées à '.now()->format('H:i:s').'.');
+            if ($restore !== null) {
+                DB::table('services')->where('id', $restore['id'])->update(['accepts_requests' => $restore['accepts_requests'], 'status' => $restore['status'], 'published_at' => $restore['published_at']]);
+                $this->warn('Service de recette remis dans son état d\'origine à '.now()->format('H:i:s').'.');
             }
         }
 

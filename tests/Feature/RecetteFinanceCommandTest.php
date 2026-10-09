@@ -110,4 +110,20 @@ class RecetteFinanceCommandTest extends TestCase
         $this->assertFalse((bool) DB::table('services')->where('slug', 'service-de-recette-mise-en-plan')->value('accepts_requests'));
         $this->assertSame(1, DB::table('orders')->count());
     }
+
+    public function test_it_reopens_an_archived_recette_service_and_restores_its_exact_state(): void
+    {
+        $this->enableSandbox();
+        $admin = $this->readyAdmin();
+        $this->artisan('freeci:demo:recette', ['--yes' => true])->assertSuccessful();
+        DB::table('services')->where('slug', 'service-de-recette-mise-en-plan')->update(['status' => 'archived', 'accepts_requests' => false]);
+
+        $this->artisan('freeci:recette:finance', ['--admin' => $admin->email, '--yes' => true, '--only' => 'A'])->assertFailed();
+        $this->assertSame(0, DB::table('orders')->count());
+
+        $this->artisan('freeci:recette:finance', ['--admin' => $admin->email, '--yes' => true, '--only' => 'A', '--open-requests' => true]);
+        $this->assertSame(1, DB::table('orders')->count());
+        $row = DB::table('services')->where('slug', 'service-de-recette-mise-en-plan')->first();
+        $this->assertSame(['archived', false], [$row->status, (bool) $row->accepts_requests]);
+    }
 }
