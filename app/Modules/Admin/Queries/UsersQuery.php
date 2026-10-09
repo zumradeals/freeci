@@ -60,9 +60,13 @@ final class UsersQuery
         $photoHistory = $photos->map(fn ($p) => ['what' => $photoLabels[$p->state] ?? $p->state, 'when' => Dates::format(Carbon::parse($p->state === 'active' ? $p->created_at : ($p->ended_at ?? $p->created_at))),
             'reason' => $p->removal_reason, 'by' => $p->remover])->all();
         $active = $photos->firstWhere('state', 'active');
+        $items = DB::table('portfolio_items')->leftJoin('users as a', 'a.id', '=', 'portfolio_items.removed_by')->where('portfolio_items.user_id', $id)->whereIn('portfolio_items.state', ['active', 'removed'])
+            ->orderByDesc('portfolio_items.created_at')->limit(30)->get(['portfolio_items.id', 'portfolio_items.state', 'portfolio_items.title', 'portfolio_items.description', 'portfolio_items.ended_at', 'portfolio_items.removal_reason', 'a.name as remover']);
+        $portfolio = $items->where('state', 'active')->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'description' => $r->description])->values()->all();
+        $portfolioRemoved = $items->where('state', 'removed')->map(fn ($r) => ['title' => $r->title, 'when' => Dates::format(Carbon::parse($r->ended_at)), 'reason' => $r->removal_reason, 'by' => $r->remover])->values()->all();
 
         return [
-            'photo' => $active === null ? null : ['id' => $active->id, 'since' => Dates::format(Carbon::parse($active->created_at))], 'photoHistory' => $photoHistory,
+            'photo' => $active === null ? null : ['id' => $active->id, 'since' => Dates::format(Carbon::parse($active->created_at))], 'photoHistory' => $photoHistory, 'portfolio' => $portfolio, 'portfolioRemoved' => $portfolioRemoved,
             'id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'verifiedAt' => $u->email_verified_at === null ? null : Dates::format(Carbon::parse($u->email_verified_at)),
             'suspended' => $u->suspended_at !== null, 'suspendedAt' => $u->suspended_at === null ? null : Dates::format(Carbon::parse($u->suspended_at)),
             'since' => Dates::format(Carbon::parse($u->created_at)), 'demo' => (bool) $u->is_demo, 'admin' => $admin, 'mfa' => $u->two_factor_confirmed_at !== null,

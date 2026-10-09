@@ -27,6 +27,15 @@
       @if(count($p['skills']))<h3 class="pf-h3">Compétences</h3><ul class="talent-skills">@foreach($p['skills'] as $sk)<li><span class="badge tone-neutral">{{ $sk }}</span></li>@endforeach</ul>@endif
     </section>
     @endif
+    @if(count($p['portfolio']))
+    <section class="sp-sec po-sec" aria-labelledby="h-po"><div class="section-head"><h2 id="h-po">Réalisations</h2><span class="muted small">{{ count($p['portfolio']) }} exemple{{ count($p['portfolio']) > 1 ? 's' : '' }}</span></div>
+      <div class="po-g">@foreach($p['portfolio'] as $it)
+        <article class="po-c"><a class="po-open" href="{{ route('portfolio.show', [$it['id'], 'large']) }}" data-po-open data-po-title="{{ $it['title'] }}" aria-label="Agrandir : {{ $it['title'] }}"><img src="{{ route('portfolio.show', [$it['id'], 'card']) }}" alt="{{ $it['title'] }}" width="640" height="427" loading="lazy" decoding="async"></a>
+          <div class="po-b"><h3>{{ $it['title'] }}</h3>@if($it['description'])<p>{{ $it['description'] }}</p>@endif @if($it['year'])<small>{{ $it['year'] }}</small>@endif</div></article>
+      @endforeach</div>
+      <dialog id="po-dlg" class="po-dlg" aria-label="Réalisation agrandie"><button class="btn btn-secondary po-x" type="button" data-po-close aria-label="Fermer">Fermer</button><img alt="" src=""><p data-po-cap></p></dialog>
+    </section>
+    @endif
     <section class="sp-sec profile-services" aria-labelledby="h-svcs"><div class="section-head"><h2 id="h-svcs">Services publiés</h2>@if($count)<span class="muted small">{{ $count }} {{ $count > 1 ? 'services' : 'service' }}</span>@endif</div>
       @if($count)<div class="svc-grid service-grid pf-sg">@foreach($p['services'] as $service)<x-fc.service-card :service="$service" :level="3" />@endforeach</div>
       @else<p class="muted" style="margin-top:8px">Aucun service publié pour l’instant.</p>@endif</section>

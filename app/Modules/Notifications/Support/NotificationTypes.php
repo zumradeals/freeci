@@ -40,6 +40,7 @@ final class NotificationTypes
             'moderation_decision' => ['label' => 'Décision de modération', 'category' => $e, 'description' => 'Votre service ou votre mission est approuvé, à corriger ou suspendu.'],
             'account_status' => ['label' => 'Statut du compte', 'category' => $e, 'description' => 'Votre compte est suspendu ou réactivé.'],
             'photo_removed' => ['label' => 'Photo de profil retirée', 'category' => $e, 'description' => 'Votre photo de profil a été retirée par l’équipe, avec le motif ; vous pouvez en déposer une autre.'],
+            'portfolio_removed' => ['label' => 'Réalisation retirée', 'category' => $e, 'description' => 'Une de vos réalisations a été retirée par l’équipe, avec le motif ; vous pouvez en ajouter une autre.'],
             'support_update' => ['label' => 'Assistance', 'category' => $e, 'description' => 'Un nouveau message ou un changement sur votre dossier d’assistance (le contenu n’est jamais envoyé par courriel).'],
             'dispute_update' => ['label' => 'Litige ou annulation', 'category' => $e, 'description' => 'Un litige ou une demande d’annulation est ouvert, ou une décision est rendue sur votre commande.'],
             'finance_update' => ['label' => 'Remboursement ou reversement', 'category' => $e, 'description' => 'Un remboursement ou un reversement lié à votre commande est confirmé ou n’a pas abouti.'],

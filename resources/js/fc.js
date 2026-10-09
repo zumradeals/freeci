@@ -228,3 +228,27 @@ document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = 
   form.addEventListener("input", refresh);
   refresh();
 })();
+
+/* Réalisations : agrandissement de l'image dans une boîte de dialogue native (Échap ferme, le focus revient sur la carte). Sans JavaScript, le lien ouvre l'image. */
+(function () {
+  "use strict";
+  var dlg = document.getElementById("po-dlg");
+  if (!dlg || typeof dlg.showModal !== "function") return;
+  var img = dlg.querySelector("img");
+  var cap = dlg.querySelector("[data-po-cap]");
+  var last = null;
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest("a[data-po-open]");
+    if (a) {
+      e.preventDefault();
+      last = a;
+      img.src = a.getAttribute("href");
+      img.alt = a.getAttribute("data-po-title") || "";
+      cap.textContent = a.getAttribute("data-po-title") || "";
+      dlg.showModal();
+      return;
+    }
+    if (e.target === dlg || e.target.closest("[data-po-close]")) dlg.close();
+  });
+  dlg.addEventListener("close", function () { img.removeAttribute("src"); if (last) last.focus(); });
+})();

@@ -60,7 +60,7 @@
 
 | Réf. | Chantier | Description |
 |---|---|---|
-| F-07 | **Portfolio** | Exemples de réalisations sur le profil (images contrôlées, titre, courte description) ; mêmes règles de signalement et de retrait que la photo |
+| F-07 | **Portfolio** — **livré au lot 69 (maquette approuvée ; 8 réalisations au plus, aucun lien, agrandissement dans la page, plus récente d'abord, signalement avec le profil)** | Exemples de réalisations sur le profil (images contrôlées, titre, courte description) ; mêmes règles de signalement et de retrait que la photo |
 | F-08 | **Offres à niveaux et options payantes** | Basique / standard / premium et options sur un service ; l'accord de commande fige le choix (comme aujourd'hui pour prix, délai, périmètre) |
 | F-09 | **Offre personnalisée** | Depuis la messagerie : le freelance propose prix, délai, périmètre ; le client accepte ; création d'une commande normale |
 | F-10 | **Disponibilité et temps de réponse** | Mode « indisponible » du freelance (ses services restent visibles mais non commandables) ; temps de réponse **calculé**, jamais déclaré |

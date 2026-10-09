@@ -52,6 +52,7 @@ final class ExportPersonalData
             'avis_recus' => DB::table('reviews')->where('subject_id', $id)->where('counts_public', true)->get(['rating', 'comment', 'visible_at'])->all(),
             'reponses_aux_avis' => $own('review_responses', 'author_id')->get(['body', 'created_at'])->all(),
             'photos_de_profil' => $own('profile_photos', 'user_id')->orderBy('created_at')->get(['state', 'mime', 'created_at', 'ended_at', 'removal_reason'])->map(fn ($p) => ['etat' => $p->state, 'format' => $p->mime, 'ajoutee_le' => $p->created_at, 'terminee_le' => $p->ended_at, 'motif_de_retrait' => $p->removal_reason])->all(),
+            'realisations' => $own('portfolio_items', 'user_id')->orderBy('created_at')->get(['state', 'title', 'description', 'year', 'created_at', 'ended_at', 'removal_reason'])->map(fn ($r) => ['etat' => $r->state, 'titre' => $r->title, 'description' => $r->description, 'annee' => $r->year, 'ajoutee_le' => $r->created_at, 'terminee_le' => $r->ended_at, 'motif_de_retrait' => $r->removal_reason])->all(),
             'favoris' => $own('favorites', 'user_id')->get(['kind', 'created_at'])->all(),
             'dossiers_assistance' => DB::table('support_cases')->where('requester_id', $id)->orderBy('opened_at')->get(['id', 'reference', 'kind', 'status', 'subject', 'opened_at', 'closed_at'])
                 ->map(fn ($c) => [

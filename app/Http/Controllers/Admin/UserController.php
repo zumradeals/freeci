@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Admin\Actions\ManageAccounts;
+use App\Modules\Admin\Actions\RemovePortfolioItem;
 use App\Modules\Admin\Actions\RemoveProfilePhoto;
 use App\Modules\Admin\Queries\UsersQuery;
 use App\Modules\Catalog\Exceptions\ModerationDenied;
@@ -54,5 +55,18 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.users.show', $id)->with('status', 'Photo retirée : la personne en est informée avec le motif.');
+    }
+
+    /** Retrait d'une réalisation du portfolio (mêmes garde-fous que la photo : confirmation récente, motif, journal d'audit). */
+    public function removePortfolio(Request $request, string $id, string $item, RemovePortfolioItem $remove): RedirectResponse
+    {
+        $reason = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']])['reason'];
+        try {
+            $remove($request->user(), $id, $item, $reason);
+        } catch (ModerationDenied|\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.users.show', $id)->with('status', 'Réalisation retirée : la personne en est informée avec le motif.');
     }
 }

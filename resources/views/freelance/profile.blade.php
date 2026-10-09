@@ -3,6 +3,30 @@
     <header class="page-head"><div class="row-top"><div><p class="eyebrow">{{ $activation ? 'Espace client' : 'Espace freelance' }}</p><h1 class="t-h1">{{ $activation ? 'Activer l’espace freelance' : 'Votre profil' }}</h1></div></div></header>
     <div class="cols"><div class="stack-lg">
     @unless($activation)
+    @php($items = app(\App\Modules\Accounts\Queries\PortfolioQueries::class)->active(auth()->id()))
+    @php($poMax = (int) config('freeci.catalog.portfolio_max'))
+    <section class="card form-card" aria-labelledby="h-po" id="h-po"><h2 class="t-h2 card-title">Réalisations</h2>
+      <p class="muted">Montrez 1 à {{ $poMax }} exemples de votre travail. Chaque réalisation est <strong>publique</strong> dès son enregistrement (une fois votre profil publié) ; elle peut être signalée avec votre profil et retirée par l’équipe, avec un motif.</p>
+      <p class="po-cnt"><span>{{ count($items) }} sur {{ $poMax }} réalisations</span></p>
+      <div style="display:grid;gap:10px">@forelse($items as $it)
+        <div class="po-ed"><img src="{{ route('portfolio.show', [$it['id'], 'card']) }}" alt="" width="96" height="64" loading="lazy"><div><b>{{ $it['title'] }}</b><small>{{ $it['description'] }}@if($it['year']) · {{ $it['year'] }}@endif</small></div>
+          <div class="acts"><form method="post" action="{{ route('freelance.portfolio.destroy', $it['id']) }}" data-once>@csrf<button class="btn btn-link" type="submit">Supprimer<span class="sr-only"> {{ $it['title'] }}</span></button></form></div>
+          <details class="po-edit"><summary class="btn btn-secondary">Modifier<span class="sr-only"> {{ $it['title'] }}</span></summary>
+            <form method="post" action="{{ route('freelance.portfolio.update', $it['id']) }}" class="po-form" data-once>@csrf
+              <div class="field"><label for="pt-{{ $it['id'] }}">Titre (3 à 80 caractères)</label><input class="input" id="pt-{{ $it['id'] }}" name="title" value="{{ $it['title'] }}" minlength="3" maxlength="80" required></div>
+              <div class="field"><label for="pd-{{ $it['id'] }}">Description (jusqu’à 300 caractères)</label><textarea class="textarea" id="pd-{{ $it['id'] }}" name="description" rows="3" maxlength="300">{{ $it['description'] }}</textarea></div>
+              <div class="field"><label for="py-{{ $it['id'] }}">Année (facultative)</label><input class="input" id="py-{{ $it['id'] }}" name="year" value="{{ $it['year'] }}" inputmode="numeric" maxlength="4" style="max-width:140px"></div>
+              <div><button class="btn btn-primary" type="submit">Enregistrer</button></div></form></details></div>
+      @empty<p class="muted">Aucune réalisation pour l’instant.</p>@endforelse</div>
+      @if(count($items) < $poMax)
+      <form method="post" action="{{ route('freelance.portfolio.store') }}" enctype="multipart/form-data" class="po-add" data-once>@csrf
+        <b>Ajouter une réalisation</b>
+        <div class="field"><label for="po-img">Image</label><input class="input" id="po-img" type="file" name="image" accept="image/jpeg,image/png,image/webp" required aria-describedby="po-img-h"><p class="hint" id="po-img-h">JPG, PNG ou WebP · {{ config('freeci.catalog.image_max_mb') }} Mo maximum · au moins {{ config('freeci.catalog.image_min_width') }} px de large · réencodée, informations cachées retirées.</p></div>
+        <div class="field"><label for="po-title">Titre (3 à 80 caractères)</label><input class="input" id="po-title" name="title" value="{{ old('title') }}" minlength="3" maxlength="80" required>@error('title')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
+        <div class="field"><label for="po-desc">Description (jusqu’à 300 caractères)</label><textarea class="textarea" id="po-desc" name="description" rows="3" maxlength="300">{{ old('description') }}</textarea><p class="hint">Pas d’adresse e-mail, de numéro de téléphone ni de lien : ces textes sont publics.</p>@error('description')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
+        <div class="field"><label for="po-year">Année (facultative)</label><input class="input" id="po-year" name="year" value="{{ old('year') }}" inputmode="numeric" maxlength="4" placeholder="{{ now()->year }}" style="max-width:140px">@error('year')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
+        <div><button class="btn btn-primary" type="submit" data-once-label="Envoi…">Ajouter la réalisation</button></div></form>
+      @else<p class="muted">Vous avez atteint {{ $poMax }} réalisations : supprimez-en une pour en ajouter.</p>@endif</section>
     <section class="card form-card" aria-labelledby="h-photo"><h2 class="t-h2 card-title" id="h-photo">Photo de profil</h2>
       <p class="muted">Votre photo est <strong>publique</strong> dès son enregistrement (une fois votre profil publié) : elle apparaît sur votre profil, vos services et vos messages. Elle peut être signalée et retirée par l’équipe, avec un motif.</p>
       @include('account._photo')

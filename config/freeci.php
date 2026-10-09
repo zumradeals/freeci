@@ -80,7 +80,7 @@ return [
         'title' => [15, 100], 'summary' => [30, 300], 'scope' => [150, 5000],
         'price_xof' => [5000, 500000], 'delivery_days' => [1, 60], 'revisions' => [0, 10],
         'deliverables_max' => 10, 'exclusions_max' => 10, 'client_inputs_max' => 8, 'line_max' => 200,
-        'images_max' => 6, 'image_max_mb' => 5, 'image_max_pixels' => 16000000, 'image_min_width' => 400,
+        'images_max' => 6, 'portfolio_max' => 8, 'image_max_mb' => 5, 'image_max_pixels' => 16000000, 'image_min_width' => 400,
         'bio' => [50, 1500], 'skills_max' => 10, 'skill' => [2, 40],
     ],
 

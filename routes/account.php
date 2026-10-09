@@ -27,6 +27,7 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FinanceSpaceController;
 use App\Http\Controllers\Freelance\FreelanceController;
+use App\Http\Controllers\Freelance\PortfolioController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
@@ -164,6 +165,9 @@ Route::middleware(['auth', 'no-store'])->group(function () {
         Route::post('/services/{service}/images/{media}/retirer', [ServiceManagementController::class, 'imageDestroy'])->name('freelance.services.images.destroy');
         Route::get('/services/{service}/{kind}', [ServiceManagementController::class, 'confirm'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'retirer-du-catalogue', 'remettre-en-ligne'])->name('freelance.services.confirm');
         Route::post('/services/{service}/{kind}', [ServiceManagementController::class, 'act'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'retirer-du-catalogue', 'remettre-en-ligne'])->middleware('throttle:20,1')->name('freelance.services.act');
+        Route::post('/realisations', [PortfolioController::class, 'store'])->middleware('throttle:20,10')->name('freelance.portfolio.store');
+        Route::post('/realisations/{id}', [PortfolioController::class, 'update'])->middleware('throttle:30,10')->name('freelance.portfolio.update');
+        Route::post('/realisations/{id}/supprimer', [PortfolioController::class, 'destroy'])->middleware('throttle:30,10')->name('freelance.portfolio.destroy');
         Route::post('/profil/publier', [FreelanceController::class, 'publish'])->middleware('throttle:10,1')->name('freelance.profile.publish');
         Route::get('/profil', [FreelanceController::class, 'profile'])->name('freelance.profile');
         Route::get('/propositions', [ProposalController::class, 'index'])->name('freelance.proposals');
@@ -237,6 +241,7 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
 
             Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
             Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
+            Route::post('/utilisateurs/{id}/realisations/{item}/retirer', [UserController::class, 'removePortfolio'])->whereUuid('item')->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.portfolio.remove');
             Route::post('/utilisateurs/{id}/photo/retirer', [UserController::class, 'removePhoto'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.photo.remove');
             Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InfoPageController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\PortfolioMediaController;
 use App\Http\Controllers\PublicMissionController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::get('/freelances/{slug}', [FreelanceProfileController::class, 'show'])->n
 Route::get('/missions', [PublicMissionController::class, 'index'])->name('missions.index');
 Route::get('/missions/{slug}', [PublicMissionController::class, 'show'])->name('missions.show');
 Route::get('/medias/{id}/{variant}', [MediaController::class, 'show'])->name('media.show');
+Route::get('/realisations/{id}/{variant}', [PortfolioMediaController::class, 'show'])->whereIn('variant', ['large', 'card'])->name('portfolio.show');
 Route::get('/photos/{id}/{variant}', [PhotoController::class, 'show'])->whereIn('variant', ['large', 'small'])->name('photo.show');
 
 // Pages d'information (brouillons tant que le porteur ne les a pas déclarées adoptées).

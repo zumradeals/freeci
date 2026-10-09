@@ -13,6 +13,19 @@
         @endif
         @if(count($u['photoHistory']))<ol class="ed-tl">@foreach($u['photoHistory'] as $h)<li><span class="d"><x-fc.icon name="check" :size="14" /></span><p><b>{{ $h['what'] }}</b><br><span class="muted small">{{ $h['when'] }}@if($h['by']) · par {{ $h['by'] }}@endif</span>@if($h['reason'])<br><span class="muted small">Motif : {{ $h['reason'] }}</span>@endif</p></li>@endforeach</ol>@endif
       </section>
+      @if(count($u['portfolio']) || count($u['portfolioRemoved']))
+      <section class="ed-card" aria-labelledby="h-poa"><h2 id="h-poa">Réalisations</h2>
+        <p class="muted" style="margin:0">{{ count($u['portfolio']) }} réalisation(s) en ligne. Retirer une réalisation exige un motif, est inscrit au journal d’audit et notifie la personne ; le fichier est conservé {{ config('freeci.account.removed_photo_days') }} jours (ou le temps d’un dossier ouvert), puis effacé.</p>
+        <div style="display:grid;gap:10px">@foreach($u['portfolio'] as $it)
+          <div class="po-adm"><img src="{{ route('portfolio.show', [$it['id'], 'card']) }}" alt="{{ $it['title'] }}" width="96" height="64" loading="lazy"><div><b>{{ $it['title'] }}</b><small>{{ $it['description'] }}</small></div>
+            @if(auth()->id() !== $u['id'])<details><summary class="btn btn-secondary">Retirer<span class="sr-only"> {{ $it['title'] }}</span></summary>
+              <form method="post" action="{{ route('admin.users.portfolio.remove', [$u['id'], $it['id']]) }}" style="display:grid;gap:8px;margin-top:8px" onsubmit="return confirm('Retirer cette réalisation ?')">@csrf
+                <div class="field"><label for="pr-{{ $it['id'] }}">Motif (10 à 1000 caractères)</label><textarea class="textarea" id="pr-{{ $it['id'] }}" name="reason" rows="3" required minlength="10" maxlength="1000"></textarea></div>
+                <button class="btn btn-danger" type="submit" data-once>Retirer cette réalisation</button></form></details>@endif</div>
+        @endforeach</div>
+        @if(count($u['portfolioRemoved']))<ol class="ed-tl">@foreach($u['portfolioRemoved'] as $h)<li><span class="d"><x-fc.icon name="check" :size="14" /></span><p><b>Réalisation retirée : {{ $h['title'] }}</b><br><span class="muted small">{{ $h['when'] }}@if($h['by']) · par {{ $h['by'] }}@endif @if($h['reason'])<br>Motif : {{ $h['reason'] }}@endif</span></p></li>@endforeach</ol>@endif
+      </section>
+      @endif
       <section class="ed-card" aria-labelledby="h-act"><h2 id="h-act">Activité</h2>
         <div class="us-stats">
           <div class="us-s"><small>Commandes client</small><b>{{ $u['ordersAsClient'][0] }}</b><span>dont {{ $u['ordersAsClient'][1] }} en cours</span></div>

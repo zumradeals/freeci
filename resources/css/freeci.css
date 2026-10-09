@@ -2226,3 +2226,33 @@ a.kpi:hover { background: var(--marine-100); }
 .ph-adm { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
 .ph-rm { border-color: #e7b9b3; }
 @media (max-width: 600px) { .avatar-ph { width: 120px; height: 120px; font-size: 2rem; } .ph-adm { grid-template-columns: 1fr; } }
+
+/* Lot 69 — réalisations (portfolio) */
+.po-sec { display: grid; gap: 14px; }
+.po-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.po-c { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.po-c img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; background: var(--marine-100); }
+.po-open { display: block; }
+.po-open:focus-visible { outline: 3px solid var(--marine-700); outline-offset: -3px; }
+.po-b { padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.po-b h3 { font-size: 1rem; line-height: 1.3; font-weight: 700; margin: 0; }
+.po-b p { margin: 0; color: var(--ink-600); font-size: .9375rem; overflow-wrap: anywhere; }
+.po-b small { color: var(--ink-600); }
+.po-dlg { border: 0; border-radius: 14px; padding: 12px; max-width: min(960px, 94vw); width: 100%; background: var(--surface); }
+.po-dlg::backdrop { background: rgba(10, 20, 36, .72); }
+.po-dlg img { width: 100%; max-height: 78vh; object-fit: contain; display: block; border-radius: 8px; background: #0b1422; }
+.po-dlg p { margin: 8px 4px 0; font-weight: 650; }
+.po-x { margin-bottom: 8px; }
+.po-cnt { display: flex; justify-content: space-between; color: var(--ink-600); font-size: .875rem; margin: 0; }
+.po-ed { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px 14px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); }
+.po-ed img, .po-adm img { width: 96px; height: 64px; object-fit: cover; border-radius: 8px; background: var(--marine-100); }
+.po-ed b, .po-adm b { display: block; overflow-wrap: anywhere; }
+.po-ed small, .po-adm small { color: var(--ink-600); display: block; overflow-wrap: anywhere; }
+.po-ed .acts { display: flex; gap: 8px; align-items: center; }
+.po-ed .acts form { margin: 0; }
+.po-edit { grid-column: 1 / -1; }
+.po-edit summary { display: inline-flex; cursor: pointer; list-style: none; }
+.po-form { display: grid; gap: 12px; margin-top: 10px; }
+.po-add { border: 2px dashed var(--line-strong, #b8c4d0); border-radius: 12px; padding: 16px; background: #fafbfd; display: grid; gap: 12px; }
+.po-adm { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 14px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); }
+@media (max-width: 600px) { .po-ed, .po-adm { grid-template-columns: 72px minmax(0, 1fr); } .po-ed img, .po-adm img { width: 72px; height: 50px; } .po-ed .acts, .po-adm > :last-child { grid-column: 1 / -1; } }

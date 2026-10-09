@@ -119,6 +119,7 @@ final class AccountClosure
         }
         DB::table('favorites')->where('user_id', $id)->delete();
         app(ProfilePhotos::class)->purgeAll($id);                // photo de profil : fichiers effacés
+        app(Portfolio::class)->purgeAll($id);                    // réalisations : fichiers et textes effacés
         DB::table('app_notifications')->where('user_id', $id)->delete();
         DB::table('notification_preferences')->where('user_id', $id)->delete();
         DB::table('contact_blocks')->where('blocker_id', $id)->orWhere('blocked_id', $id)->delete();
