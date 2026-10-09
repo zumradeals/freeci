@@ -46,6 +46,8 @@ class FinanceOperationsTest extends TestCase
 
     private int $refundCalls = 0;
 
+    private ?int $verifyAmount = null;      // montant lu par la vérification (null = celui du paiement)
+
     private User $a1;                  // UN SEUL administrateur : il prépare, confirme et exécute
 
     protected function setUp(): void
@@ -88,7 +90,7 @@ class FinanceOperationsTest extends TestCase
                 $ref = basename($path);
                 $amount = (int) DB::table('payments')->where('provider_transaction_reference', $ref)->value('amount_xof');
 
-                return Http::response(['success' => true, 'data' => ['id' => 1, 'reference' => $ref, 'amount' => $amount, 'fees' => 450, 'status' => $this->geniusStatus, 'environment' => 'sandbox']], 200);
+                return Http::response(['success' => true, 'data' => ['id' => 1, 'reference' => $ref, 'amount' => $this->verifyAmount ?? $amount, 'fees' => 450, 'status' => $this->geniusStatus, 'environment' => 'sandbox']], 200);
             }
             if ($path === '/api/v1/merchant/account') {
                 return Http::response(['success' => true, 'data' => ['id' => 'merchant-uuid-1234']], 200);
@@ -247,7 +249,8 @@ class FinanceOperationsTest extends TestCase
         $this->ops()->approve($this->a1, $id, true);
         $this->refundMode = 'timeout';
         $this->ops()->executeRefundViaApi($this->a1, $id);
-        $this->geniusStatus = 'refunded';                                  // la lecture dit « refunded » : ni montant ni rattachement établis
+        $this->geniusStatus = 'refunded';                                  // la lecture dit « refunded » mais le montant lu ne correspond pas : pas de preuve
+        $this->verifyAmount = 12345;
         Artisan::call('freeci:finance:reconcile');
         $op = $this->opRow($id);
         $this->assertSame(['to_verify', 'provider_reports_refunded'], [$op->state, $op->uncertain_reason]);
@@ -699,6 +702,7 @@ class FinanceOperationsTest extends TestCase
         $this->refundMode = 'timeout';
         $this->ops()->executeRefundViaApi($this->a1, $id);
         $this->geniusStatus = 'refunded';
+        $this->verifyAmount = 12345;
         $hook('whsec_test_sandbox_0123456789', 1)->assertOk();
         DB::table('payment_events')->where('processing', 'received')->pluck('id')->each(fn ($e) => app(ProcessProviderEvent::class)->process((int) $e));
         $this->assertSame(['to_verify', 'provider_reports_refunded'], [$this->opRow($id)->state, $this->opRow($id)->uncertain_reason]);
@@ -727,5 +731,43 @@ class FinanceOperationsTest extends TestCase
         $this->assertSame(['to_verify', 'interrupted'], [$this->opRow($id)->state, $this->opRow($id)->uncertain_reason]);
         $this->assertSame(0, $this->refundCalls, 'la reprise ne renvoie jamais : lecture seule');
         $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'));
+    }
+
+    public function test_a_total_refund_read_as_refunded_for_the_full_amount_is_confirmed_on_the_providers_proof_without_resending(): void
+    {
+        $o = $this->paid();
+        $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
+        $this->ops()->approve($this->a1, $id, true);
+        $this->refundMode = 'noref';                                       // réponse sans référence de remboursement : résultat incertain
+        $this->ops()->executeRefundViaApi($this->a1, $id);
+        $this->assertSame('to_verify', $this->opRow($id)->state);
+        $this->assertSame(35000, $this->balance($o, 'refund_reserved_simulated'));
+
+        $this->geniusStatus = 'refunded';                                  // lecture indépendante : même transaction, montant total, même environnement
+        $this->assertSame('confirmed_on_provider_proof', $this->ops()->reconcile($id));
+        $op = $this->opRow($id);
+        $this->assertSame(['confirmed', 'api'], [$op->state, $op->execution_mode]);
+        $this->assertSame(1, $this->refundCalls, 'aucun nouvel envoi');
+        $this->assertSame(0, $this->balance($o, 'refund_reserved_simulated'));
+        $this->assertSame(35000, OrderFunds::summary($o->id)['refunded']);
+        $this->assertSame(0, DB::table('reconciliation_cases')->whereNull('resolved_at')->count());
+        $this->assertNotNull($op->provider_proof_at);
+        $this->assertSame(35000, json_decode($op->provider_proof, true)['amount_xof']);
+        $this->assertStringContainsString('preuve du prestataire', (string) DB::table('financial_operation_events')->where('operation_id', $id)->orderByDesc('id')->value('note'));
+        $this->assertSame('not_applicable', $this->ops()->reconcile($id), 'idempotent');
+    }
+
+    public function test_no_proof_means_no_automatic_confirmation_for_a_discordant_amount(): void
+    {
+        $o = $this->paid();
+        $id = $this->ops()->requestRefund($this->a1, $this->decision($o, 'refund'), null, 'Remboursement décidé par le support.', 'k1');
+        $this->ops()->approve($this->a1, $id, true);
+        $this->refundMode = 'timeout';
+        $this->ops()->executeRefundViaApi($this->a1, $id);
+        $this->geniusStatus = 'refunded';
+        $this->verifyAmount = 34999;                                       // montant lu différent de l'encaissé : pas de preuve
+        $this->assertSame('provider_reports_refunded', $this->ops()->reconcile($id));
+        $this->assertSame('to_verify', $this->opRow($id)->state);
+        $this->assertSame(1, $this->refundCalls);
     }
 }

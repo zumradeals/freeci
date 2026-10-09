@@ -5,6 +5,7 @@ namespace App\Modules\Finance\Actions;
 use App\Integrations\Payments\GeniusPayConfig;
 use App\Integrations\Payments\PaymentGateways;
 use App\Integrations\Payments\ProviderStatus;
+use App\Integrations\Payments\Verification;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Admin\Actions\AdminAudit;
 use App\Modules\Finance\Models\ReconciliationCase;
@@ -313,7 +314,7 @@ final class FinancialOperations
      *  - « completed » après un délai dépassé n'établit pas un échec (traitement possiblement en cours, asynchrone, ou réponse perdue).
      * Dans les deux cas l'opération reste « à vérifier » avec ses fonds réservés ; seul le rapprochement manuel documenté (`reconcileManually`) conclut.
      *
-     * @return string provider_reports_refunded | pending | uncertain | not_applicable
+     * @return string confirmed_on_provider_proof | provider_reports_refunded | pending | uncertain | not_applicable
      */
     public function reconcile(string $opId): string
     {
@@ -328,6 +329,14 @@ final class FinancialOperations
             $this->markUncertain($op->id, 'interrupted');                // envoi interrompu avant d'enregistrer la réponse : résultat inconnu
             $op = $this->op($opId);
         }
+        if ($v->status === ProviderStatus::Refunded && $this->providerProvesTotalRefund($op, $payment, $v)) {
+            // Preuve du prestataire (lecture indépendante) : ce paiement, intégralement remboursé chez lui, est celui de CETTE opération totale. Confirmation sans intervention.
+            $this->settle($op->id, 'api', null, ['provider_proof' => ['status' => $v->status->value, 'amount_xof' => $v->amountXof, 'currency' => $v->currency, 'transaction' => $v->transactionReference, 'environment' => $v->environment, 'read_at' => now()->toIso8601String()], 'note' => 'Confirmé sur preuve du prestataire : lecture du paiement « remboursé » pour le montant total ('.$op->amount_xof.' FCFA), même transaction, même environnement ; aucune référence de remboursement fournie.']);
+            DB::table('reconciliation_cases')->where('payment_id', $op->payment_id)->whereIn('reason', ['refund_unproven_provider_refunded', 'refunded_by_provider'])->whereNull('resolved_at')
+                ->update(['resolved_at' => now(), 'resolution_note' => 'Clos automatiquement : remboursement total confirmé sur preuve du prestataire ('.$op->reference.').']);
+
+            return 'confirmed_on_provider_proof';
+        }
         if ($v->status === ProviderStatus::Refunded) {
             if ($op->state === 'in_progress') {
                 $this->markUncertain($op->id, 'provider_reports_refunded');
@@ -341,6 +350,30 @@ final class FinancialOperations
         }
 
         return $v->status === ProviderStatus::Succeeded ? 'pending' : 'uncertain';
+    }
+
+    /**
+     * La lecture du paiement chez le prestataire PROUVE le remboursement total quand, ensemble : l'opération est un remboursement TOTAL par API ; le paiement est celui
+     * que FreeCI a confirmé et c'est la même transaction ; le prestataire dit « remboursé » ; le montant lu égale celui encaissé et celui de l'opération ; la devise (si
+     * fournie) est XOF ; l'environnement est celui de l'opération ; aucun autre remboursement n'est confirmé sur ce paiement. Tout élément manquant ou discordant : pas de preuve.
+     */
+    private function providerProvesTotalRefund(object $op, object $payment, Verification $v): bool
+    {
+        if ($op->kind !== 'refund' || $op->scope !== 'total' || $op->execution_mode !== 'api' || ! in_array($op->state, ['in_progress', 'to_verify'], true)) {
+            return false;
+        }
+        $confirmed = OrderFunds::confirmedPayment($op->order_id);
+        if ($confirmed === null || $confirmed->id !== $payment->id || $payment->provider_transaction_reference === null) {
+            return false;
+        }
+        if ($v->transactionReference !== $payment->provider_transaction_reference || $v->environment !== $op->environment || ($v->currency !== null && $v->currency !== 'XOF')) {
+            return false;
+        }
+        if ($v->amountXof === null || $v->amountXof !== (int) $payment->amount_xof || (int) $op->amount_xof !== (int) $payment->amount_xof) {
+            return false;
+        }
+
+        return ! DB::table('financial_operations')->where('payment_id', $payment->id)->where('kind', 'refund')->where('state', 'confirmed')->where('id', '!=', $op->id)->exists();
     }
 
     /**
@@ -419,6 +452,10 @@ final class FinancialOperations
             }
             $upd = ['state' => 'confirmed', 'execution_mode' => $mode, 'confirmed_at' => now(), 'executed_by' => $op->executed_by ?? $actorId ?? $op->requested_by, 'uncertain_reason' => null,
                 'row_version' => $op->row_version + 1, 'updated_at' => now()];
+            if (isset($extra['provider_proof'])) {
+                $upd['provider_proof_at'] = now();
+                $upd['provider_proof'] = json_encode($extra['provider_proof']);
+            }
             if (isset($extra['provider_refund_reference'])) {
                 $upd['provider_refund_reference'] = $extra['provider_refund_reference'];
             }

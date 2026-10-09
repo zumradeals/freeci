@@ -80,7 +80,10 @@ final class RefreshPaymentStatus
     {
         $op = DB::table('financial_operations')->where('payment_id', $payment->getKey())->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])->value('id');
         if ($op !== null) {
-            app(FinancialOperations::class)->reconcile($op);          // « refunded » seul ne confirme rien : l'opération reste « à vérifier »
+            // « refunded » seul ne confirme rien ; la preuve complète (montant total, même transaction, même environnement) confirme.
+            if (app(FinancialOperations::class)->reconcile($op) === 'confirmed_on_provider_proof') {
+                return;
+            }
         }
         $this->flag($order, $payment, 'refunded_by_provider', $v);
     }

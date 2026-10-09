@@ -25,3 +25,7 @@ Source : rapport de Claude sur le VPS (prompt `docs/38`), commit déployé `43ec
 - Comportement des scénarios `failure`, `timeout`, `pending`, et des passerelles par carte.
 - Remboursement **partiel** en bac à sable ; existence d'un **paiement sortant** (reversement) : question à poser au support Genius Pay (§8.4 de la recette).
 - Redirection `https://geniuspay.ci/docs` → `http://geniuspay.ci:8000/docs/` (côté prestataire).
+
+## Recette automatisée du 2026-10-09 (`freeci:recette:finance`, commit `1e8dc22`)
+
+Bac à sable, six scénarios A à F, six paiements réglés par le simulateur et confirmés sans intervention. Tous les contrôles sont RÉUSSIS, sauf un point « à voir » : le remboursement total par API (B) est resté « à vérifier » faute de référence de remboursement (opération `OP-2610-00001`). Décision du porteur : confirmation automatique sur preuve du prestataire (lot 72). Restent manuels : écrans (B10, D3/D11, F5–F8), remboursement partiel chez le prestataire (C7), question du paiement sortant (§8.4), signature du §10.

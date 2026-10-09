@@ -217,7 +217,9 @@ final class ProcessProviderEvent
         //         // Une notification « remboursé » n'établit ni le montant ni le rattachement à une opération FreeCI : elle marque l'opération « à vérifier » (rapprochement manuel), jamais « confirmée ».
         $op = DB::table('financial_operations')->where('payment_id', $payment->getKey())->where('kind', 'refund')->where('execution_mode', 'api')->whereIn('state', ['in_progress', 'to_verify'])->value('id');
         if ($op !== null) {
-            app(FinancialOperations::class)->reconcile($op);
+            if (app(FinancialOperations::class)->reconcile($op) === 'confirmed_on_provider_proof') {
+                return 'applied';
+            }
         }
         $this->flag($order, $payment, 'refunded_by_provider');
 
