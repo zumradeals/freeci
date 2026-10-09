@@ -27,6 +27,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FinanceSpaceController;
+use App\Http\Controllers\Freelance\AvailabilityController;
 use App\Http\Controllers\Freelance\FreelanceController;
 use App\Http\Controllers\Freelance\PortfolioController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
@@ -158,6 +159,8 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::middleware('freelance')->prefix('freelance')->group(function () {
         Route::get('/', [FreelanceController::class, 'dashboard'])->name('freelance.dashboard');
         Route::get('/commandes', [FreelanceController::class, 'orders'])->name('freelance.orders');
+        Route::get('/disponibilite', [AvailabilityController::class, 'show'])->name('freelance.availability');
+        Route::post('/disponibilite', [AvailabilityController::class, 'save'])->middleware('throttle:20,10')->name('freelance.availability.save');
         Route::get('/revenus', [FinanceSpaceController::class, 'freelancer'])->name('freelance.earnings');
         Route::post('/revenus/destination', [FinanceSpaceController::class, 'declareBeneficiary'])->middleware('throttle:10,10')->name('freelance.earnings.beneficiary');
         Route::get('/services', [ServiceManagementController::class, 'index'])->name('freelance.services');

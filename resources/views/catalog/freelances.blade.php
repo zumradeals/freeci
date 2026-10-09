@@ -80,7 +80,7 @@
       @foreach($results as $r)
         <article class="card talent-card tc-new" aria-labelledby="talent-{{ $loop->index }}">
           <div class="talent-card-top"><x-fc.avatar :name="$r['name']" :user="$r['userId']" size="lg" /><x-fc.fav-button kind="freelance" :slug="$r['slug']" :on="$r['favorited']" /></div>
-          <div class="talent-identity"><h2 class="t-h3" id="talent-{{ $loop->index }}"><a href="{{ route('freelances.show', $r['slug']) }}">{{ $r['name'] }}</a></h2><p>{{ $r['headline'] }}</p>@if($r['city'])<p class="muted small"><x-fc.icon name="pin" :size="14" /> {{ $r['city'] }}</p>@endif</div>
+          <div class="talent-identity"><h2 class="t-h3" id="talent-{{ $loop->index }}"><a href="{{ route('freelances.show', $r['slug']) }}">{{ $r['name'] }}</a></h2><p>{{ $r['headline'] }}</p>@if($r['city'])<p class="muted small"><x-fc.icon name="pin" :size="14" /> {{ $r['city'] }}</p>@endif<p style="margin:6px 0 0"><x-fc.seller-pill :user="$r['userId']" short /></p></div>
           @if(count($r['skills']))<ul class="talent-skills" aria-label="Compétences">@foreach(array_slice($r['skills'], 0, 3) as $sk)<li><span class="badge tone-neutral">{{ $sk }}</span></li>@endforeach</ul>@endif
           <div class="talent-card-bottom">
             <div class="tc-line"><p class="small muted">{{ $r['servicesCount'] }} service{{ $r['servicesCount'] > 1 ? 's' : '' }} publié{{ $r['servicesCount'] > 1 ? 's' : '' }}</p>

@@ -6,6 +6,7 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Data\ServiceCard;
 use App\Modules\Catalog\Data\ServiceSearchCriteria;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Catalog\Support\Availability;
 use App\Modules\Orders\Queries\ReviewQueries;
 use App\Modules\Orders\Support\ReviewVisibility;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -47,6 +48,9 @@ final class SearchServices
             });
         }
 
+        // Les services dont le freelance est indisponible restent visibles mais passent APRÈS les disponibles (quel que soit le tri).
+        $q->orderByRaw('(select case when '.Availability::unavailableSql('fp').' then 1 else 0 end from freelance_profiles fp where fp.id = services.freelance_profile_id) asc');
+
         match ($c->sort) {
             'prix-croissant' => $q->orderBy('services.price_xof'),
             'prix-decroissant' => $q->orderByDesc('services.price_xof'),
@@ -62,6 +66,7 @@ final class SearchServices
 
         $p = $q->paginate(ServiceSearchCriteria::PER_PAGE, ['services.*'], 'page', $page);
         $ids = $p->getCollection()->map(fn (Service $s) => (string) $s->getKey())->all();
+        app(SellerSignals::class)->preload($p->getCollection()->map(fn (Service $s) => (string) $s->freelanceProfile->user_id)->all());
         $stats = $this->reviews->forServices($ids);
         $marked = $this->favorites->marked($viewer, 'service', $ids);
 

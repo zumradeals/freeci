@@ -23,7 +23,7 @@ final class GetPublicProfile
 
         return [
             'id' => (string) $p->getKey(), 'userId' => (string) $p->user_id, 'name' => $p->display_name, 'initials' => ServiceProjection::initials($p->display_name), 'headline' => $p->headline, 'city' => $p->city, 'bio' => $p->bio,
-            'portfolio' => app(PortfolioQueries::class)->active((string) $p->user_id), 'skills' => $p->skills ?? [], 'isDemo' => $p->is_demo, 'services' => $services,
+            'portfolio' => app(PortfolioQueries::class)->active((string) $p->user_id), 'skills' => $p->skills ?? [], 'isDemo' => $p->is_demo, 'services' => $services, 'seller' => app(SellerSignals::class)->for((string) $p->user_id),
         ];
     }
 }

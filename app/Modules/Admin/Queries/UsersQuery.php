@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Queries;
 
+use App\Modules\Catalog\Actions\AvailabilityManager;
 use App\Shared\Dates;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -70,7 +71,7 @@ final class UsersQuery
             'id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'verifiedAt' => $u->email_verified_at === null ? null : Dates::format(Carbon::parse($u->email_verified_at)),
             'suspended' => $u->suspended_at !== null, 'suspendedAt' => $u->suspended_at === null ? null : Dates::format(Carbon::parse($u->suspended_at)),
             'since' => Dates::format(Carbon::parse($u->created_at)), 'demo' => (bool) $u->is_demo, 'admin' => $admin, 'staff' => DB::table('staff_grants')->where('user_id', $id)->whereNull('revoked_at')->where(fn ($y) => $y->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists(), 'mfa' => $u->two_factor_confirmed_at !== null,
-            'roles' => DB::table('account_roles')->where('user_id', $id)->pluck('role')->all(),
+            'availability' => app(AvailabilityManager::class)->stateFor((string) $id), 'roles' => DB::table('account_roles')->where('user_id', $id)->pluck('role')->all(),
             'ordersAsClient' => [$orders('client_id')->count(), $orders('client_id')->whereNotIn('state', self::FINAL)->count()],
             'ordersAsFreelancer' => [$orders('freelancer_id')->count(), $orders('freelancer_id')->whereNotIn('state', self::FINAL)->count()],
             'services' => DB::table('services')->join('freelance_profiles as p', 'p.id', '=', 'services.freelance_profile_id')->where('p.user_id', $id)->count(),

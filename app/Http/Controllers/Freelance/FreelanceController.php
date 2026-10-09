@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Accounts\Actions\GetFreelanceProfile;
 use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Actions\SaveFreelanceProfile;
+use App\Modules\Catalog\Actions\AvailabilityManager;
 use App\Modules\Catalog\Actions\ListFreelancerServices;
 use App\Modules\Finance\Queries\FreelancerEarnings;
 use App\Modules\Orders\Queries\FreelancerOverview;
@@ -21,7 +22,7 @@ class FreelanceController extends Controller
     {
         return view('freelance.dashboard', [
             'user' => $request->user(), 'o' => $overview($request->user()),
-            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'revenue' => $earnings->overview($request->user(), 1)['totals']['real'], 'space' => 'freelancer',
+            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'availability' => app(AvailabilityManager::class)->state($request->user()), 'revenue' => $earnings->overview($request->user(), 1)['totals']['real'], 'space' => 'freelancer',
         ]);
     }
 

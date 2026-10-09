@@ -31,6 +31,7 @@ final class ExportPersonalData
             'profil_freelance' => $profile === null ? null : [
                 'nom_affiche' => $profile->display_name, 'accroche' => $profile->headline, 'presentation' => $profile->bio, 'ville' => $profile->city,
                 'competences' => json_decode((string) $profile->skills, true), 'publie_le' => $profile->published_at, 'adresse_publique' => $profile->slug,
+                'indisponible_depuis' => $profile->unavailable_at, 'retour_prevu_le' => $profile->back_on, 'retour_automatique' => (bool) $profile->auto_reopen,
             ],
             'services' => $profile === null ? [] : DB::table('services')->where('freelance_profile_id', $profile->id)->get(['title', 'status', 'price_xof', 'delivery_days', 'summary', 'created_at'])->all(),
             'missions' => $own('missions', 'client_id')->orderBy('created_at')->get(['slug', 'status', 'created_at', 'closed_at'])->all(),

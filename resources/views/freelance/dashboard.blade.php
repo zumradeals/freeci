@@ -37,6 +37,13 @@
         @endif
       </div>
       <aside class="sx-col">
+        @if(! empty($availability['has_profile']))
+        <section class="card panel" aria-labelledby="h-av"><div class="av-state"><h2 class="t-h2" id="h-av">Disponibilité</h2><span class="av-sw"><span class="av-dot {{ $availability['unavailable'] ? 'off' : '' }}"></span> {{ $availability['unavailable'] ? 'Indisponible' : 'Disponible' }}</span></div>
+          <p class="muted small">{{ $availability['unavailable'] ? 'Aucune nouvelle demande ne vous parvient'.($availability['back_label'] ? ' jusqu’au '.\Illuminate\Support\Carbon::parse($availability['back_on'])->translatedFormat('j F').'.' : '.') : 'Les clients peuvent vous envoyer des demandes.' }}</p>
+          @php($st = $availability['stats'])
+          @if($st['count'] >= \App\Modules\Orders\Queries\ResponseStats::MIN)<ul class="sx-rev"><li><span>Réponse habituelle</span><b>{{ $st['label'] ?? '—' }}</b></li><li><span>Traitées dans le délai</span><b>{{ $st['rate'] }} %</b></li></ul>@else<p class="muted small">Réactivité : pas encore assez de demandes pour la calculer.</p>@endif
+          <a class="btn btn-secondary" href="{{ route('freelance.availability') }}">Gérer ma disponibilité</a></section>
+        @endif
         <section class="card panel" aria-labelledby="h-svc"><div class="card-head"><h2 class="t-h2" id="h-svc">Vos services</h2><a class="btn btn-link" href="{{ route('freelance.services') }}">Gérer</a></div>
           @if(count($services))
             <ul class="stack-sm">@foreach($services as $s)<li class="row" style="justify-content:space-between;gap:8px 16px"><span style="min-width:0">@if($s['published'])<a href="{{ route('services.show', $s['slug']) }}">{{ $s['title'] }}</a>@else{{ $s['title'] ?: 'Sans titre' }}@endif<br><small class="muted">{{ $s['status'] }}</small></span>@if($s['price'])<x-fc.money :amount="$s['price']" />@endif</li>@endforeach</ul>

@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Catalog\Support\Availability;
 use App\Modules\Orders\Queries\ReviewQueries;
 use App\Modules\Orders\Support\ReviewVisibility;
 use App\Shared\Money;
@@ -55,6 +56,8 @@ final class SearchFreelancers
             $query->whereRaw("freeci_unaccent(concat_ws(' ', p.display_name, p.headline, p.skills::text)) ILIKE freeci_unaccent(?)", [$like]);
         }
 
+        $query->orderByRaw('case when '.Availability::unavailableSql('p').' then 1 else 0 end asc');      // indisponibles : visibles mais après les disponibles
+
         match ($sort) {
             'nom' => $query->orderByRaw('lower(freeci_unaccent(p.display_name)) asc'),
             'mieux-notes' => $query->leftJoinSub(ReviewVisibility::published(DB::table('reviews'))->selectRaw('subject_id, avg(rating) as r_avg, count(*) as r_count')->groupBy('subject_id'), 'rv', 'rv.subject_id', '=', 'p.user_id')
@@ -65,13 +68,15 @@ final class SearchFreelancers
 
         $p = $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
         $ids = $p->getCollection()->pluck('id')->all();
+        $signals = app(SellerSignals::class);
+        $signals->preload($p->getCollection()->pluck('user_id')->map(fn ($u) => (string) $u)->all());
         $stats = $this->reviews->forProfiles($ids);
         $marked = $this->favorites->marked($viewer, 'freelance', $ids);
 
         return $p->through(fn ($r) => [
             'id' => $r->id, 'userId' => (string) $r->user_id, 'slug' => $r->slug, 'name' => $r->display_name, 'initials' => ServiceProjection::initials($r->display_name), 'headline' => $r->headline, 'city' => $r->city,
             'skills' => array_slice(json_decode($r->skills ?? '[]', true) ?: [], 0, 5), 'servicesCount' => (int) $r->services_count, 'minPrice' => $r->min_price !== null ? Money::xof((int) $r->min_price) : null, 'isDemo' => (bool) $r->is_demo,
-            'ratingCount' => $stats[$r->id]['count'] ?? 0, 'ratingAvg' => $stats[$r->id]['avg'] ?? null, 'favorited' => isset($marked[$r->id]),
+            'ratingCount' => $stats[$r->id]['count'] ?? 0, 'ratingAvg' => $stats[$r->id]['avg'] ?? null, 'favorited' => isset($marked[$r->id]), 'seller' => $signals->for((string) $r->user_id),
         ]);
     }
 }

@@ -15,6 +15,8 @@ TaskHeartbeat::watch(Schedule::command('freeci:orders:expire')->everyFiveMinutes
 TaskHeartbeat::watch(Schedule::command('freeci:files:scan')->everyFiveMinutes()->withoutOverlapping(), 'files:scan');
 TaskHeartbeat::watch(Schedule::command('freeci:media:prune')->daily(), 'media:prune');
 TaskHeartbeat::watch(Schedule::command('freeci:photos:purge')->daily(), 'photos:purge');
+// Retours de disponibilité : constate les dates de retour échues (la disponibilité elle-même est évaluée à la lecture) et prévient le freelance.
+TaskHeartbeat::watch(Schedule::command('freeci:availability:reopen')->dailyAt('00:10'), 'availability:reopen');
 // Courriels de notification : relance des envois restés en attente ; vidage de la file par le planificateur SEULEMENT si demandé
 // (FREECI_QUEUE_VIA_SCHEDULER=true), sinon un processus « queue:work » dédié est recommandé (deploy/freeci-queue.service.example).
 TaskHeartbeat::watch(Schedule::command('freeci:notifications:retry --stale')->everyTenMinutes()->withoutOverlapping(), 'notifications:retry');

@@ -6,6 +6,10 @@
   <p class="effect"><strong>C’est votre service.</strong> Vous ne pouvez pas le commander. Les demandes reçues apparaissent dans votre <a href="{{ route('freelance.dashboard') }}">espace freelance</a>.</p>
 @elseif(! $service->acceptsRequests)
   <p class="effect"><strong>Demandes fermées.</strong> Ce service n’accepte pas de demandes pour le moment.</p>
+@elseif(! ($sg = app(\App\Modules\Catalog\Actions\SellerSignals::class)->for($service->sellerUserId))['available'])
+  <span class="btn btn-lg btn-block is-off" aria-disabled="true">Demande impossible pour le moment</span>
+  <div class="av-note"><x-fc.icon name="info" :size="18" /><span>{{ explode(' ', $service->sellerName)[0] }} ne prend pas de nouvelle demande{{ $sg['back_on'] ? ' avant le '.$sg['back_on'] : ' pour le moment' }}. Ajoutez ce service à vos favoris pour y revenir, ou consultez d’autres freelances.</span></div>
+  <p><a class="btn btn-link" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">Voir des services similaires</a></p>
 @else
   <a class="btn btn-primary btn-lg btn-block" @if($id) id="{{ $id }}" @endif href="{{ route('services.request', $service->slug) }}">Demander cette prestation</a>
   @if($aside)

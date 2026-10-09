@@ -2285,3 +2285,32 @@ a.kpi:hover { background: var(--marine-100); }
 .tf-lost summary{cursor:pointer;font-weight:600}
 @media(max-width:600px){.tf-codes{grid-template-columns:1fr}.tf-qrbox svg{width:160px;height:160px}}
 @media print{.tf-codes li{border-style:solid}}
+
+/* Lot 74 — disponibilité et temps de réponse (F-10) */
+.av-state{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.av-sw{display:inline-flex;align-items:center;gap:10px;font-weight:700}
+.av-dot{width:12px;height:12px;border-radius:50%;background:#1a7f4b;display:inline-block}
+.av-dot.off{background:#9aa5b1}
+.av-opt{display:grid;gap:10px}
+.av-opt label.o{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;cursor:pointer}
+.av-opt label.o.on{border-color:#1b3a63;box-shadow:0 0 0 2px #dbe7f5}
+.av-opt b{display:block}
+.av-opt small{color:var(--ink-600)}
+.av-kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.av-kpi>div{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.av-kpi b{display:block;font-size:1.6rem;line-height:1.1}
+.av-kpi small{color:var(--ink-600)}
+.av-bar{height:8px;border-radius:99px;background:#e8eef5;overflow:hidden;margin-top:8px}
+.av-bar i{display:block;height:100%;background:#1a7f4b}
+.av-pill{display:inline-flex;gap:6px;align-items:center;border-radius:99px;padding:4px 10px;font-size:.8125rem;font-weight:650;background:#e7f4ec;color:#14633a}
+.av-pill.off{background:#eef1f5;color:#4a5563}
+.av-pill.new{background:#eaf1f8;color:#1b3a63}
+.av-pill .av-dot{width:8px;height:8px}
+.btn.is-off{background:#eef1f5;border-color:#d5dce5;color:#6b7684;cursor:not-allowed;pointer-events:none}
+.av-note{display:flex;gap:10px;align-items:flex-start;background:#f3f6fa;border:1px solid var(--line);border-radius:12px;padding:12px}
+.av-note svg{flex:none;margin-top:2px;color:#1b3a63}
+.av-tl{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.av-tl li{display:flex;gap:10px;align-items:flex-start}
+.av-tl svg{flex:none;margin-top:2px;color:#1a7f4b}
+.svc.is-off .thumb{filter:grayscale(1);opacity:.7}
+@media(max-width:600px){.av-kpi{grid-template-columns:1fr}}

@@ -10,12 +10,14 @@ use App\Modules\Catalog\Enums\ServiceStatus;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Catalog\Models\Service;
+use App\Modules\Catalog\Support\Availability;
 use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Exceptions\OwnService;
 use App\Modules\Orders\Exceptions\PendingRequestExists;
 use App\Modules\Orders\Exceptions\RequestsClosed;
+use App\Modules\Orders\Exceptions\SellerUnavailable;
 use App\Modules\Orders\Exceptions\ServiceChanged;
 use App\Modules\Orders\Models\Order;
 use App\Shared\CommandReceipts;
@@ -34,7 +36,7 @@ final class RequestService
      * @param  list<string>  $answers  une réponse par « élément à fournir » du service, dans l'ordre
      * @return array{0: Order, 1: bool} [commande, vrai si répétition de la même opération]
      *
-     * @throws ServiceNotFound|ServiceNotAvailable|OwnService|RequestsClosed|ServiceChanged|PendingRequestExists|OrderForbidden|ValidationException
+     * @throws ServiceNotFound|ServiceNotAvailable|OwnService|RequestsClosed|SellerUnavailable|ServiceChanged|PendingRequestExists|OrderForbidden|ValidationException
      */
     public function __invoke(User $client, string $serviceSlug, int $expectedServiceVersion, array $answers, ?string $notes, bool $conditionsAccepted, string $operationKey): array
     {
@@ -59,6 +61,9 @@ final class RequestService
         }
         if (! $service->accepts_requests) {
             throw new RequestsClosed;
+        }
+        if ($this->sellerUnavailable($service->freelance_profile_id)) {
+            throw new SellerUnavailable;          // le freelance ne prend pas de nouvelle demande pour le moment (F-10)
         }
 
         $brief = $this->validatedBrief($service, $answers, $notes, $conditionsAccepted);
@@ -100,6 +105,13 @@ final class RequestService
         return ['answers' => $items, 'notes' => $notes === '' ? null : $notes];
     }
 
+    private function sellerUnavailable(string $profileId): bool
+    {
+        $p = DB::table('freelance_profiles')->where('id', $profileId)->first(['unavailable_at', 'back_on', 'auto_reopen']);
+
+        return $p !== null && Availability::unavailable($p);
+    }
+
     private function create(User $client, Service $service, int $expectedVersion, array $brief): string
     {
         // Verrou du service : les conditions copiées sont celles de cette version précise, sans modification concurrente.
@@ -109,6 +121,9 @@ final class RequestService
         }
         if ($locked->row_version !== $expectedVersion) {
             throw new ServiceChanged;
+        }
+        if ($this->sellerUnavailable($locked->freelance_profile_id)) {
+            throw new SellerUnavailable;
         }
         $locked->load(['category', 'freelanceProfile']);
 

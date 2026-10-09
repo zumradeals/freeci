@@ -39,6 +39,7 @@
           <div><dt>Adresse e-mail</dt><dd>{{ $u['verifiedAt'] ? 'Vérifiée le '.$u['verifiedAt'] : 'Non vérifiée' }}</dd></div>
           <div><dt>Inscrit le</dt><dd>{{ $u['since'] }}</dd></div>
           <div><dt>Rôles</dt><dd>{{ count($u['roles']) ? implode(', ', $u['roles']) : 'aucun' }}@if($u['admin']) · <strong>administrateur</strong> (double authentification : {{ $u['mfa'] ? 'activée' : 'inactive' }})@endif@unless($u['admin']) · double authentification : {{ $u['mfa'] ? 'activée' : 'non activée' }}@endunless</dd></div>
+          @if($u['availability']['has_profile'])<div><dt>Disponibilité</dt><dd>{{ $u['availability']['unavailable'] ? 'Indisponible'.($u['availability']['back_label'] ? ' jusqu’au '.$u['availability']['back_label'] : '') : 'Disponible' }}@if($u['availability']['stats']['count'] >= 5) · réponse habituelle {{ $u['availability']['stats']['label'] ?? 'non établie' }}, {{ $u['availability']['stats']['rate'] }} % traitées dans le délai @else · réactivité : pas assez de demandes @endif</dd></div>@endif
         </dl></section>
       <section class="ed-card" aria-labelledby="h-his"><h2 id="h-his">Historique des suspensions</h2>
         @if(count($u['history']))<ol class="ed-tl">@foreach($u['history'] as $h)<li><span class="d"><x-fc.icon name="check" :size="14" /></span><p><b>{{ $h['action'] }}</b> · {{ $h['when'] }} · par {{ $h['actor'] }}<br><span class="muted small">{{ $h['reason'] }}</span></p></li>@endforeach</ol>@else<p class="muted" style="margin:0">Aucune suspension enregistrée.</p>@endif

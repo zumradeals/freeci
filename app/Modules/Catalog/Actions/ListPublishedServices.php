@@ -18,6 +18,7 @@ final class ListPublishedServices
             ->limit(max(1, min($limit, 20)))
             ->get();
         $ids = $services->map(fn (Service $s) => (string) $s->getKey())->all();
+        app(SellerSignals::class)->preload($services->map(fn (Service $s) => (string) $s->freelanceProfile->user_id)->all());
         $stats = app(ReviewQueries::class)->forServices($ids);
         $marked = app(FavoriteQueries::class)->marked(auth()->user(), 'service', $ids);
 

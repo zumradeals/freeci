@@ -53,6 +53,7 @@
         <section aria-labelledby="s5"><h2 class="t-h2" id="s5">À propos du freelance</h2>
           <div class="card vendor"><div class="top"><x-fc.avatar :name="$service->sellerName" :user="$service->sellerUserId" size="lg" />
             <div><p class="t-h3">{{ $service->sellerName }}</p><p class="muted">{{ $service->sellerHeadline }}@if($service->sellerCity) · {{ $service->sellerCity }}@endif</p></div></div>
+            <p style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap"><x-fc.seller-pill :user="$service->sellerUserId" rate /></p>
             @if($service->sellerSlug)<p style="margin-top:8px"><a class="btn btn-secondary" href="{{ route('freelances.show', $service->sellerSlug) }}">Voir le profil complet</a></p>@endif
             </div></section>
         <section aria-labelledby="s6" id="avis"><h2 class="t-h2" id="s6">Avis</h2>
@@ -82,7 +83,7 @@
     <div class="svc-grid service-grid">@foreach($similar as $other)<x-fc.service-card :service="$other" :level="2" />@endforeach</div></section>
   @endif
 </div>
-<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@endif</div>
+<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))@if(app(\App\Modules\Catalog\Actions\SellerSignals::class)->for($service->sellerUserId)['available'])<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@else<span class="btn btn-lg is-off" aria-disabled="true">Indisponible</span>@endif @endif</div>
 
 @auth<div class="container" style="margin:8px auto 96px"><p class="small muted"><a href="{{ route('support.report.form', ['service', $service->slug]) }}">Signaler ce service</a>@if($service->sellerSlug) · <a href="{{ route('support.report.form', ['profile', $service->sellerSlug]) }}">Signaler le profil du vendeur</a>@endif</p></div>@endauth
 </x-layouts.public>

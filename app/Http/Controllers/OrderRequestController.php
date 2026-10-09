@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Integrations\FileScan\FileScanner;
 use App\Modules\Catalog\Actions\GetPublishedService;
+use App\Modules\Catalog\Actions\SellerSignals;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Orders\Actions\RequestService;
@@ -12,6 +13,7 @@ use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Exceptions\OwnService;
 use App\Modules\Orders\Exceptions\PendingRequestExists;
 use App\Modules\Orders\Exceptions\RequestsClosed;
+use App\Modules\Orders\Exceptions\SellerUnavailable;
 use App\Modules\Orders\Exceptions\ServiceChanged;
 use App\Shared\Dates;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +36,9 @@ class OrderRequestController extends Controller
         }
         if ($service->sellerUserId === $request->user()->getKey()) {
             return response()->view('errors.order', ['title' => 'C’est votre service', 'message' => 'Vous ne pouvez pas commander votre propre service.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 403);
+        }
+        if (! app(SellerSignals::class)->for($service->sellerUserId)['available']) {
+            return response()->view('errors.order', ['title' => 'Freelance indisponible', 'message' => 'Ce freelance ne prend pas de nouvelle demande pour le moment. Ajoutez le service à vos favoris pour y revenir, ou consultez d’autres services.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
         }
         if (! $service->acceptsRequests) {
             return response()->view('errors.order', ['title' => 'Demandes fermées', 'message' => 'Ce service d’exemple n’accepte pas de demande.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
@@ -64,6 +69,8 @@ class OrderRequestController extends Controller
             return response()->view('catalog.unavailable', [], 410);
         } catch (OwnService) {
             return response()->view('errors.order', ['title' => 'C’est votre service', 'message' => 'Vous ne pouvez pas commander votre propre service.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 403);
+        } catch (SellerUnavailable) {
+            return response()->view('errors.order', ['title' => 'Freelance indisponible', 'message' => 'Ce freelance ne prend pas de nouvelle demande pour le moment. Ajoutez le service à vos favoris pour y revenir, ou consultez d’autres services.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
         } catch (RequestsClosed) {
             return response()->view('errors.order', ['title' => 'Demandes fermées', 'message' => 'Ce service n’accepte pas de demande.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
         } catch (OrderForbidden) {
