@@ -97,6 +97,8 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Fuseau de la SESSION : Laravel écrit des dates sans décalage horaire (heure UTC de l'application) ; sans ceci, un serveur PostgreSQL réglé sur un autre fuseau les interprète mal (décalage de plusieurs heures).
+            'timezone' => env('DB_TIMEZONE', 'UTC'),
         ],
 
         'sqlsrv' => [

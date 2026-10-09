@@ -25,17 +25,20 @@ class PaymentGateways
     {
         $h = strtolower(trim((string) (is_array($headers['x-webhook-environment'] ?? null) ? ($headers['x-webhook-environment'][0] ?? '') : ($headers['x-webhook-environment'] ?? ''))));
         $candidates = in_array($h, GeniusPayConfig::ENVIRONMENTS, true) ? [$h] : GeniusPayConfig::ENVIRONMENTS;
+        $badBody = null;
         foreach ($candidates as $env) {
             if (GeniusPayConfig::keys($env)['webhook_secret'] === '') {
                 continue;
             }
             try {
                 return $this->forEnvironment($env)->parseEvent($rawBody, $headers);
+            } catch (InvalidProviderBody $e) {
+                $badBody = $e;          // signature valide pour cet environnement, corps inexploitable : on le signale tel quel (400)
             } catch (InvalidProviderEvent) {
                 continue;
             }
         }
-        throw new InvalidProviderEvent('Notification non authentifiée.');
+        throw $badBody ?? new InvalidProviderEvent('Notification non authentifiée.');
     }
 
     /** Au moins un secret de webhook est-il configuré ? (sinon l'adresse répond 404). */

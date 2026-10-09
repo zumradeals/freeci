@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Integrations\Payments\GeniusPayConfig;
+use App\Integrations\Payments\InvalidProviderBody;
 use App\Integrations\Payments\InvalidProviderEvent;
 use App\Integrations\Payments\PaymentGateways;
 use App\Modules\Finance\Actions\ProcessProviderEvent;
@@ -32,6 +33,10 @@ class GeniusPayWebhookController extends Controller
         }
         try {
             $event = $gateways->parseWebhook($raw, $request->headers->all());
+        } catch (InvalidProviderBody) {
+            Log::warning('geniuspay.webhook_body_invalid', ['length' => strlen($raw)]);       // signature valide, corps inexploitable : ni secret en cause, ni rejeu utile
+
+            return response()->json(['error' => 'invalid_body'], 400);
         } catch (InvalidProviderEvent) {
             // Trace de diagnostic SANS donnée sensible (booléens et longueurs seulement) ; aucun enregistrement durable en base.
             foreach (GeniusPayConfig::ENVIRONMENTS as $env) {

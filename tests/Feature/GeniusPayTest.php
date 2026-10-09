@@ -581,4 +581,30 @@ class GeniusPayTest extends TestCase
         $this->assertSame(1, Artisan::call('freeci:genius:status', ['--ping' => true]));
         $this->assertStringContainsString('aucun appel émis', Artisan::output());
     }
+
+    /** Corps PLAT observé à la sonde du bac à sable : `data` porte directement `reference`, `status`, `environment`… (sans `transaction`). */
+    private function flat(string $event, array $data, ?int $ts = null): array
+    {
+        $ts ??= time();
+        $body = json_encode(['event' => $event, 'timestamp' => gmdate('c', $ts), 'data' => $data + ['environment' => 'sandbox']]);
+
+        return [$body, ['X-Webhook-Signature' => hash_hmac('sha256', $ts.'.'.$body, self::WHSEC), 'X-Webhook-Timestamp' => (string) $ts, 'X-Webhook-Environment' => 'sandbox']];
+    }
+
+    public function test_the_flat_sandbox_body_is_accepted_and_a_signed_unusable_body_answers_400_not_401(): void
+    {
+        $this->order();
+        [$b, $h] = $this->flat('payment.success', ['id' => 1, 'reference' => self::TX, 'amount' => $this->amount(), 'status' => 'completed', 'gateway' => 'orange_money', 'scenario' => 'success']);
+        $this->hook($b, $h)->assertOk()->assertJson(['received' => true]);
+        $this->assertSame(1, DB::table('payment_events')->where('provider', 'genius_pay')->count());
+
+        [$b2, $h2] = $this->flat('payment.refunded', ['reference' => self::TX, 'status' => 'refunded']);
+        $this->hook($b2, $h2)->assertOk();
+
+        [$b3, $h3] = $this->flat('payment.success', ['status' => 'completed']);                        // signé, mais sans référence
+        $this->hook($b3, $h3)->assertStatus(400)->assertJson(['error' => 'invalid_body']);
+        [$b4, $h4] = $this->flat('payment.success', ['reference' => self::TX]);
+        $h4['X-Webhook-Signature'] = str_repeat('0', 64);
+        $this->hook($b4, $h4)->assertStatus(401);                                                  // signature fausse : toujours 401
+    }
 }

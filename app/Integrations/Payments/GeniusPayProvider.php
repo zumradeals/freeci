@@ -8,6 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -142,6 +143,9 @@ class GeniusPayProvider implements PaymentProvider
         }
         $ref = $d['refund_reference'] ?? null;
         if (! is_string($ref) || $ref === '' || strlen($ref) > 80) {
+            // Diagnostic SANS valeur : seuls les NOMS des champs renvoyés sont journalisés (la sonde a constaté un remboursement effectif sans `refund_reference`).
+            Log::warning('geniuspay.refund_reference_missing', ['environment' => $this->environment(), 'keys' => array_slice(array_map('strval', array_keys($d)), 0, 40)]);
+
             return RefundResult::uncertain('refund_reference_missing');         // sans référence de remboursement, le rattachement n'est pas établi
         }
 
@@ -214,13 +218,14 @@ class GeniusPayProvider implements PaymentProvider
                 'event' => mb_substr($data['event'], 0, 60), 'environment' => $env, 'signature_timestamp' => (int) $ts, 'body_sha256' => hash('sha256', $rawBody),
             ]);
         }
-        $tx = is_array($data) ? ($data['data']['transaction'] ?? null) : null;
+        // Deux formes observées : documentée (`data.transaction.{reference,…}`) et PLATE, émise par le simulateur du bac à sable (`data.{reference,…}`, constatée à la sonde).
+        $tx = is_array($data) ? ($data['data']['transaction'] ?? (is_string($data['data']['reference'] ?? null) ? $data['data'] : null)) : null;
         if (! is_array($data) || ! is_string($data['event'] ?? null) || ! is_array($tx) || ! is_string($tx['reference'] ?? null) || $tx['reference'] === '' || strlen($tx['reference']) > 80) {
-            throw new InvalidProviderEvent('Corps de notification invalide.');
+            throw new InvalidProviderBody('Corps de notification invalide.');
         }
         $env = strtolower((string) ($data['data']['environment'] ?? ''));
         if ($env === '' || ($envHeader !== '' && $envHeader !== $env) || $env !== $this->environment()) {
-            throw new InvalidProviderEvent('Environnement absent ou incohérent.');   // un secret ne valide que les notifications de SON environnement
+            throw new InvalidProviderBody('Environnement absent ou incohérent.');   // un secret ne valide que les notifications de SON environnement
         }
         $status = match ($data['event']) {
             'payment.success' => ProviderStatus::Succeeded,
