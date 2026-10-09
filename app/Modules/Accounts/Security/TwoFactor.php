@@ -60,7 +60,8 @@ final class TwoFactor
         RateLimiter::clear($this->key($user));
 
         return DB::transaction(function () use ($user, $step) {
-            DB::table('users')->where('id', $user->getKey())->update(['two_factor_confirmed_at' => now(), 'two_factor_last_step' => $step]);
+            // Les connexions mémorisées (cookie « se souvenir de moi ») ne franchiraient pas la deuxième étape : elles sont invalidées.
+            DB::table('users')->where('id', $user->getKey())->update(['two_factor_confirmed_at' => now(), 'two_factor_last_step' => $step, 'remember_token' => Str::random(60)]);
             SecurityLog::record('mfa_enabled', $user->getKey());
 
             return $this->issueCodes($user);
@@ -133,6 +134,18 @@ final class TwoFactor
             DB::table('sessions')->where('user_id', $user->getKey())->delete();                 // toutes les sessions ouvertes sont fermées
             RateLimiter::clear($this->key($user));
             SecurityLog::record('mfa_reset', $user->getKey(), ['by' => $by]);
+        });
+    }
+
+    /** Désactivation VOLONTAIRE par la personne (mot de passe et code vérifiés par l'appelant) : les AUTRES sessions sont fermées, la session courante est conservée. */
+    public function disable(User $user, string $keepSessionId): void
+    {
+        DB::transaction(function () use ($user, $keepSessionId) {
+            DB::table('users')->where('id', $user->getKey())->update(['two_factor_secret' => null, 'two_factor_confirmed_at' => null, 'two_factor_last_step' => null, 'remember_token' => Str::random(60)]);
+            DB::table('two_factor_recovery_codes')->where('user_id', $user->getKey())->delete();
+            DB::table('sessions')->where('user_id', $user->getKey())->where('id', '<>', $keepSessionId)->delete();
+            RateLimiter::clear($this->key($user));
+            SecurityLog::record('mfa_disabled', $user->getKey(), ['by' => 'self']);
         });
     }
 

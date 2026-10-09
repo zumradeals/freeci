@@ -3,6 +3,7 @@
 use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Account\ProfilePhotoController;
+use App\Http\Controllers\Account\TwoFactorController;
 use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
 use App\Http\Controllers\Admin\AuditController;
@@ -54,6 +55,10 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/espace/compte/sessions/{id}/fermer', [AccountController::class, 'revokeSession'])->middleware('throttle:20,1')->name('account.sessions.revoke');
     Route::post('/espace/compte/photo', [ProfilePhotoController::class, 'store'])->middleware('throttle:10,10')->name('account.photo.store');
     Route::post('/espace/compte/photo/supprimer', [ProfilePhotoController::class, 'destroy'])->middleware('throttle:20,10')->name('account.photo.destroy');
+    Route::get('/espace/compte/double-authentification', [TwoFactorController::class, 'show'])->name('account.2fa');
+    Route::post('/espace/compte/double-authentification/activer', [TwoFactorController::class, 'enable'])->middleware('throttle:10,10')->name('account.2fa.enable');
+    Route::post('/espace/compte/double-authentification/codes', [TwoFactorController::class, 'regenerate'])->middleware('throttle:6,10')->name('account.2fa.codes');
+    Route::post('/espace/compte/double-authentification/desactiver', [TwoFactorController::class, 'disable'])->middleware('throttle:6,10')->name('account.2fa.disable');
     Route::post('/espace/compte/export', [AccountController::class, 'export'])->middleware('throttle:6,10')->name('account.export');
     Route::post('/espace/compte/fermeture', [AccountController::class, 'requestClosure'])->middleware('throttle:5,10')->name('account.closure.request');
     Route::post('/espace/compte/fermeture/annuler', [AccountController::class, 'cancelClosure'])->middleware('throttle:10,1')->name('account.closure.cancel');
@@ -242,6 +247,7 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
             Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');
             Route::post('/utilisateurs/{id}/realisations/{item}/retirer', [UserController::class, 'removePortfolio'])->whereUuid('item')->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.portfolio.remove');
+            Route::post('/utilisateurs/{id}/double-authentification/reinitialiser', [UserController::class, 'resetTwoFactor'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.mfa.reset');
             Route::post('/utilisateurs/{id}/photo/retirer', [UserController::class, 'removePhoto'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.photo.remove');
             Route::post('/utilisateurs/{id}/{action}', [UserController::class, 'change'])->whereIn('action', ['suspendre', 'reactiver'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.users.change');
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Modules\Accounts\Security\SecondFactorGate;
 use App\Modules\Finance\Actions\Beneficiaries;
 use App\Modules\Finance\Queries\ClientFinance;
 use App\Modules\Finance\Queries\FreelancerEarnings;
@@ -24,7 +25,8 @@ class FinanceSpaceController extends Controller
 
     public function declareBeneficiary(Request $request, Beneficiaries $b): RedirectResponse
     {
-        $d = $request->validate(['method' => ['required', 'in:mobile_money,bank_transfer,other'], 'holder' => ['required', 'string', 'min:2', 'max:120'], 'destination' => ['required', 'string', 'min:6', 'max:120']]);
+        $d = $request->validate(['method' => ['required', 'in:mobile_money,bank_transfer,other'], 'holder' => ['required', 'string', 'min:2', 'max:120'], 'destination' => ['required', 'string', 'min:6', 'max:120'], 'code' => ['nullable', 'string', 'max:20']]);
+        app(SecondFactorGate::class)->assert($request->user(), $d['code'] ?? null);          // double authentification active : un code est demandé pour changer l'endroit où l'argent est versé
         try {
             $b->declare($request->user(), $d['method'], $d['holder'], $d['destination']);
         } catch (\DomainException $e) {

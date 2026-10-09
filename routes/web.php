@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\FreelanceDirectoryController;
 use App\Http\Controllers\FreelanceProfileController;
@@ -38,6 +39,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/inscription', [RegisterController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/connexion', [LoginController::class, 'create'])->name('login');
     Route::post('/connexion', [LoginController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/connexion/verification', [TwoFactorChallengeController::class, 'show'])->name('login.2fa');
+    Route::post('/connexion/verification', [TwoFactorChallengeController::class, 'verify'])->middleware('throttle:10,5')->name('login.2fa.verify');
+    Route::post('/connexion/verification/annuler', [TwoFactorChallengeController::class, 'cancel'])->name('login.2fa.cancel');
     Route::get('/mot-de-passe-oublie', [PasswordResetController::class, 'request'])->name('password.request');
     Route::post('/mot-de-passe-oublie', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reinitialisation/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');

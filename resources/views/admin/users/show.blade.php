@@ -38,12 +38,19 @@
           <div><dt>État</dt><dd>@if($u['suspended'])Suspendu depuis le {{ $u['suspendedAt'] }}@else Actif @endif</dd></div>
           <div><dt>Adresse e-mail</dt><dd>{{ $u['verifiedAt'] ? 'Vérifiée le '.$u['verifiedAt'] : 'Non vérifiée' }}</dd></div>
           <div><dt>Inscrit le</dt><dd>{{ $u['since'] }}</dd></div>
-          <div><dt>Rôles</dt><dd>{{ count($u['roles']) ? implode(', ', $u['roles']) : 'aucun' }}@if($u['admin']) · <strong>administrateur</strong> (double authentification : {{ $u['mfa'] ? 'activée' : 'inactive' }})@endif</dd></div>
+          <div><dt>Rôles</dt><dd>{{ count($u['roles']) ? implode(', ', $u['roles']) : 'aucun' }}@if($u['admin']) · <strong>administrateur</strong> (double authentification : {{ $u['mfa'] ? 'activée' : 'inactive' }})@endif@unless($u['admin']) · double authentification : {{ $u['mfa'] ? 'activée' : 'non activée' }}@endunless</dd></div>
         </dl></section>
       <section class="ed-card" aria-labelledby="h-his"><h2 id="h-his">Historique des suspensions</h2>
         @if(count($u['history']))<ol class="ed-tl">@foreach($u['history'] as $h)<li><span class="d"><x-fc.icon name="check" :size="14" /></span><p><b>{{ $h['action'] }}</b> · {{ $h['when'] }} · par {{ $h['actor'] }}<br><span class="muted small">{{ $h['reason'] }}</span></p></li>@endforeach</ol>@else<p class="muted" style="margin:0">Aucune suspension enregistrée.</p>@endif
       </section></div>
       <aside class="ac-side">
+        @if($u['mfa'] && ! $u['staff'] && auth()->id() !== $u['id'])
+          <section class="ed-ck ph-rm" aria-labelledby="h-mfa"><h3 id="h-mfa" style="color:#a02a1f">Réinitialiser la double authentification</h3>
+            <div class="rq-info"><x-fc.icon name="info" :size="18" /><span>À n’utiliser que si la personne a perdu son téléphone <strong>et</strong> ses codes de secours, après avoir vérifié son identité. Toutes ses sessions sont fermées ; elle reçoit le motif et peut réactiver la double authentification. Acte journalisé.</span></div>
+            <form method="post" action="{{ route('admin.users.mfa.reset', $u['id']) }}" style="display:grid;gap:12px" onsubmit="return confirm('Réinitialiser la double authentification de ce compte ?')">@csrf
+              <div class="field"><label for="f-mfa-reason">Motif et vérification d’identité effectuée (10 à 1000 caractères)</label><textarea class="textarea" id="f-mfa-reason" name="reason" rows="4" required minlength="10" maxlength="1000"></textarea></div>
+              <button class="btn btn-danger" type="submit" data-once>Réinitialiser</button></form></section>
+        @endif
         @if($u['photo'] && auth()->id() !== $u['id'])
           <section class="ed-ck ph-rm" aria-labelledby="h-rmp"><h3 id="h-rmp" style="color:#a02a1f">Retirer la photo</h3>
             <div class="rq-info"><x-fc.icon name="info" :size="18" /><span>La photo cesse d’être affichée partout. La personne reçoit le motif et peut déposer une autre photo. Le fichier est conservé {{ config('freeci.account.removed_photo_days') }} jours (ou le temps d’un dossier d’assistance ouvert), puis effacé.</span></div>

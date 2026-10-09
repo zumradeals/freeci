@@ -19,9 +19,12 @@ class LoginController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $second = $request->authenticate();
         $request->session()->regenerate();
         app(AdminAccess::class)->forget($request->session());         // la double authentification se franchit à CHAQUE nouvelle session
+        if ($second) {
+            return redirect()->route('login.2fa');                    // mot de passe correct, session NON ouverte : le code est demandé
+        }
 
         // `intended` ne contient que l'URL que le visiteur a demandée sur ce site : jamais de destination externe.
         return redirect()->intended(route('account.dashboard'));

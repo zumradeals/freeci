@@ -8,6 +8,8 @@ use App\Modules\Accounts\Actions\AccountSettings;
 use App\Modules\Accounts\Actions\ChangeEmail;
 use App\Modules\Accounts\Actions\ExportPersonalData;
 use App\Modules\Accounts\Exceptions\AccountConflict;
+use App\Modules\Accounts\Security\SecondFactorGate;
+use App\Modules\Accounts\Security\TwoFactor;
 use App\Modules\Notifications\Support\MailStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +35,7 @@ class AccountController extends Controller
             'blockers' => $open === null ? [] : $closure->blockers($u->getKey()),
             'graceDays' => (int) config('freeci.account.closure_grace_days'),
             'isStaff' => $u->isStaff(),
+            'twoFactor' => $u->hasTwoFactor() ? ['since' => $u->two_factor_confirmed_at, 'remaining' => app(TwoFactor::class)->remaining($u)] : null,
         ]);
     }
 
@@ -45,7 +48,9 @@ class AccountController extends Controller
 
     public function password(Request $request, AccountSettings $settings): RedirectResponse
     {
-        $d = $request->validate(['current_password' => ['required', 'string', 'max:200'], 'password' => ['required', 'string', 'confirmed', Password::min(10)->letters()->numbers()]]);
+        $d = $request->validate(['current_password' => ['required', 'string', 'max:200'], 'password' => ['required', 'string', 'confirmed', Password::min(10)->letters()->numbers()], 'code' => ['nullable', 'string', 'max:20']]);
+        $settings->assertPassword($request->user(), $d['current_password']);
+        app(SecondFactorGate::class)->assert($request->user(), $d['code'] ?? null);        // double authentification active : un code s'ajoute au mot de passe
         $settings->changePassword($request->user(), $d['current_password'], $d['password'], $request->session()->getId());
 
         return back()->with('status', 'Mot de passe modifié. Vos autres sessions ont été fermées.');
@@ -53,7 +58,9 @@ class AccountController extends Controller
 
     public function requestEmail(Request $request, ChangeEmail $email): RedirectResponse
     {
-        $d = $request->validate(['email' => ['required', 'string', 'max:254'], 'current_password' => ['required', 'string', 'max:200']]);
+        $d = $request->validate(['email' => ['required', 'string', 'max:254'], 'current_password' => ['required', 'string', 'max:200'], 'code' => ['nullable', 'string', 'max:20']]);
+        app(AccountSettings::class)->assertPassword($request->user(), $d['current_password']);
+        app(SecondFactorGate::class)->assert($request->user(), $d['code'] ?? null);
         try {
             $email->request($request->user(), $d['email'], $d['current_password']);
         } catch (AccountConflict $e) {

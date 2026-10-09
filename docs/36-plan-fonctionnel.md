@@ -70,7 +70,7 @@
 
 ### Vague 2 — Croissance
 
-F-14 parrainage et codes promotionnels · F-15 version anglaise · F-16 référencement (plan du site, aperçus de partage, données structurées) · F-17 statistiques d'administration et exports CSV · F-18 double authentification facultative pour tous.
+F-14 parrainage et codes promotionnels · F-15 version anglaise · F-16 référencement (plan du site, aperçus de partage, données structurées) · F-17 statistiques d'administration et exports CSV · F-18 double authentification facultative pour tous — **livrée au lot 73 (maquette approuvée, 5 points approuvés)**.
 
 ### Reporté
 
@@ -124,7 +124,7 @@ Un chantier ne commence qu'après : sa **maquette approuvée** si l'interface ch
 | Réf. | Question | Recommandation |
 |---|---|---|
 | Q1 | Photo de profil facultative aussi pour les clients ? | **Tranché : oui (DEC-F03)** |
-| Q2 | Fournisseur d'envoi d'e-mails ? | À choisir selon coût et délivrabilité en Côte d'Ivoire |
+| Q2 | Fournisseur d'envoi d'e-mails ? | **Tranché par le porteur : SMTP du serveur o2switch, dès que le domaine freeci.net est acheté et opérationnel** |
 | Q3 | WhatsApp ou SMS comme premier canal mobile ? | WhatsApp s'il est accessible via fournisseur agréé ; sinon SMS |
 | Q4 | Mentions et numérotation exigées pour les reçus et factures ? | À faire confirmer par un conseil fiscal avant F-04 |
 | Q5 | Niveau de vérification d'identité souhaité et conservation des pièces ? | Téléphone d'abord ; pièce d'identité plus tard, si nécessaire |

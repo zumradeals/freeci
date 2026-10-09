@@ -20,6 +20,7 @@
       <form method="post" action="{{ route('account.email.request') }}" class="stack-sm">@csrf
         <div class="ac-r2"><div class="field"><label for="ne">Nouvelle adresse</label><input class="input" id="ne" name="email" type="email" maxlength="254" required autocomplete="email"></div>
         <div class="field"><label for="ne-p">Mot de passe actuel</label><input class="input" id="ne-p" name="current_password" type="password" required autocomplete="current-password"></div></div>
+@if($twoFactor)<div class="field"><label for="ne-c">Code de votre application d’authentification</label><input class="input" id="ne-c" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required><p class="muted small" style="margin:0">La double authentification est active : un code s’ajoute au mot de passe pour cet acte.</p></div>@endif
         <button class="btn btn-secondary" type="submit" @disabled(! $mailReady)>Envoyer le lien de vérification</button></form></section>
 
     <section class="ed-card" aria-labelledby="h-pw"><h2 id="h-pw">Mot de passe</h2>
@@ -27,8 +28,35 @@
         <div class="field"><label for="cp">Mot de passe actuel</label><input class="input" id="cp" name="current_password" type="password" required autocomplete="current-password"></div>
         <div class="ac-r2"><div class="field"><label for="np">Nouveau mot de passe (10 caractères minimum, lettres et chiffres)</label><input class="input" id="np" name="password" type="password" minlength="10" required autocomplete="new-password"></div>
         <div class="field"><label for="npc">Confirmer le nouveau mot de passe</label><input class="input" id="npc" name="password_confirmation" type="password" required autocomplete="new-password"></div></div>
+        @if($twoFactor)<div class="field"><label for="np-c">Code de votre application d’authentification</label><input class="input" id="np-c" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required><p class="muted small" style="margin:0">La double authentification est active : un code s’ajoute au mot de passe pour cet acte.</p></div>@endif
         <p class="muted small">Vos autres sessions seront fermées.</p>
         <button class="btn btn-primary" type="submit">Changer le mot de passe</button></form></section>
+
+    <section class="ed-card" id="h-2fa" aria-labelledby="h-2fa-t">
+      <div class="tf-state"><h2 id="h-2fa-t">Double authentification</h2>@if($twoFactor)<span class="badge tone-success">Activée</span>@else<span class="badge tone-warning">Non activée</span>@endif</div>
+      @if($twoFactor)
+        <p>Un code de votre application d’authentification est demandé à chaque nouvelle connexion. Activée le {{ $twoFactor['since']->timezone(config('app.timezone'))->translatedFormat('j F Y') }}.@if($isStaff) Elle est <strong>obligatoire pour l’équipe</strong> et ne peut pas être désactivée.@endif</p>
+        <div class="tf-mini">
+          <div><b>Codes de secours : {{ $twoFactor['remaining'] }} sur {{ \App\Modules\Accounts\Security\TwoFactor::CODES }} restants</b><p class="muted small" style="margin:2px 0 8px">Chaque code ne sert qu’une fois. Générer de nouveaux codes annule les anciens.</p>
+            <details class="tf-act"><summary class="btn btn-secondary">Générer de nouveaux codes</summary>
+              <form method="post" action="{{ route('account.2fa.codes') }}" class="stack-sm">@csrf
+                <div class="ac-r2"><div class="field"><label for="tc-p">Mot de passe actuel</label><input class="input" id="tc-p" name="current_password" type="password" required autocomplete="current-password"></div>
+                <div class="field"><label for="tc-c">Code de l’application</label><input class="input" id="tc-c" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required></div></div>
+                <button class="btn btn-primary" type="submit" data-once>Générer</button></form></details></div>
+          @unless($isStaff)
+          <div><b>Désactiver</b><p class="muted small" style="margin:2px 0 8px">Votre compte repasse à la protection par mot de passe seul. Vos autres sessions sont fermées.</p>
+            <details class="tf-act"><summary class="btn btn-link">Désactiver la double authentification</summary>
+              <form method="post" action="{{ route('account.2fa.disable') }}" class="stack-sm" onsubmit="return confirm('Désactiver la double authentification ?')">@csrf
+                <div class="ac-r2"><div class="field"><label for="td-p">Mot de passe actuel</label><input class="input" id="td-p" name="current_password" type="password" required autocomplete="current-password"></div>
+                <div class="field"><label for="td-c">Code de l’application</label><input class="input" id="td-c" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required></div></div>
+                <button class="btn btn-primary" type="submit" data-once>Désactiver</button></form></details></div>
+          @endunless
+        </div>
+      @else
+        <p>Ajoutez une deuxième étape à la connexion : un code à 6 chiffres généré par une application sur votre téléphone. Même si votre mot de passe est découvert, personne ne peut entrer dans votre compte sans ce code.</p>
+        <ul class="tf-lv"><li class="ok"><x-fc.icon name="check" :size="18" /><span>Facultative : vous pouvez l’activer et la désactiver quand vous voulez.</span></li><li class="ok"><x-fc.icon name="check" :size="18" /><span>Aucun SMS, aucun frais : une application d’authentification suffit (Google Authenticator, Microsoft Authenticator, Aegis, 2FAS…).</span></li><li class="ok"><x-fc.icon name="check" :size="18" /><span>8 codes de secours vous sont remis pour le cas où vous perdez votre téléphone.</span></li></ul>
+        <div class="tf-acts"><a class="btn btn-primary" href="{{ route('account.2fa') }}"><x-fc.icon name="lock" :size="18" /> Activer la double authentification</a></div>
+      @endif</section>
 
     <section class="ed-card" aria-labelledby="h-exp"><h2 id="h-exp">Exporter mes données</h2>
       <p class="muted small">Un fichier JSON de vos propres données (compte, profil, commandes, messages que vous avez envoyés, avis, favoris, notifications, sécurité). Il ne contient pas les données privées des autres personnes ni vos secrets. Il est généré à la demande, téléchargé directement et non conservé sur le serveur. Limite : {{ config('freeci.account.export_per_day') }} par jour.</p>
@@ -57,6 +85,9 @@
           <button class="btn btn-primary" type="submit">Demander la fermeture</button></form>
       @endif</section>
     </div><aside class="ac-side">
+    <section class="ed-ck" aria-labelledby="h-sec"><h3 id="h-sec">Niveau de sécurité</h3>
+      <ul class="tf-lv"><li class="ok"><x-fc.icon name="check" :size="18" /><span>Mot de passe défini</span></li><li class="{{ auth()->user()->emailVerified() ? 'ok' : 'no' }}"><x-fc.icon :name="auth()->user()->emailVerified() ? 'check' : 'warn'" :size="18" /><span>Adresse e-mail {{ auth()->user()->emailVerified() ? 'vérifiée' : 'non vérifiée' }}</span></li><li class="{{ $twoFactor ? 'ok' : 'no' }}"><x-fc.icon :name="$twoFactor ? 'check' : 'warn'" :size="18" /><span>Double authentification {!! $twoFactor ? 'activée' : '<b>non activée</b>' !!}</span></li></ul>
+      @unless($twoFactor)<p class="muted small" style="margin:12px 0 0">Conseil : activez-la avant de recevoir vos premiers paiements.</p>@endunless</section>
     <section class="ed-ck" aria-labelledby="h-ses"><h3 id="h-ses">Sessions ouvertes</h3>
       <ul class="ac-ses">@foreach($sessions as $s)
         <li><div><b>{{ $s['device'] }}</b><small>{{ $s['ip'] }} · dernière activité {{ $s['last']->timezone(config('app.timezone'))->translatedFormat('j F Y') }}</small></div>@if($s['current'])<span class="badge tone-success">Cette session</span>@else<form method="post" action="{{ route('account.sessions.revoke', $s['id']) }}" style="display:inline">@csrf<button class="btn btn-link" type="submit">Fermer</button></form>@endif</li>@endforeach</ul>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Admin\Actions\ManageAccounts;
 use App\Modules\Admin\Actions\RemovePortfolioItem;
 use App\Modules\Admin\Actions\RemoveProfilePhoto;
+use App\Modules\Admin\Actions\ResetUserTwoFactor;
 use App\Modules\Admin\Queries\UsersQuery;
 use App\Modules\Catalog\Exceptions\ModerationDenied;
 use Illuminate\Http\RedirectResponse;
@@ -55,6 +56,19 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.users.show', $id)->with('status', 'Photo retirée : la personne en est informée avec le motif.');
+    }
+
+    /** Réinitialisation de la double authentification d'une personne (sensible : confirmation récente exigée par la route ; motif obligatoire, journal d'audit, notification). */
+    public function resetTwoFactor(Request $request, string $id, ResetUserTwoFactor $reset): RedirectResponse
+    {
+        $reason = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']])['reason'];
+        try {
+            $reset($request->user(), $id, $reason);
+        } catch (ModerationDenied|\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.users.show', $id)->with('status', 'Double authentification réinitialisée : les sessions de la personne sont fermées et elle en est informée avec le motif.');
     }
 
     /** Retrait d'une réalisation du portfolio (mêmes garde-fous que la photo : confirmation récente, motif, journal d'audit). */

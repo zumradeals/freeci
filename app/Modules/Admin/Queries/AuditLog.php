@@ -25,7 +25,7 @@ final class AuditLog
         'login_failed' => 'Connexion échouée', 'login_locked' => 'Connexion bloquée (trop de tentatives)', 'admin_denied' => 'Accès administration refusé', 'email_verification_sent' => 'Lien de vérification envoyé',
         'email_verification_unavailable' => 'Vérification impossible (courrier non configuré)', 'email_verification_failed' => 'Échec d’envoi du lien de vérification', 'email_verified' => 'Adresse vérifiée', 'email_verification_rejected' => 'Lien de vérification rejeté',
         'mfa_enabled' => 'Double authentification activée', 'mfa_passed' => 'Double authentification franchie', 'mfa_failed' => 'Code de double authentification refusé', 'mfa_enroll_failed' => 'Code d’activation refusé',
-        'mfa_locked' => 'Double authentification bloquée', 'mfa_recovery_used' => 'Code de récupération utilisé', 'mfa_codes_regenerated' => 'Codes de récupération régénérés', 'mfa_reset' => 'Double authentification réinitialisée (console)',
+        'mfa_locked' => 'Double authentification bloquée', 'mfa_recovery_used' => 'Code de récupération utilisé', 'mfa_codes_regenerated' => 'Codes de récupération régénérés', 'mfa_reset' => 'Double authentification réinitialisée', 'mfa_disabled' => 'Double authentification désactivée par la personne',
         'reauth_ok' => 'Identité reconfirmée', 'reauth_failed' => 'Reconfirmation refusée', 'admin_granted' => 'Habilitation accordée (console)', 'admin_revoked' => 'Habilitation révoquée (console)', 'support_granted' => 'Habilitation support accordée (console)', 'support_revoked' => 'Habilitation support révoquée (console)',
     ];
 

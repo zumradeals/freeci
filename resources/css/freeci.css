@@ -2256,3 +2256,32 @@ a.kpi:hover { background: var(--marine-100); }
 .po-add { border: 2px dashed var(--line-strong, #b8c4d0); border-radius: 12px; padding: 16px; background: #fafbfd; display: grid; gap: 12px; }
 .po-adm { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 14px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); }
 @media (max-width: 600px) { .po-ed, .po-adm { grid-template-columns: 72px minmax(0, 1fr); } .po-ed img, .po-adm img { width: 72px; height: 50px; } .po-ed .acts, .po-adm > :last-child { grid-column: 1 / -1; } }
+
+/* Lot 73 — double authentification facultative (F-18) */
+.tf-st{list-style:none;margin:0;padding:0;display:grid;gap:22px;counter-reset:s}
+.tf-st>li{display:grid;grid-template-columns:36px minmax(0,1fr);gap:14px;counter-increment:s}
+.tf-st>li::before{content:counter(s);width:36px;height:36px;border-radius:50%;background:#eaf1f8;color:var(--marine-900);display:grid;place-items:center;font-weight:750}
+.tf-st h2{margin:0 0 4px;font-size:1.05rem}
+.tf-qr{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.tf-qrbox{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff;line-height:0}
+.tf-qrbox svg{width:180px;height:180px;display:block}
+.tf-key{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;background:#f3f6fa;border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:inline-block;overflow-wrap:anywhere}
+.tf-code{font-size:1.4rem;letter-spacing:.3em;text-align:center}
+.tf-codes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.tf-codes li{font-family:ui-monospace,Menlo,monospace;font-size:1.05rem;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;background:#fff;text-align:center;letter-spacing:.04em}
+.tf-state{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.tf-lv{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.tf-lv li{display:flex;gap:10px;align-items:flex-start}
+.tf-lv svg{flex:none;margin-top:2px}
+.tf-lv .ok svg{color:#1a7f4b}
+.tf-lv .no svg{color:#8a6d00}
+.tf-acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tf-mini{display:grid;gap:8px}
+.tf-mini>div{border-top:1px solid var(--line);padding-top:10px}
+.tf-act summary{list-style:none;cursor:pointer;display:inline-flex}
+.tf-act summary::-webkit-details-marker{display:none}
+.tf-act[open] summary{margin-bottom:10px}
+.tf-lost{margin-top:14px}
+.tf-lost summary{cursor:pointer;font-weight:600}
+@media(max-width:600px){.tf-codes{grid-template-columns:1fr}.tf-qrbox svg{width:160px;height:160px}}
+@media print{.tf-codes li{border-style:solid}}
