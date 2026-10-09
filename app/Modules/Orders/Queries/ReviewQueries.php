@@ -84,7 +84,7 @@ final class ReviewQueries
 
         return $p->through(fn ($r) => [
             'id' => $r->id, 'rating' => (int) $r->rating, 'comment' => $r->comment, 'when' => Dates::short(Carbon::parse($r->visible_at)),
-            'source' => $r->origin === 'mission' ? 'À la suite d’une mission' : ($withSource ? (isset($titles[$r->service_id]) ? 'Service : '.$titles[$r->service_id] : 'Service') : null),
+            'source' => $r->origin === 'mission' ? 'À la suite d’une mission' : ($r->origin === 'offer' ? 'À la suite d’une offre personnalisée' : ($withSource ? (isset($titles[$r->service_id]) ? 'Service : '.$titles[$r->service_id] : 'Service') : null)),
             'reply' => isset($replies[$r->id]) ? ['id' => $replies[$r->id]->id, 'body' => $replies[$r->id]->body, 'when' => Dates::short(Carbon::parse($replies[$r->id]->created_at))] : null,
         ]);
     }

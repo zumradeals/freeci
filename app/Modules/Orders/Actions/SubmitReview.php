@@ -50,12 +50,12 @@ final class SubmitReview
                 if (DB::table('reviews')->where('order_id', $o->id)->exists()) {
                     throw new ReviewConflict('Vous avez déjà déposé un avis pour cette commande : un seul avis est possible.');
                 }
-                $isService = $o->origin !== 'mission';
+                $isService = $o->origin === 'service';
                 $public = $o->environment === 'live';
                 $visibleAt = $public ? Carbon::parse($o->closed_at)->addDays((int) config('freeci.reviews.publication_days')) : now();
                 DB::table('reviews')->insert([
-                    'id' => (string) Str::uuid(), 'order_id' => $o->id, 'author_id' => $client->getKey(), 'subject_id' => $o->freelancer_id, 'origin' => $isService ? 'service' : 'mission',
-                    'service_id' => $isService ? $o->service_id : null, 'mission_id' => $isService ? null : $o->mission_id, 'rating' => $rating, 'comment' => $comment,
+                    'id' => (string) Str::uuid(), 'order_id' => $o->id, 'author_id' => $client->getKey(), 'subject_id' => $o->freelancer_id, 'origin' => $o->origin,
+                    'service_id' => $isService ? $o->service_id : null, 'mission_id' => $o->origin === 'mission' ? $o->mission_id : null, 'rating' => $rating, 'comment' => $comment,
                     'counts_public' => $public, 'visible_at' => $visibleAt->greaterThan(now()) ? $visibleAt : now(), 'created_at' => now(),
                 ]);
 

@@ -14,7 +14,10 @@
       <livewire:conversation-freshness :conversation="$t['id']" :after="$t['lastId']" />
       <div class="ms-thread" data-thread aria-live="off">
         @if($t['olderBefore'])<p><a class="btn btn-secondary" href="{{ route('messages.show', array_filter(['conversation' => $t['id'], 'avant' => $t['olderBefore'], 'espace' => $space === 'freelancer' ? 'freelance' : null])) }}">Messages plus anciens</a></p>@endif
-        @forelse($t['messages'] as $m)
+        @php($items = collect($t['messages'])->map(fn ($m) => ['kind' => 'message', 'at' => $m['at'], 'm' => $m])->merge(collect($t['offers'])->map(fn ($o) => ['kind' => 'offer', 'at' => $o['at'], 'o' => $o]))->sortBy('at')->values())
+        @forelse($items as $it)
+          @if($it['kind'] === 'offer')@include('messages._offer', ['o' => $it['o'], 'space' => $space])@continue @endif
+          @php($m = $it['m'])
           <article class="ms-msg {{ $m['mine'] ? 'mine' : 'theirs' }} msg {{ $m['mine'] ? 'msg-mine' : 'msg-theirs' }}" id="m-{{ $m['id'] }}" aria-label="Message de {{ $m['who'] }}">
             <div class="b">
               @if($m['body'] !== '')<p>{!! nl2br(e($m['body'])) !!}</p>@endif
@@ -26,6 +29,7 @@
         @empty<p class="muted">Aucun message.</p>@endforelse
       </div>
 
+      @if($t['canOffer'])<div class="of-comp" style="margin:12px 16px 0"><a class="btn btn-secondary" href="{{ route('offers.create', $t['id']) }}"><x-fc.icon name="briefcase" :size="18" /> Proposer une offre personnalisée</a><span class="muted small">Une seule offre en attente à la fois par conversation.</span></div>@endif
       @if($t['canSend'])
         @if($t['iBlocked'])<div class="notice tone-warning" role="note"><x-fc.icon name="warn" /><p>Vous avez bloqué ce contact. Cette conversation reste possible parce qu’elle est liée à une commande active.</p></div>@endif
         @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>{{ $errors->first() }} Votre saisie est conservée.</p></div>@endif

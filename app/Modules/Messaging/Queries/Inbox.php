@@ -11,6 +11,7 @@ use App\Modules\Messaging\Models\ContactBlock;
 use App\Modules\Messaging\Models\Conversation;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Orders\Models\Order;
+use App\Modules\Orders\Queries\OfferQueries;
 use App\Shared\Dates;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -88,13 +89,14 @@ final class Inbox
         return [
             'id' => $c->getKey(), 'with' => $other->name, 'withId' => (string) $other->getKey(), 'context' => $c->context_title, 'kind' => $c->kind, 'orderReference' => $order?->reference, 'orderActive' => ConversationRules::essential($c),
             'lastId' => (int) $c->last_message_id, 'olderBefore' => $older ? (int) $rows->first()->id : null, 'unreadFrom' => $unreadFrom,
+            'offers' => app(OfferQueries::class)->forThread($u, $c->getKey(), $older ? $rows->first()->created_at : null), 'canOffer' => app(OfferQueries::class)->canPropose($u, $c),
             'canSend' => ConversationRules::canSend($c), 'iBlocked' => $iBlocked, 'blockedByOther' => ! $iBlocked && ConversationRules::blockedBetween($c->client_id, $c->freelancer_id),
             'messages' => $rows->map(function (Message $m) use ($u, $files, $unreadFrom) {
                 $f = $files->get($m->id);
 
                 return [
                     'id' => $m->id, 'mine' => $m->sender_id === $u->getKey(), 'who' => $m->sender_id === $u->getKey() ? 'Vous' : (string) DB::table('users')->where('id', $m->sender_id)->value('name'),
-                    'when' => Dates::format($m->created_at), 'body' => $m->body, 'unread' => $m->sender_id !== $u->getKey() && $m->id > $unreadFrom,
+                    'when' => Dates::format($m->created_at), 'at' => $m->created_at->toIso8601String(), 'body' => $m->body, 'unread' => $m->sender_id !== $u->getKey() && $m->id > $unreadFrom,
                     'file' => $f ? [
                         'name' => $f->original_name, 'size' => $f->size_bytes >= 1048576 ? number_format($f->size_bytes / 1048576, 1, ',', ' ').' Mo' : number_format($f->size_bytes / 1024, 0, ',', ' ').' Ko',
                         'label' => $f->state->label(), 'clean' => $f->state === FileState::Clean, 'rejected' => $f->state === FileState::Rejected,

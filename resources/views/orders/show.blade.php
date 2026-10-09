@@ -27,7 +27,7 @@
 
     <section class="card order-head" aria-labelledby="h-title">
       <div class="top"><span class="badge tone-{{ $d->tone }}"><x-fc.icon :name="$d->icon" :size="16" />{{ $d->stateLabel }}</span><span class="muted">Réf. <span class="num">{{ $d->reference }}</span></span><a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Messages @if($d->messageUnread > 0)<span class="count-badge" aria-label="{{ $d->messageUnread }} non lu{{ $d->messageUnread > 1 ? 's' : '' }}">{{ $d->messageUnread }}</span>@endif</a>@if($d->environment === 'test')<span class="tag-demo">Commande de test — aucun argent réel</span>@elseif($d->environment === 'legacy')<span class="tag-demo">Ancienne commande</span>@endif</div>
-      <h1 class="t-h1" id="h-title">{{ $d->title }}</h1>
+      <h1 class="t-h1" id="h-title">{{ $d->title }}</h1>@if($d->origin === 'offer')<p><span class="badge tone-info">Offre personnalisée</span></p>@endif
       <dl class="meta">
         <div><dt>{{ $d->otherPartyLabel }}</dt><dd>{{ $d->otherPartyName }}</dd></div>
         <div><dt>Montant convenu</dt><dd><x-fc.money :amount="$d->price" /></dd></div>
@@ -83,13 +83,13 @@
           @unless($isF)<div class="mt-16"><a class="btn btn-primary" href="{{ route('orders.payment', $d->reference) }}">Voir l’état du paiement</a></div>@endunless
         @elseif($d->canPay)
           <h2 class="t-h2 mt-6" id="h-action">Payer {{ $d->price->formatted() }} FCFA</h2>
-          <p class="mt-6">{{ $d->origin === 'mission' ? 'Proposition retenue' : 'Demande acceptée' }} le {{ \App\Shared\Dates::format($d->acceptedAt) }} @if($d->origin !== 'mission')par {{ $d->freelancerName }}@else({{ $d->freelancerName }})@endif.</p>
+          <p class="mt-6">{{ $d->origin === 'mission' ? 'Proposition retenue' : ($d->origin === 'offer' ? 'Offre acceptée' : 'Demande acceptée') }} le {{ \App\Shared\Dates::format($d->acceptedAt) }} @if($d->origin !== 'mission')par {{ $d->freelancerName }}@else({{ $d->freelancerName }})@endif.</p>
           @if($d->paymentDeadline)<p class="due due-block"><x-fc.icon name="clock" :size="20" /><span>Payer avant le <strong>{{ \App\Shared\Dates::format($d->paymentDeadline) }}</strong> <span class="{{ \App\Shared\Dates::isUrgent($d->paymentDeadline) ? 'urgent' : 'rel' }}">({{ \App\Shared\Dates::until($d->paymentDeadline) }})</span></span></p>@endif
           <div class="row mt-16"><a class="btn btn-primary btn-lg" href="{{ route('orders.payment', $d->reference) }}">Aller au paiement</a><a class="btn btn-secondary btn-lg" href="{{ route('orders.confirm', [$d->reference, 'cancel']) }}">Annuler la commande</a></div>
           <p class="effect mt-12">@if($d->environment === 'test')<strong>Mode test — aucun argent réel n’est débité.</strong> @endif Le travail commence après paiement confirmé côté serveur et brief complet.</p>
         @else
           <h2 class="t-h2 mt-6" id="h-action">{{ $isF ? 'Vous avez accepté : la commande attend le paiement' : 'Demande acceptée : la commande attend le paiement' }}</h2>
-          <p class="mt-6">{{ $d->origin === 'mission' ? 'Proposition retenue' : 'Acceptée' }} le {{ \App\Shared\Dates::format($d->acceptedAt) }}@if($d->origin !== 'mission') par {{ $d->freelancerName }}@endif.</p>
+          <p class="mt-6">{{ $d->origin === 'mission' ? 'Proposition retenue' : ($d->origin === 'offer' ? 'Offre acceptée' : 'Acceptée') }} le {{ \App\Shared\Dates::format($d->acceptedAt) }}@if($d->origin !== 'mission') par {{ $d->freelancerName }}@endif.</p>
           <p class="note-line mt-12"><x-fc.icon name="lock" :size="16" /><span><strong>Le paiement n’est pas ouvert pour cette commande.</strong> Aucun paiement ne peut être effectué ici : la commande reste « en attente de paiement », sans échéance de paiement. <strong>Le travail ne commence — et aucune échéance de réalisation ne court — qu’après paiement confirmé et brief complet.</strong></span></p>
           @unless($isF)<div class="mt-16"><a class="btn btn-secondary" href="{{ route('orders.confirm', [$d->reference, 'cancel']) }}">Annuler la commande</a></div>@endunless
         @endif</section>
@@ -156,7 +156,7 @@
           <section class="card" aria-labelledby="h-accord"><h2 class="t-h2 card-title" id="h-accord">Accord de commande</h2>
             <dl class="defs">
               <div><dt>Parties</dt><dd>Client : {{ $d->clientName }}<small>Freelance : {{ $d->freelancerName }}</small></dd></div>
-              <div><dt>{{ $d->origin === 'mission' ? 'Mission' : 'Prestation' }}</dt><dd>{{ $d->title }}<small>{{ $d->categoryName }} · @if($d->origin === 'mission')proposition v{{ $d->proposalNumber }} retenue : conditions de la proposition figées à la sélection @else version {{ $d->serviceVersion }} du service, au moment de la demande @endif</small></dd></div>
+              <div><dt>{{ $d->origin === 'mission' ? 'Mission' : ($d->origin === 'offer' ? 'Offre personnalisée' : 'Prestation') }}</dt><dd>{{ $d->title }}<small>{{ $d->categoryName }} · @if($d->origin === 'mission')proposition v{{ $d->proposalNumber }} retenue : conditions de la proposition figées à la sélection @elseif($d->origin === 'offer')offre envoyée dans la conversation et acceptée par le client : conditions de l’offre figées à l’acceptation @else version {{ $d->serviceVersion }} du service, au moment de la demande @endif</small></dd></div>
               <div><dt>Périmètre</dt><dd>{{ $d->scope }}</dd></div>
               <div><dt>Livrables</dt><dd>@foreach($d->deliverables as $x){{ $x }}@if(! $loop->last)<br>@endif @endforeach</dd></div>
               <div><dt>Non inclus</dt><dd>@foreach($d->exclusions as $x){{ $x }}@if(! $loop->last)<br>@endif @endforeach</dd></div>
@@ -166,7 +166,7 @@
               @if($d->dueAt)<div><dt>Échéance de réalisation</dt><dd>{{ \App\Shared\Dates::format($d->dueAt) }}<small>Fixée au départ ; seul un report accepté par le client la modifie (l’ancienne valeur est conservée).</small></dd></div>@endif
               <div><dt>Corrections incluses</dt><dd>{{ $d->revisionsIncluded }}</dd></div>
               <div><dt>Fichiers livrables</dt><dd>@switch($dl['deliveryMode'] ?? 'unspecified')@case('files')Exigés : au moins un fichier contrôlé par livraison @break @case('message')Livraison par message : aucun fichier exigé (précisé dans l’accord) @break @default Non précisé<small>Accord antérieur à cette règle. Les conditions figées sont conservées telles quelles et l’obligation de joindre un fichier n’est <strong>pas contrôlée automatiquement</strong> : le client examine ce qui est livré, peut demander une correction ou laisser la livraison non validée.</small>@endswitch</dd></div>
-              @if($d->origin === 'mission')<div><dt>Sélection</dt><dd>Proposition retenue le {{ \App\Shared\Dates::format($d->acceptedAt) }}<small>La proposition vaut acceptation du freelance : aucun délai de réponse.</small></dd></div>@else<div><dt>Délais de la demande</dt><dd>Réponse du freelance avant le {{ \App\Shared\Dates::format($d->responseDeadline) }}</dd></div>@endif
+              @if($d->origin === 'offer')<div><dt>Acceptation</dt><dd>Offre acceptée le {{ \App\Shared\Dates::format($d->acceptedAt) }}<small>L’offre vaut acceptation du freelance : aucun délai de réponse.</small></dd></div>@elseif($d->origin === 'mission')<div><dt>Sélection</dt><dd>Proposition retenue le {{ \App\Shared\Dates::format($d->acceptedAt) }}<small>La proposition vaut acceptation du freelance : aucun délai de réponse.</small></dd></div>@else<div><dt>Délais de la demande</dt><dd>Réponse du freelance avant le {{ \App\Shared\Dates::format($d->responseDeadline) }}</dd></div>@endif
               <div><dt>Conditions</dt><dd>Conditions de la demande v{{ $d->conditionsVersion }}<small>Acceptées le {{ \App\Shared\Dates::format($d->conditionsAcceptedAt) }}</small></dd></div>
             </dl></section>
           <p class="note-line"><x-fc.icon name="lock" :size="16" /><span>Accord figé : il ne change pas si le service ou ses tarifs évoluent ensuite.</span></p>

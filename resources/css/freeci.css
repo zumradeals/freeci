@@ -2314,3 +2314,32 @@ a.kpi:hover { background: var(--marine-100); }
 .av-tl svg{flex:none;margin-top:2px;color:#1a7f4b}
 .svc.is-off .thumb{filter:grayscale(1);opacity:.7}
 @media(max-width:600px){.av-kpi{grid-template-columns:1fr}}
+
+/* Lot 75 — offre personnalisée (F-09) */
+.ms-thread{grid-auto-rows:max-content}
+.of-card{border:1px solid #b9cfe8;border-radius:14px;background:#fff;max-width:520px;margin:10px 0}
+.of-card header{border-radius:13px 13px 0 0}
+.of-foot{border-radius:0 0 13px 13px}
+.of-card.mine{margin-left:auto}
+.of-card header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;background:#f1f6fc;border-bottom:1px solid #d7e4f3;flex-wrap:wrap}
+.of-card header b{display:flex;gap:8px;align-items:center}
+.of-body{padding:14px;display:grid;gap:10px}
+.of-body h3{margin:0;font-size:1.05rem}
+.of-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.of-kv>div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+.of-kv small{display:block;color:var(--ink-600)}
+.of-kv b{font-size:1.05rem}
+.of-foot{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:#fbfcfe}
+.of-st{display:inline-flex;gap:6px;align-items:center;border-radius:99px;padding:3px 10px;font-size:.8125rem;font-weight:700}
+.of-st.wait{background:#fff4d6;color:#7a5a00}
+.of-st.ok{background:#e7f4ec;color:#14633a}
+.of-st.no{background:#fdeceb;color:#a02a1f}
+.of-st.off{background:#eef1f5;color:#4a5563}
+.of-compact{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;background:#fff;max-width:520px;margin:10px 0}
+.of-list{margin:0;padding:0 0 0 18px;display:grid;gap:4px}
+.of-tl{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.of-tl li{display:flex;gap:10px;align-items:flex-start}
+.of-tl svg{flex:none;margin-top:2px;color:#1a7f4b}
+.of-comp{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.of-sum{border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px;display:grid;gap:8px}
+@media(max-width:600px){.of-kv{grid-template-columns:1fr}}

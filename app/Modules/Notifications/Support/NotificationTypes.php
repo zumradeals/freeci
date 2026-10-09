@@ -43,6 +43,8 @@ final class NotificationTypes
             'portfolio_removed' => ['label' => 'Réalisation retirée', 'category' => $e, 'description' => 'Une de vos réalisations a été retirée par l’équipe, avec le motif ; vous pouvez en ajouter une autre.'],
             'two_factor_reset' => ['label' => 'Double authentification réinitialisée', 'category' => $e, 'description' => 'L’équipe a réinitialisé la double authentification de votre compte, avec le motif ; vous pouvez la réactiver.'],
             'availability_reopened' => ['label' => 'Disponibilité rétablie', 'category' => $e, 'description' => 'Votre date de retour est arrivée : vous êtes de nouveau disponible pour de nouvelles demandes.'],
+            'offer_received' => ['label' => 'Offre personnalisée reçue', 'category' => $e, 'description' => 'Un freelance vous envoie une offre personnalisée : à examiner avant sa date de validité.'],
+            'offer_update' => ['label' => 'Offre personnalisée', 'category' => $e, 'description' => 'Une offre personnalisée est acceptée, refusée, retirée ou expirée.'],
             'support_update' => ['label' => 'Assistance', 'category' => $e, 'description' => 'Un nouveau message ou un changement sur votre dossier d’assistance (le contenu n’est jamais envoyé par courriel).'],
             'dispute_update' => ['label' => 'Litige ou annulation', 'category' => $e, 'description' => 'Un litige ou une demande d’annulation est ouvert, ou une décision est rendue sur votre commande.'],
             'finance_update' => ['label' => 'Remboursement ou reversement', 'category' => $e, 'description' => 'Un remboursement ou un reversement lié à votre commande est confirmé ou n’a pas abouti.'],

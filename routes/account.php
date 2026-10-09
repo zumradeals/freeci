@@ -33,6 +33,7 @@ use App\Http\Controllers\Freelance\PortfolioController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderFileController;
 use App\Http\Controllers\OrderRequestController;
@@ -97,6 +98,13 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/espace/messages/{conversation}', [MessageController::class, 'store'])->middleware('throttle:30,1')->name('messages.send');
     Route::post('/espace/messages/{conversation}/bloquer', [MessageController::class, 'block'])->middleware('throttle:20,1')->name('messages.block');
     Route::post('/espace/messages/{conversation}/debloquer', [MessageController::class, 'unblock'])->middleware('throttle:20,1')->name('messages.unblock');
+    // Offre personnalisée (F-09) : participants de la conversation seulement.
+    Route::get('/espace/messages/{conversation}/offre', [OfferController::class, 'create'])->name('offers.create');
+    Route::post('/espace/messages/{conversation}/offre', [OfferController::class, 'store'])->middleware('throttle:10,10')->name('offers.store');
+    Route::get('/espace/offres/{offer}', [OfferController::class, 'show'])->name('offers.show');
+    Route::post('/espace/offres/{offer}/accepter', [OfferController::class, 'accept'])->middleware('throttle:10,10')->name('offers.accept');
+    Route::post('/espace/offres/{offer}/refuser', [OfferController::class, 'decline'])->middleware('throttle:20,10')->name('offers.decline');
+    Route::post('/espace/offres/{offer}/retirer', [OfferController::class, 'withdraw'])->middleware('throttle:20,10')->name('offers.withdraw');
     Route::get('/services/{slug}/contacter', [MessageController::class, 'startService'])->name('messages.start.service');
     Route::post('/services/{slug}/contacter', [MessageController::class, 'storeService'])->middleware('throttle:10,1')->name('messages.start.service.store');
     Route::get('/espace/propositions/{proposal}/message', [MessageController::class, 'startProposal'])->name('messages.start.proposal');
