@@ -23,7 +23,7 @@ class ServiceVersion extends Model
     {
         return [
             'price_xof' => 'integer', 'delivery_days' => 'integer', 'revisions_included' => 'integer', 'revision_no' => 'integer', 'number' => 'integer',
-            'deliverables' => 'array', 'exclusions' => 'array', 'client_inputs' => 'array', 'images' => 'array',
+            'deliverables' => 'array', 'exclusions' => 'array', 'client_inputs' => 'array', 'images' => 'array', 'tiers' => 'array', 'options' => 'array',
             'brief_requires_files' => 'boolean', 'delivery_requires_files' => 'boolean',
             'submitted_at' => 'datetime', 'decided_at' => 'datetime', 'published_at' => 'datetime',
         ];

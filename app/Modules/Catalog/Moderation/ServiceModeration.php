@@ -48,7 +48,7 @@ final class ServiceModeration
             $now = now();
             $v->forceFill(['state' => 'published', 'decided_at' => $now, 'decided_by' => $moderator->getKey(), 'decision_note' => null, 'published_at' => $now])->save();
 
-            $service->forceFill($v->only(['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'images', 'brief_requires_files', 'delivery_requires_files']) + [
+            $service->forceFill($v->only(['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'images', 'brief_requires_files', 'delivery_requires_files', 'tiers', 'options']) + [
                 'status' => ServiceStatus::Published->value, 'published_at' => $service->published_at ?? $now, 'is_demo' => $profile->is_demo,
             ]);
             if (str_starts_with($service->slug, 'brouillon-')) {

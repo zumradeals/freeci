@@ -160,7 +160,9 @@
               <div><dt>Périmètre</dt><dd>{{ $d->scope }}</dd></div>
               <div><dt>Livrables</dt><dd>@foreach($d->deliverables as $x){{ $x }}@if(! $loop->last)<br>@endif @endforeach</dd></div>
               <div><dt>Non inclus</dt><dd>@foreach($d->exclusions as $x){{ $x }}@if(! $loop->last)<br>@endif @endforeach</dd></div>
-              <div><dt>Prix convenu</dt><dd><x-fc.money :amount="$d->price" /><small>Figé dans l’accord</small></dd></div>
+              @if($d->tierName)<div><dt>Formule</dt><dd>{{ $d->tierName }}<small>Choisie parmi les formules du service, au moment de la demande</small></dd></div>@endif
+              @if(count($d->selectedOptions))<div><dt>Options retenues</dt><dd>@foreach($d->selectedOptions as $o){{ $o['label'] }} · + <x-fc.money :amount="\App\Shared\Money::xof((int) $o['price_xof'])" />@if(($o['delivery_days'] ?? 0) != 0) · {{ $o['delivery_days'] > 0 ? '+ ' : '− ' }}{{ abs($o['delivery_days']) }} {{ abs($o['delivery_days']) > 1 ? 'jours' : 'jour' }}@endif @if(! $loop->last)<br>@endif @endforeach</dd></div>@endif
+              <div><dt>Prix convenu</dt><dd><x-fc.money :amount="$d->price" /><small>Figé dans l’accord @if($d->basePrice !== null && count($d->selectedOptions)) · formule <x-fc.money :amount="\App\Shared\Money::xof($d->basePrice)" /> + options <x-fc.money :amount="\App\Shared\Money::xof($d->price->xof - $d->basePrice)" />@endif</small></dd></div>
               <div><dt>Délai</dt><dd>{{ $d->deliveryDays }} {{ $d->deliveryDays > 1 ? 'jours' : 'jour' }} à partir du départ</dd></div>
               <div><dt>Départ</dt><dd>@if($d->startedAt){{ \App\Shared\Dates::format($d->startedAt) }}<small>Enregistré une seule fois, après paiement confirmé côté serveur et brief complet.</small>@else Non enregistré<small>Enregistré une seule fois, après paiement confirmé et brief complet. Aucune échéance de réalisation ne court avant.</small>@endif</dd></div>
               @if($d->dueAt)<div><dt>Échéance de réalisation</dt><dd>{{ \App\Shared\Dates::format($d->dueAt) }}<small>Fixée au départ ; seul un report accepté par le client la modifie (l’ancienne valeur est conservée).</small></dd></div>@endif

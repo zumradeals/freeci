@@ -252,3 +252,47 @@ document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = 
   });
   dlg.addEventListener("close", function () { img.removeAttribute("src"); if (last) last.focus(); });
 })();
+
+/* Formules et options (F-08) : total affiché pendant la sélection. AMÉLIORATION seulement : le serveur recalcule tout à l'envoi et sans JavaScript la page reste utilisable. */
+document.querySelectorAll("[data-tier-form]").forEach(function (f) {
+  var rows = f.querySelector("[data-tier-rows]");
+  if (!rows) return;
+  function fcfa(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA"; }
+  function row(label, value, cls) {
+    var d = document.createElement("div"); d.className = "r" + (cls ? " " + cls : "");
+    var a = document.createElement("span"); a.textContent = label;
+    var b = document.createElement("span"); b.textContent = value;
+    d.appendChild(a); d.appendChild(b); return d;
+  }
+  function update() {
+    var tier = f.querySelector('input[name="formule"]:checked');
+    var needTier = !!f.querySelector('input[name="formule"]');
+    var base = tier ? +tier.dataset.price : (needTier ? null : +f.dataset.basePrice);
+    var days = tier ? +tier.dataset.days : (needTier ? null : +f.dataset.baseDays);
+    var rev = tier ? +tier.dataset.rev : +f.dataset.baseRev;
+    f.querySelectorAll(".tr-card").forEach(function (c) { var r = c.querySelector("input"); c.classList.toggle("sel", !!(r && r.checked)); });
+    f.querySelectorAll(".tr-opt").forEach(function (c) { var r = c.querySelector("input"); c.classList.toggle("on", !!(r && r.checked)); });
+    rows.textContent = "";
+    if (base === null) { var p = document.createElement("p"); p.className = "muted small"; p.style.margin = "0"; p.textContent = "Choisissez une formule : le total s’affiche ici."; rows.appendChild(p); return; }
+    var total = base, d = days;
+    rows.appendChild(row(tier ? "Formule " + tier.dataset.name : "Prix du service", fcfa(base)));
+    f.querySelectorAll('input[name="options[]"]:checked').forEach(function (o) {
+      total += +o.dataset.price; d += +o.dataset.days;
+      rows.appendChild(row(o.dataset.label, "+ " + fcfa(+o.dataset.price)));
+    });
+    d = Math.max(1, d);
+    rows.appendChild(row("Total", fcfa(total), "tot"));
+    rows.appendChild(row("Délai total", d + (d > 1 ? " jours" : " jour")));
+    rows.appendChild(row("Corrections incluses", String(rev)));
+  }
+  f.addEventListener("change", update); update();
+});
+
+/* Éditeur de service : en mode « formules », les champs prix/délai/retouches d'offre unique sont masqués (le serveur dérive ces valeurs des formules). */
+document.querySelectorAll('input[name="pricing_mode"]').forEach(function (r) {
+  r.addEventListener("change", function () {
+    var tiers = document.querySelector('input[name="pricing_mode"][value="tiers"]').checked;
+    document.querySelectorAll("[data-single-fields]").forEach(function (e) { e.hidden = tiers; });
+    document.querySelectorAll("[data-tier-fields]").forEach(function (e) { e.hidden = !tiers; });
+  });
+});

@@ -79,6 +79,8 @@ return [
     'catalog' => [
         'title' => [15, 100], 'summary' => [30, 300], 'scope' => [150, 5000],
         'price_xof' => [5000, 500000], 'delivery_days' => [1, 60], 'revisions' => [0, 10],
+        // Formules et options (F-08) : PARAMÈTRES PROVISOIRES, comme les autres bornes du catalogue.
+        'tiers' => [2, 3], 'tier_name' => [2, 30], 'tier_includes_max' => 6, 'options_max' => 5, 'option_label' => [3, 60], 'option_price' => [500, 200000], 'option_days' => [-10, 30], 'options_days_total_max' => 60,
         'deliverables_max' => 10, 'exclusions_max' => 10, 'client_inputs_max' => 8, 'line_max' => 200,
         'images_max' => 6, 'portfolio_max' => 8, 'image_max_mb' => 5, 'image_max_pixels' => 16000000, 'image_min_width' => 400,
         'bio' => [50, 1500], 'skills_max' => 10, 'skill' => [2, 40],

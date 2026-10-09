@@ -73,6 +73,7 @@ final class ModerationQueue
         $map = fn ($row) => $row === null ? null : [
             'Titre' => $row->title, 'Catégorie' => $cat($row), 'Résumé' => $row->summary, 'Périmètre' => $row->scope, 'Prix' => Money::xof((int) $row->price_xof)->formatted().' FCFA',
             'Délai' => $row->delivery_days.' jour(s)', 'Corrections incluses' => (string) $row->revisions_included,
+            'Formules' => $this->tiers($row->tiers ?? null), 'Options payantes' => $this->options($row->options ?? null),
             'Livrables' => $this->lines($row->deliverables), 'Exclusions' => $this->lines($row->exclusions), 'À fournir par le client' => $this->lines($row->client_inputs),
             'Fichiers au brief' => $row->brief_requires_files ? 'Exigés' : 'Non exigés', 'Livraison' => $row->delivery_requires_files ? 'Avec fichiers' : 'Par message',
             'Images' => count(json_decode((string) $row->images, true) ?: []).' image(s)',
@@ -157,5 +158,21 @@ final class ModerationQueue
     private function history($events): array
     {
         return collect($events)->map(fn ($e) => ['what' => self::EVENTS[$e->type] ?? $e->type, 'by' => $e->actor_label, 'note' => $e->note, 'when' => Dates::format(Carbon::parse($e->occurred_at))])->all();
+    }
+
+    /** Formules d'une version, une ligne par formule (relecture par la modération). */
+    private function tiers(?string $json): string
+    {
+        $t = json_decode((string) $json, true) ?: [];
+
+        return $t === [] ? 'Offre unique' : implode("\n", array_map(fn ($x) => $x['name'].' : '.Money::xof((int) $x['price_xof'])->formatted().' FCFA, '.$x['delivery_days'].' jour(s), '.$x['revisions_included'].' correction(s) — '.implode(' ; ', $x['includes'] ?? []), $t));
+    }
+
+    /** Options payantes d'une version, une ligne par option. */
+    private function options(?string $json): string
+    {
+        $o = json_decode((string) $json, true) ?: [];
+
+        return $o === [] ? 'Aucune' : implode("\n", array_map(fn ($x) => $x['label'].' : + '.Money::xof((int) $x['price_xof'])->formatted().' FCFA, '.($x['delivery_days'] >= 0 ? '+' : '−').abs((int) $x['delivery_days']).' jour(s)', $o));
     }
 }

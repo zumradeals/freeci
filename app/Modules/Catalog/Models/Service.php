@@ -27,7 +27,7 @@ class Service extends Model
     protected $hidden = ['search_document'];
 
     /** Champs qui constituent les conditions commerciales : toute modification crée une nouvelle « version » du service. */
-    public const COMMERCIAL_FIELDS = ['title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'brief_requires_files', 'delivery_requires_files', 'status'];
+    public const COMMERCIAL_FIELDS = ['title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'brief_requires_files', 'delivery_requires_files', 'tiers', 'options', 'status'];
 
     protected static function booted(): void
     {
@@ -54,7 +54,7 @@ class Service extends Model
             'delivery_days' => 'integer',
             'revisions_included' => 'integer',
             'deliverables' => 'array',
-            'exclusions' => 'array',
+            'exclusions' => 'array', 'tiers' => 'array', 'options' => 'array',
             'client_inputs' => 'array',
             'images' => 'array',
             'published_at' => 'datetime',

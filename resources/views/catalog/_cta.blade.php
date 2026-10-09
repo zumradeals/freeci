@@ -10,6 +10,9 @@
   <span class="btn btn-lg btn-block is-off" aria-disabled="true">Demande impossible pour le moment</span>
   <div class="av-note"><x-fc.icon name="info" :size="18" /><span>{{ explode(' ', $service->sellerName)[0] }} ne prend pas de nouvelle demande{{ $sg['back_on'] ? ' avant le '.$sg['back_on'] : ' pour le moment' }}. Ajoutez ce service à vos favoris pour y revenir, ou consultez d’autres freelances.</span></div>
   <p><a class="btn btn-link" href="{{ route('services.index', ['categorie' => $service->categorySlug]) }}">Voir des services similaires</a></p>
+@elseif(count($service->tiers) >= 2)
+  <a class="btn btn-primary btn-lg btn-block" @if($id) id="{{ $id }}" @endif href="#formules">Choisir une formule</a>
+  <p class="effect"><strong>{{ count($service->tiers) }} formules</strong> au choix, avec des options facultatives. <strong>Aucun paiement à cette étape.</strong></p>
 @else
   <a class="btn btn-primary btn-lg btn-block" @if($id) id="{{ $id }}" @endif href="{{ route('services.request', $service->slug) }}">Demander cette prestation</a>
   @if($aside)

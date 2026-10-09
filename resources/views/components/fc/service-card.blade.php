@@ -8,11 +8,11 @@
     @endif
   </div>
   <div class="body">
-    <p class="cat-l">{{ $service->categoryName }}</p>
+    <p class="cat-l">{{ $service->categoryName }}@if($service->tierCount >= 2) <span class="tr-badge">{{ $service->tierCount }} formules</span>@endif</p>
     <h{{ $level }} class="ttl"><a class="stretch" href="{{ route('services.show', $service->slug) }}">{{ $service->title }}</a></h{{ $level }}>
     <p class="seller"><x-fc.avatar :name="$service->sellerName" :user="$service->sellerUserId" />{{ $service->sellerName }} · {{ $service->sellerHeadline }}</p>
     @if($service->ratingCount > 0)<p class="rate-l"><x-fc.rating :avg="$service->ratingAvg" :count="$service->ratingCount" /></p>@endif
     @if($service->sellerUserId !== '')<p class="rate-l"><x-fc.seller-pill :user="$service->sellerUserId" short /></p>@endif
-    <div class="foot"><span class="dl"><x-fc.icon name="clock" :size="18" />{{ $service->deliveryDays }} {{ $service->deliveryDays > 1 ? 'jours' : 'jour' }}</span><x-fc.money :amount="$service->price" /></div>
+    <div class="foot"><span class="dl"><x-fc.icon name="clock" :size="18" />{{ $service->deliveryDays }} {{ $service->deliveryDays > 1 ? 'jours' : 'jour' }}</span>@if($service->tierCount >= 2)<span class="tr-from"><small>À partir de</small><x-fc.money :amount="$service->price" /></span>@else<x-fc.money :amount="$service->price" />@endif</div>
   </div>
 </article>

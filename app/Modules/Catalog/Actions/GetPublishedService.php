@@ -56,6 +56,7 @@ final class GetPublishedService
             sellerUserId: $p->user_id,
             sellerSlug: $p->published_at !== null ? $p->slug : null,
             id: (string) $service->getKey(),
+            tiers: $service->tiers ?? [], options: $service->options ?? [],
         );
     }
 }

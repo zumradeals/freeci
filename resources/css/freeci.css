@@ -2343,3 +2343,39 @@ a.kpi:hover { background: var(--marine-100); }
 .of-comp{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
 .of-sum{border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px;display:grid;gap:8px}
 @media(max-width:600px){.of-kv{grid-template-columns:1fr}}
+
+/* Lot 76 — formules et options payantes (F-08) */
+.tr-block{display:grid;gap:14px}
+.tr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.tr-card{position:relative;border:1px solid var(--line);border-radius:14px;background:#fff;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;cursor:pointer}
+.tr-card.sel{border-color:#1b3a63;box-shadow:0 0 0 2px #dbe7f5}
+.tr-card header{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.tr-card header b{font-size:1.05rem}
+.tr-card .pr{font-size:1.4rem;font-weight:800;line-height:1.1}
+.tr-body{padding:14px;display:grid;gap:10px;align-content:start}
+.tr-kv{display:flex;gap:14px;flex-wrap:wrap;color:var(--ink-600)}
+.tr-kv span{display:inline-flex;gap:6px;align-items:center}
+.tr-card ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.tr-card li{display:flex;gap:8px;align-items:flex-start}
+.tr-card li svg{flex:none;margin-top:2px;color:#1a7f4b}
+.tr-card footer{padding:14px;border-top:1px solid var(--line);background:#fbfcfe}
+.tr-card.sel .tr-pick{background:#1b3a63;color:#fff;border-color:#1b3a63}
+.tr-radio{position:absolute;opacity:0;pointer-events:none}
+.tr-radio:focus-visible + header{outline:3px solid #7aa7e0;outline-offset:-3px}
+.tr-h3{margin:4px 0 0;font-size:1.05rem}
+.tr-opts{display:grid;gap:10px}
+.tr-opt{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer}
+.tr-opt.on{border-color:#1b3a63;background:#f5f9fe}
+.tr-opt b{display:block}
+.tr-opt small{color:var(--ink-600)}
+.tr-sum{border:1px solid var(--line);border-radius:14px;background:#fff;padding:16px;display:grid;gap:8px;max-width:440px}
+.tr-sum .r{display:flex;justify-content:space-between;gap:10px}
+.tr-sum .tot{border-top:1px solid var(--line);padding-top:10px;font-size:1.2rem;font-weight:800}
+.tr-badge{display:inline-flex;border-radius:99px;padding:2px 9px;font-size:.75rem;font-weight:650;background:#eaf1f8;color:#1b3a63;margin-left:6px;vertical-align:middle}
+.tr-from{display:grid;justify-items:end;line-height:1.15}
+.tr-from small{color:var(--ink-600);font-size:.75rem}
+.tr-ed{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tr-ed>div{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;display:grid;gap:10px;align-content:start}
+.tr-ed h3{margin:0}
+.tr-oprow{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+@media(max-width:800px){.tr-grid{grid-template-columns:1fr}.tr-oprow{grid-template-columns:1fr}}

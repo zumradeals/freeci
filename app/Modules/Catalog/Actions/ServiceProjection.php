@@ -30,6 +30,7 @@ final class ServiceProjection
             isDemo: $s->is_demo,
             id: (string) $s->getKey(),
             sellerUserId: (string) $profile->user_id,
+            tierCount: count($s->tiers ?? []),
         );
     }
 

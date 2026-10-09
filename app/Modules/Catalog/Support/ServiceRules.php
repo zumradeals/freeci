@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
  */
 final class ServiceRules
 {
-    public const FIELDS = ['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'delivery_requires_files', 'brief_requires_files'];
+    public const FIELDS = ['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'delivery_requires_files', 'brief_requires_files', 'tiers', 'options'];
 
     /** Normalise une saisie brute (formulaire) vers les colonnes d'une version. @return array<string, mixed> */
     public static function normalize(array $in): array
@@ -19,7 +19,8 @@ final class ServiceRules
         $lines = fn ($v) => array_values(array_filter(array_map(fn ($l) => trim((string) preg_replace('/\s+/u', ' ', $l)), is_array($v) ? $v : (preg_split('/\R/u', (string) $v) ?: [])), fn ($l) => $l !== ''));
         $int = fn ($v) => ($v === null || trim((string) $v) === '') ? null : (int) preg_replace('/[\s\x{202F}\x{00A0}]/u', '', (string) $v);
 
-        return [
+        $pricing = ServiceTiers::normalize($in);
+        $base = [
             'category_id' => trim((string) ($in['category_id'] ?? '')),
             'title' => trim((string) preg_replace('/\s+/u', ' ', (string) ($in['title'] ?? ''))),
             'summary' => trim((string) ($in['summary'] ?? '')),
@@ -32,7 +33,15 @@ final class ServiceRules
             'client_inputs' => $lines($in['client_inputs'] ?? ''),
             'delivery_requires_files' => ($in['delivery_mode'] ?? 'files') !== 'message',
             'brief_requires_files' => ! empty($in['brief_requires_files']),
+            'tiers' => $pricing['tiers'], 'options' => $pricing['options'],
         ];
+        if ($pricing['tiers'] !== null) {
+            // En mode « formules », prix, délai et corrections du service sont DÉRIVÉS des formules (la moins chère, la plus rapide) : jamais saisis à part.
+            $d = ServiceTiers::derive($pricing['tiers']);
+            $base = array_merge($base, ['price_xof' => $d['price_xof'], 'delivery_days' => $d['delivery_days'], 'revisions_included' => $d['revisions_included'] ?? 0]);
+        }
+
+        return $base;
     }
 
     /** @param array<string, mixed> $v colonnes normalisées */
@@ -83,6 +92,10 @@ final class ServiceRules
                 $e[$field] = 'Retirez les coordonnées privées (adresse e-mail, numéro de téléphone) : les échanges passent par FreeCI.';
             }
         }
+        if (($v['tiers'] ?? null) !== null) {
+            unset($e['price_xof'], $e['delivery_days'], $e['revisions_included']);      // dérivés des formules : leurs erreurs sont celles des formules
+        }
+        $e += ServiceTiers::errors($v['tiers'] ?? null, $v['options'] ?? null, $strict);
         if ($e !== []) {
             throw ValidationException::withMessages($e);
         }

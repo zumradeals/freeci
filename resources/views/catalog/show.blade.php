@@ -18,7 +18,7 @@
       </div>
 
       <section class="buy-summary card" aria-label="Offre">
-        <p class="muted small">Prix fixe pour le périmètre décrit</p><x-fc.money :amount="$service->price" size="lg" />
+        <p class="muted small">{{ count($service->tiers) >= 2 ? 'À partir de' : 'Prix fixe pour le périmètre décrit' }}</p><x-fc.money :amount="$service->price" size="lg" />
         <ul class="facts-row">
           <li><x-fc.icon name="clock" /><span><b>{{ $days }}</b><small>Délai</small></span></li>
           <li><x-fc.icon name="pencil" /><span><b>{{ $rev }}</b><small>{{ $revLabel }}</small></span></li>
@@ -26,6 +26,7 @@
         </ul>
         @include('catalog._cta', ['service' => $service, 'id' => 'buy-cta'])
       </section>
+      @if(count($service->tiers) >= 2 || count($service->options))@include('catalog._tiers', ['service' => $service])@endif
 
       <figure class="gallery" data-gallery>
         @if(count($service->images))
@@ -68,7 +69,7 @@
 
     <aside class="offer-aside" aria-label="Offre">
       <div class="offer sp-offer">
-        <div><p class="muted small">Prix fixe pour le périmètre décrit</p><x-fc.money :amount="$service->price" size="lg" /></div>
+        <div><p class="muted small">{{ count($service->tiers) >= 2 ? 'À partir de' : 'Prix fixe pour le périmètre décrit' }}</p><x-fc.money :amount="$service->price" size="lg" /></div>
         <ul class="sp-facts">
           <li><x-fc.icon name="clock" :size="22" /><span><b>{{ $days }}</b><small>Délai</small></span></li>
           <li><x-fc.icon name="pencil" :size="22" /><span><b>{{ $rev }}</b><small>{{ $revLabel }}</small></span></li>
@@ -83,7 +84,7 @@
     <div class="svc-grid service-grid">@foreach($similar as $other)<x-fc.service-card :service="$other" :level="2" />@endforeach</div></section>
   @endif
 </div>
-<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))@if(app(\App\Modules\Catalog\Actions\SellerSignals::class)->for($service->sellerUserId)['available'])<a class="btn btn-primary btn-lg" href="{{ route('services.request', $service->slug) }}">Demander</a>@else<span class="btn btn-lg is-off" aria-disabled="true">Indisponible</span>@endif @endif</div>
+<div class="sticky-buy" role="region" aria-label="Demander cette prestation"><div class="sum"><x-fc.money :amount="$service->price" /><small>{{ $days }}@if($service->revisionsIncluded) · {{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}@endif</small></div>@if($service->acceptsRequests && (! auth()->check() || auth()->id() !== $service->sellerUserId))@if(app(\App\Modules\Catalog\Actions\SellerSignals::class)->for($service->sellerUserId)['available'])<a class="btn btn-primary btn-lg" href="{{ count($service->tiers) >= 2 ? '#formules' : route('services.request', $service->slug) }}">{{ count($service->tiers) >= 2 ? 'Choisir' : 'Demander' }}</a>@else<span class="btn btn-lg is-off" aria-disabled="true">Indisponible</span>@endif @endif</div>
 
 @auth<div class="container" style="margin:8px auto 96px"><p class="small muted"><a href="{{ route('support.report.form', ['service', $service->slug]) }}">Signaler ce service</a>@if($service->sellerSlug) · <a href="{{ route('support.report.form', ['profile', $service->sellerSlug]) }}">Signaler le profil du vendeur</a>@endif</p></div>@endauth
 </x-layouts.public>

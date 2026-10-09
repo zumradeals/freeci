@@ -93,6 +93,7 @@ final class ServiceEditorData
             sellerName: $p->display_name, sellerInitials: ServiceProjection::initials($p->display_name), sellerHeadline: $p->headline, sellerCity: $p->city,
             price: Money::xof((int) $v->price_xof), deliveryDays: (int) $v->delivery_days, revisionsIncluded: $v->revisions_included, deliverables: $v->deliverables, exclusions: $v->exclusions,
             clientInputs: $v->client_inputs, images: ImageUrls::present($v->images), isDemo: $p->is_demo, version: 0, acceptsRequests: false, sellerUserId: $p->user_id, sellerSlug: null,
+            tiers: $v->tiers ?? [], options: $v->options ?? [],
         );
     }
 }

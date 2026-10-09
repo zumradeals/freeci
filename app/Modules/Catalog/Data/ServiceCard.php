@@ -24,12 +24,13 @@ final readonly class ServiceCard
         public ?string $ratingAvg = null,
         public bool $favorited = false,             // état pour l'utilisateur connecté seulement (favoris privés)
         public string $sellerUserId = '',           // pour la photo de profil du vendeur
+        public int $tierCount = 0,                  // nombre de formules (0 = offre unique) : le prix affiché est alors « à partir de »
     ) {}
 
     /** Complète la carte avec des données réelles (avis publiés, favori de l'utilisateur) : rien n'est inventé quand elles manquent. */
     public function withExtras(?array $stats, bool $favorited): self
     {
         return new self($this->slug, $this->title, $this->categoryName, $this->sellerName, $this->sellerInitials, $this->sellerHeadline, $this->deliveryDays, $this->price, $this->imageSrc, $this->imageAlt,
-            $this->isDemo, $this->id, (int) ($stats['count'] ?? 0), $stats['avg'] ?? null, $favorited, $this->sellerUserId);
+            $this->isDemo, $this->id, (int) ($stats['count'] ?? 0), $stats['avg'] ?? null, $favorited, $this->sellerUserId, $this->tierCount);
     }
 }

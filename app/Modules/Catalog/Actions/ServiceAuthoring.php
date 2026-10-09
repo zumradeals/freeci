@@ -59,6 +59,7 @@ final class ServiceAuthoring
             'scope' => $service->scope, 'price_xof' => $service->price_xof, 'delivery_days' => $service->delivery_days, 'revisions_included' => $service->revisions_included,
             'deliverables' => $service->deliverables, 'exclusions' => $service->exclusions, 'client_inputs' => $service->client_inputs, 'images' => $service->images,
             'brief_requires_files' => $service->brief_requires_files, 'delivery_requires_files' => $service->delivery_requires_files,
+            'tiers' => $service->tiers, 'options' => $service->options,
             'published_at' => $state === 'published' ? ($service->published_at ?? now()) : null,
         ]);
     }
@@ -198,7 +199,7 @@ final class ServiceAuthoring
             $live = ServiceVersion::query()->where('service_id', $service->getKey())->where('state', 'published')->first()
                 ?? throw new ServiceStateConflict('Ce service n’a pas encore de version publiée.');
             $n = (int) ServiceVersion::query()->where('service_id', $service->getKey())->max('number') + 1;
-            $v = ServiceVersion::create($live->only(['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'images', 'brief_requires_files', 'delivery_requires_files'])
+            $v = ServiceVersion::create($live->only(['category_id', 'title', 'summary', 'scope', 'price_xof', 'delivery_days', 'revisions_included', 'deliverables', 'exclusions', 'client_inputs', 'images', 'brief_requires_files', 'delivery_requires_files', 'tiers', 'options'])
                 + ['service_id' => $service->getKey(), 'number' => $n, 'state' => 'draft', 'created_by' => $owner->getKey()]);
             ServiceHistory::log($service->getKey(), $v->getKey(), 'revision_started', $owner, self::OWNER, null, ['from_number' => $live->number]);
 

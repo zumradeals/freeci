@@ -4,6 +4,12 @@
   $lines = fn ($a) => implode("\n", $a ?? []);
   $err = fn ($k) => $errors->first($k);
   $mode = old('delivery_mode', $v->delivery_requires_files ? 'files' : 'message');
+  $pmode = old('pricing_mode', ! empty($v->tiers) ? 'tiers' : 'single');
+  $tierRows = old('tiers', collect($v->tiers ?? [])->map(fn ($t) => ['includes' => implode("\n", $t['includes'] ?? [])] + $t)->all());
+  $tierRows = array_values($tierRows) + [];
+  for ($i = count($tierRows); $i < 3; $i++) { $tierRows[] = []; }
+  $optRows = array_values(old('options', $v->options ?? []));
+  $optRows = array_pad($optRows, min($L['options_max'], max(2, count($optRows) + 1)), []);
   $len = fn ($t) => mb_strlen(trim((string) $t));
   $within = fn ($n, $r) => $n >= $r[0] && $n <= $r[1];
   $num = fn ($t) => (int) preg_replace('/\D/', '', (string) $t);
@@ -12,7 +18,7 @@
     'title' => ['Titre et catégorie', $within($len($val('title', $v->title)), $L['title']) && (string) old('category_id', $v->category_id) !== ''],
     'summary' => ['Résumé', $within($len($val('summary', $v->summary)), $L['summary'])],
     'scope' => ['Description du périmètre', $within($len($val('scope', $v->scope)), $L['scope'])],
-    'offer' => ['Prix, délai et retouches', $within($num($val('price_xof', $v->price_xof)), $L['price_xof']) && $within($num($val('delivery_days', $v->delivery_days)), $L['delivery_days']) && $within((int) $val('revisions_included', $v->revisions_included), $L['revisions'])],
+    'offer' => ['Prix, délai et retouches', $pmode === 'tiers' ? collect($tierRows)->filter(fn ($t) => trim((string) ($t['name'] ?? '')) !== '' && ! empty($t['price_xof']))->count() >= 2 : $within($num($val('price_xof', $v->price_xof)), $L['price_xof']) && $within($num($val('delivery_days', $v->delivery_days)), $L['delivery_days']) && $within((int) $val('revisions_included', $v->revisions_included), $L['revisions'])],
     'deliverables' => ['Ce que le client reçoit', $linesCount(old('deliverables', $lines($v->deliverables))) >= 1],
     'cover' => ['Image de couverture', ! $imagesEnabled || count($images) >= 1],
     'profile' => ['Profil publié', (bool) $profilePublished],
@@ -52,14 +58,47 @@
         </div></section>
 
         <section class="card" id="editor-offre" data-editor-panel="offre" aria-labelledby="h-off"><h2 class="t-h2 card-title" id="h-off">L’offre</h2><div class="fields">
+          <div style="display:contents" data-single-fields @if($pmode === 'tiers') hidden @endif>
           <x-fc.field name="price_xof" label="Prix (FCFA)" type="text" :value="$v->price_xof ?: ''" :required="false" :hint="'De '.number_format($L['price_xof'][0], 0, ',', ' ').' à '.number_format($L['price_xof'][1], 0, ',', ' ').' FCFA, prix fixe pour le périmètre décrit.'" />
           <x-fc.field name="delivery_days" label="Délai de réalisation (jours)" type="text" :value="$v->delivery_days ?: ''" :required="false" :hint="$L['delivery_days'][0].' à '.$L['delivery_days'][1].' jours, après paiement confirmé et réception des éléments nécessaires.'" />
           <x-fc.field name="revisions_included" label="Retouches incluses" type="text" :value="$v->revisions_included" :required="false" :hint="'De '.$L['revisions'][0].' à '.$L['revisions'][1].'. Nombre de demandes de retouche comprises dans le prix.'" />
+          </div>
           @foreach(['deliverables' => ['Que recevra le client ?', 'Exemple : une photo restaurée en JPG haute qualité. Un élément par ligne.', 3], 'exclusions' => ['Ce qui n’est pas inclus', 'Une ligne par exclusion (facultatif).', 3]] as $f => [$label, $hint, $rows])
           <div class="field"><label for="f-{{ $f }}">{{ $label }}</label><p class="hint" id="h-{{ $f }}">{{ $hint }}</p>
             <textarea class="textarea" id="f-{{ $f }}" name="{{ $f }}" rows="{{ $rows }}" aria-describedby="h-{{ $f }} @if($err($f)) e-{{ $f }} @endif" @if($err($f)) aria-invalid="true" @endif>{{ old($f, $lines($v->{$f})) }}</textarea>@if($err($f))<p class="field-error" id="e-{{ $f }}"><x-fc.icon name="error" :size="16" />{{ $err($f) }}</p>@endif</div>
           @endforeach
         </div></section>
+
+
+        <section class="card" id="editor-formules" data-editor-panel="offre" aria-labelledby="h-form"><div class="row row-between"><h2 class="t-h2" id="h-form">Formules et options</h2></div>
+          <p class="note-line"><x-fc.icon name="info" :size="16" /><span>Le titre, le résumé, le périmètre, les livrables communs, ce qui n’est pas inclus et les éléments à fournir restent <strong>communs</strong> à toutes les formules. Les formules et options sont <strong>contrôlées</strong> comme le reste du service ; vos commandes en cours gardent leur accord.</span></p>
+          <fieldset class="field" @disabled(! $editable)><legend class="label">Tarification</legend>
+            <label class="check"><input type="radio" name="pricing_mode" value="single" @checked($pmode === 'single')> Une seule offre (prix, délai et retouches ci-dessus)</label>
+            <label class="check"><input type="radio" name="pricing_mode" value="tiers" @checked($pmode === 'tiers')> Plusieurs formules ({{ $L['tiers'][0] }} ou {{ $L['tiers'][1] }}) : le prix, le délai et les retouches de chaque formule remplacent ceux ci-dessus</label>
+            @if($err('tiers'))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err('tiers') }}</p>@endif</fieldset>
+          <div class="tr-ed" data-tier-fields @if($pmode !== 'tiers') hidden @endif>
+            @foreach($tierRows as $i => $t)
+              <div><h3>Formule {{ $i + 1 }}@if($i >= $L['tiers'][0]) <span class="muted small">(facultative)</span>@endif</h3>
+                <div class="field"><label for="t{{ $i }}-name">Nom ({{ $L['tier_name'][1] }} caractères)</label><input class="input" id="t{{ $i }}-name" name="tiers[{{ $i }}][name]" value="{{ $t['name'] ?? '' }}" maxlength="{{ $L['tier_name'][1] }}" @disabled(! $editable) @if($err("tiers.$i.name")) aria-invalid="true" @endif>@if($err("tiers.$i.name"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("tiers.$i.name") }}</p>@endif</div>
+                <div class="field"><label for="t{{ $i }}-price">Prix (FCFA)</label><input class="input" id="t{{ $i }}-price" name="tiers[{{ $i }}][price_xof]" inputmode="numeric" value="{{ $t['price_xof'] ?? '' }}" @disabled(! $editable) @if($err("tiers.$i.price_xof")) aria-invalid="true" @endif>@if($err("tiers.$i.price_xof"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("tiers.$i.price_xof") }}</p>@endif</div>
+                <div class="field"><label for="t{{ $i }}-days">Délai (jours)</label><input class="input" id="t{{ $i }}-days" name="tiers[{{ $i }}][delivery_days]" inputmode="numeric" value="{{ $t['delivery_days'] ?? '' }}" @disabled(! $editable) @if($err("tiers.$i.delivery_days")) aria-invalid="true" @endif>@if($err("tiers.$i.delivery_days"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("tiers.$i.delivery_days") }}</p>@endif</div>
+                <div class="field"><label for="t{{ $i }}-rev">Corrections incluses</label><input class="input" id="t{{ $i }}-rev" name="tiers[{{ $i }}][revisions_included]" inputmode="numeric" value="{{ $t['revisions_included'] ?? '' }}" @disabled(! $editable) @if($err("tiers.$i.revisions_included")) aria-invalid="true" @endif>@if($err("tiers.$i.revisions_included"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("tiers.$i.revisions_included") }}</p>@endif</div>
+                <div class="field"><label for="t{{ $i }}-inc">Ce que comprend cette formule (une ligne par élément, {{ $L['tier_includes_max'] }} au plus)</label><textarea class="textarea" id="t{{ $i }}-inc" name="tiers[{{ $i }}][includes]" rows="4" @disabled(! $editable) @if($err("tiers.$i.includes")) aria-invalid="true" @endif>{{ $t['includes'] ?? '' }}</textarea>@if($err("tiers.$i.includes"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("tiers.$i.includes") }}</p>@endif</div>
+              </div>
+            @endforeach
+          </div>
+          <h3 class="tr-h3">Options payantes <span class="muted small">({{ $L['options_max'] }} au plus, facultatives)</span></h3>
+          <p class="muted small" style="margin:0">Une option s’ajoute au prix et au délai de la formule choisie (jours en plus, ou en moins avec un nombre négatif). Elle ne change ni les corrections ni le périmètre de base. Pour vider une ligne, effacez son libellé et son prix.</p>
+          @if($err('options'))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err('options') }}</p>@endif
+          @foreach($optRows as $i => $o)
+            <div class="tr-oprow">
+              <div class="field"><label for="o{{ $i }}-label">Libellé</label><input class="input" id="o{{ $i }}-label" name="options[{{ $i }}][label]" value="{{ $o['label'] ?? '' }}" maxlength="{{ $L['option_label'][1] }}" @disabled(! $editable) @if($err("options.$i.label")) aria-invalid="true" @endif>@if($err("options.$i.label"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("options.$i.label") }}</p>@endif</div>
+              <div class="field"><label for="o{{ $i }}-price">Prix (FCFA)</label><input class="input" id="o{{ $i }}-price" name="options[{{ $i }}][price_xof]" inputmode="numeric" value="{{ $o['price_xof'] ?? '' }}" @disabled(! $editable) @if($err("options.$i.price_xof")) aria-invalid="true" @endif>@if($err("options.$i.price_xof"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("options.$i.price_xof") }}</p>@endif</div>
+              <div class="field"><label for="o{{ $i }}-days">Jours en plus</label><input class="input" id="o{{ $i }}-days" name="options[{{ $i }}][delivery_days]" inputmode="numeric" value="{{ $o['delivery_days'] ?? '' }}" @disabled(! $editable) @if($err("options.$i.delivery_days")) aria-invalid="true" @endif>@if($err("options.$i.delivery_days"))<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $err("options.$i.delivery_days") }}</p>@endif</div>
+            </div>
+          @endforeach
+          <p class="muted small" style="margin:0">Pour un besoin sur mesure, utilisez l’<strong>offre personnalisée</strong> depuis la messagerie.</p>
+        </section>
 
         <section class="card" id="editor-images" data-editor-panel="images" aria-labelledby="h-img"><div class="row row-between"><h2 class="t-h2" id="h-img">Images de votre service</h2><span class="muted small">{{ count($images) }} sur {{ $L['images_max'] }}</span></div>
           <p class="note-line"><x-fc.icon name="shield" :size="16" /><span>L’image principale apparaîtra dans le catalogue et en tête de votre service. JPG, PNG ou WebP, {{ $L['image_max_mb'] }} Mo maximum, {{ $L['image_min_width'] }} px de large au minimum.</span></p>

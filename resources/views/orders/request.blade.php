@@ -14,6 +14,19 @@
       @csrf
       <input type="hidden" name="service_version" value="{{ $service->version }}">
       <input type="hidden" name="operation_key" value="{{ $operationKey }}">
+      @if(! empty($selection))
+        @if($selection['tier_no'])<input type="hidden" name="tier" value="{{ $selection['tier_no'] }}">@endif
+        @foreach($selection['options'] as $o)<input type="hidden" name="options[]" value="{{ $o['no'] }}">@endforeach
+        <section class="card rq-card tr-recap" aria-labelledby="r-sel"><div class="row row-between"><h2 class="t-h2 card-title" id="r-sel">Votre sélection</h2><a href="{{ route('services.show', $service->slug) }}#formules">Modifier</a></div>
+          <div class="tr-sum" style="border:0;padding:0">
+            @if($selection['tier'])<div class="r"><span>Formule {{ $selection['tier']['name'] }} · {{ $selection['base_days'] }} {{ $selection['base_days'] > 1 ? 'jours' : 'jour' }} · {{ $selection['revisions'] }} {{ $selection['revisions'] > 1 ? 'corrections' : 'correction' }}</span><span><x-fc.money :amount="\App\Shared\Money::xof($selection['base_price'])" /></span></div>@endif
+            @foreach($selection['options'] as $o)<div class="r"><span>{{ $o['label'] }}@if($o['delivery_days'] != 0) · {{ $o['delivery_days'] > 0 ? '+ ' : '− ' }}{{ abs($o['delivery_days']) }} {{ abs($o['delivery_days']) > 1 ? 'jours' : 'jour' }}@endif</span><span>+ <x-fc.money :amount="\App\Shared\Money::xof((int) $o['price_xof'])" /></span></div>@endforeach
+            <div class="r tot"><span>Total</span><span><x-fc.money :amount="\App\Shared\Money::xof($selection['price'])" /></span></div>
+            <div class="r"><span>Délai total · corrections</span><span>{{ $selection['days'] }} {{ $selection['days'] > 1 ? 'jours' : 'jour' }} · {{ $selection['revisions'] }}</span></div>
+          </div>
+          @error('tier')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror @error('options')<p class="field-error"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror
+        </section>
+      @endif
 
       <section class="card rq-card" aria-labelledby="r-need"><h2 class="t-h2 card-title" id="r-need">Votre besoin</h2>
         <div class="stack" style="display:grid;gap:16px">
@@ -50,8 +63,8 @@
         @if($cover)<div class="im"><img src="{{ $cover }}" alt="" width="640" height="320"></div>@endif
         <div class="b">
           <div><p class="muted small">Le service demandé</p><h2 id="r-reminder">{{ $service->title }}</h2><p class="muted small">{{ $service->sellerName }} · version {{ $service->version }} du service, consultée maintenant</p></div>
-          <p class="rq-price"><x-fc.money :amount="$service->price" size="lg" /></p>
-          <ul class="rq-facts"><li><x-fc.icon name="clock" :size="20" /><span><b>{{ $service->deliveryDays }} {{ $service->deliveryDays > 1 ? 'jours' : 'jour' }}</b> après le départ</span></li><li><x-fc.icon name="pencil" :size="20" /><span><b>{{ $service->revisionsIncluded }} {{ $service->revisionsIncluded > 1 ? 'corrections' : 'correction' }}</b> {{ $service->revisionsIncluded > 1 ? 'incluses' : 'incluse' }}</span></li></ul>
+          <p class="rq-price">@if(! empty($selection))<x-fc.money :amount="\App\Shared\Money::xof($selection['price'])" size="lg" />@else<x-fc.money :amount="$service->price" size="lg" />@endif</p>
+          <ul class="rq-facts"><li><x-fc.icon name="clock" :size="20" /><span><b>{{ ! empty($selection) ? $selection['days'] : $service->deliveryDays }} {{ (! empty($selection) ? $selection['days'] : $service->deliveryDays) > 1 ? 'jours' : 'jour' }}</b> après le départ</span></li><li><x-fc.icon name="pencil" :size="20" /><span><b>{{ ! empty($selection) ? $selection['revisions'] : $service->revisionsIncluded }} {{ (! empty($selection) ? $selection['revisions'] : $service->revisionsIncluded) > 1 ? 'corrections' : 'correction' }}</b> {{ (! empty($selection) ? $selection['revisions'] : $service->revisionsIncluded) > 1 ? 'incluses' : 'incluse' }}</span></li></ul>
           <p class="rq-lock"><x-fc.icon name="lock" :size="18" /><span>Ces conditions sont <strong>figées</strong> dans votre commande au moment de l’envoi : elles ne changent pas si le service est modifié ensuite.</span></p>
         </div>
       </section>

@@ -164,6 +164,7 @@ final class GetOrderDossier
             messageUnread: app(Inbox::class)->unreadForOrder($viewer, $order->getKey()),
             supportCase: app(DisputeOptions::class)->for($order->getKey(), $order->state->value)['live'],
             disputeKinds: app(DisputeOptions::class)->for($order->getKey(), $order->state->value)['kinds'],
+            tierName: $a->tier_name, basePrice: $a->base_price_xof === null ? null : (int) $a->base_price_xof, selectedOptions: $a->selected_options ?? [],
         );
     }
 

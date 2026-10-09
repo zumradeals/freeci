@@ -11,6 +11,7 @@ use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
 use App\Modules\Catalog\Models\Service;
 use App\Modules\Catalog\Support\Availability;
+use App\Modules\Catalog\Support\ServiceTiers;
 use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\OrderForbidden;
@@ -38,7 +39,7 @@ final class RequestService
      *
      * @throws ServiceNotFound|ServiceNotAvailable|OwnService|RequestsClosed|SellerUnavailable|ServiceChanged|PendingRequestExists|OrderForbidden|ValidationException
      */
-    public function __invoke(User $client, string $serviceSlug, int $expectedServiceVersion, array $answers, ?string $notes, bool $conditionsAccepted, string $operationKey): array
+    public function __invoke(User $client, string $serviceSlug, int $expectedServiceVersion, array $answers, ?string $notes, bool $conditionsAccepted, string $operationKey, ?int $tier = null, array $options = []): array
     {
         if (! $client->hasRole(AccountRole::CLIENT)) {
             throw new OrderForbidden;
@@ -67,11 +68,12 @@ final class RequestService
         }
 
         $brief = $this->validatedBrief($service, $answers, $notes, $conditionsAccepted);
+        ServiceTiers::resolve($service->tiers, $service->options, $tier, $options, (int) $service->price_xof, (int) $service->delivery_days, (int) $service->revisions_included);      // formule et options valides, sinon refus avant tout effet
 
         [$orderId, $replayed] = CommandReceipts::once(
             $client->getKey(), 'orders.request_service', $operationKey,
-            ['service' => $service->getKey(), 'version' => $expectedServiceVersion, 'brief' => $brief, 'accepted' => $conditionsAccepted],
-            fn () => $this->create($client, $service, $expectedServiceVersion, $brief),
+            ['service' => $service->getKey(), 'version' => $expectedServiceVersion, 'brief' => $brief, 'accepted' => $conditionsAccepted, 'tier' => $tier, 'options' => array_values(array_unique(array_map('strval', $options)))],
+            fn () => $this->create($client, $service, $expectedServiceVersion, $brief, $tier, $options),
         );
 
         return [Order::findOrFail($orderId), $replayed];
@@ -112,7 +114,7 @@ final class RequestService
         return $p !== null && Availability::unavailable($p);
     }
 
-    private function create(User $client, Service $service, int $expectedVersion, array $brief): string
+    private function create(User $client, Service $service, int $expectedVersion, array $brief, ?int $tier = null, array $options = []): string
     {
         // Verrou du service : les conditions copiées sont celles de cette version précise, sans modification concurrente.
         $locked = Service::query()->whereKey($service->getKey())->lockForUpdate()->first();
@@ -126,6 +128,8 @@ final class RequestService
             throw new SellerUnavailable;
         }
         $locked->load(['category', 'freelanceProfile']);
+        // Prix, délai et corrections de l'accord : recalculés ICI, sous verrou, à partir des formules et options PUBLIÉES de cette version (jamais lus dans la requête).
+        $sel = ServiceTiers::resolve($locked->tiers, $locked->options, $tier, $options, (int) $locked->price_xof, (int) $locked->delivery_days, (int) $locked->revisions_included);
 
         $now = now();
         $responseHours = (int) config('freeci.orders.response_hours');
@@ -159,10 +163,12 @@ final class RequestService
             'category_name' => $locked->category->name,
             'seller_name' => $locked->freelanceProfile->display_name,
             'scope' => $locked->scope,
-            'price_xof' => $locked->price_xof,
-            'delivery_days' => $locked->delivery_days,
-            'revisions_included' => $locked->revisions_included,
-            'deliverables' => $locked->deliverables,
+            'price_xof' => $sel['price'],
+            'delivery_days' => $sel['days'],
+            'revisions_included' => $sel['revisions'],
+            'deliverables' => array_merge($locked->deliverables, $sel['tier']['includes'] ?? [], array_map(fn ($o) => 'Option : '.$o['label'], $sel['options'])),
+            'tier_name' => $sel['tier']['name'] ?? null, 'base_price_xof' => $sel['tier'] === null ? null : $sel['base_price'], 'base_delivery_days' => $sel['tier'] === null ? null : $sel['base_days'],
+            'selected_options' => $sel['options'] === [] ? null : array_map(fn ($o) => ['label' => $o['label'], 'price_xof' => (int) $o['price_xof'], 'delivery_days' => (int) $o['delivery_days']], $sel['options']),
             'exclusions' => $locked->exclusions,
             'client_inputs' => $locked->client_inputs,
             'delivery_requires_files' => $locked->delivery_requires_files,
@@ -177,7 +183,7 @@ final class RequestService
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);
         $order->events()->create([
             'type' => 'requested', 'actor_id' => $client->getKey(), 'to_state' => OrderState::AwaitingAcceptance->value,
-            'meta' => ['service_row_version' => $locked->row_version, 'response_deadline_at' => $order->response_deadline_at->toIso8601String()],
+            'meta' => ['service_row_version' => $locked->row_version, 'response_deadline_at' => $order->response_deadline_at->toIso8601String(), 'tier' => $sel['tier']['name'] ?? null, 'options' => array_column($sel['options'], 'label')],
         ]);
 
         return $order->getKey();

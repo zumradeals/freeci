@@ -75,5 +75,8 @@ final readonly class OrderDossier
         public ?string $supportCase = null,              // dossier de litige / annulation en cours (référence)
         public string $otherPartyId = '',
         public array $disputeKinds = [],                 // ce que la partie peut demander (dispute | cancellation | claim)
+        public ?string $tierName = null,                 // formule choisie (offres à niveaux), figée dans l'accord
+        public ?int $basePrice = null,                   // prix de la formule seule ; `price` = total (formule + options)
+        public array $selectedOptions = [],              // options retenues : libellé, prix, jours
     ) {}
 }

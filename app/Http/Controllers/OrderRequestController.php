@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Integrations\FileScan\FileScanner;
 use App\Modules\Catalog\Actions\GetPublishedService;
 use App\Modules\Catalog\Actions\SellerSignals;
+use App\Modules\Catalog\Data\ServiceDetail;
 use App\Modules\Catalog\Exceptions\ServiceNotAvailable;
 use App\Modules\Catalog\Exceptions\ServiceNotFound;
+use App\Modules\Catalog\Support\ServiceTiers;
 use App\Modules\Orders\Actions\RequestService;
 use App\Modules\Orders\Exceptions\OperationKeyReused;
 use App\Modules\Orders\Exceptions\OrderForbidden;
@@ -20,6 +22,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /** Demande de prestation (docs/04 §3) : page dédiée, formulaire serveur, fonctionne sans JavaScript. */
@@ -44,7 +47,13 @@ class OrderRequestController extends Controller
             return response()->view('errors.order', ['title' => 'Demandes fermées', 'message' => 'Ce service d’exemple n’accepte pas de demande.', 'back' => route('services.show', $slug), 'backLabel' => 'Retour au service'], 409);
         }
 
-        return view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'uploadsEnabled' => app(FileScanner::class)->isOperational(), 'changed' => (bool) $request->session()->get('service_changed')]);
+        try {
+            $selection = $this->selection($service, $request->query('formule'), (array) $request->query('options', []));
+        } catch (ValidationException $e) {
+            return redirect()->route('services.show', $slug)->with('error', 'Choisissez une formule (et vos options) avant de décrire votre besoin.');
+        }
+
+        return view('orders.request', ['selection' => $selection, 'service' => $service, 'operationKey' => (string) Str::uuid(), 'uploadsEnabled' => app(FileScanner::class)->isOperational(), 'changed' => (bool) $request->session()->get('service_changed')]);
     }
 
     public function store(Request $request, string $slug, RequestService $requestService, GetPublishedService $get): RedirectResponse|Response
@@ -56,12 +65,13 @@ class OrderRequestController extends Controller
             'answers.*' => ['nullable', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:3000'],
             'conditions' => ['accepted'],
+            'tier' => ['nullable', 'integer', 'min:1', 'max:3'], 'options' => ['nullable', 'array', 'max:5'], 'options.*' => ['integer', 'min:1', 'max:5'],
         ], ['conditions.accepted' => 'Vous devez accepter les conditions de la demande pour l’envoyer.']);
 
         try {
             [$order, $replayed] = $requestService(
                 $request->user(), $slug, (int) $data['service_version'], array_values($data['answers']),
-                $data['notes'] ?? null, true, $data['operation_key'],
+                $data['notes'] ?? null, true, $data['operation_key'], $data['tier'] ?? null, array_values($data['options'] ?? []),
             );
         } catch (ServiceNotFound) {
             abort(404);
@@ -82,12 +92,27 @@ class OrderRequestController extends Controller
         } catch (ServiceChanged) {
             // 409 : on rend à nouveau le formulaire avec les conditions à jour, brouillon conservé (docs/04 §3.5).
             $service = $get($slug);
+            try {
+                $selection = $this->selection($service, $data['tier'] ?? null, array_values($data['options'] ?? []));
+            } catch (ValidationException) {
+                return redirect()->route('services.show', $slug)->with('error', 'Ce service a été modifié : choisissez de nouveau votre formule et vos options.');
+            }
 
-            return response()->view('orders.request', ['service' => $service, 'operationKey' => (string) Str::uuid(), 'changed' => true, 'uploadsEnabled' => app(FileScanner::class)->isOperational()], 409);
+            return response()->view('orders.request', ['selection' => $selection, 'service' => $service, 'operationKey' => (string) Str::uuid(), 'changed' => true, 'uploadsEnabled' => app(FileScanner::class)->isOperational()], 409);
         }
 
         return redirect()->route('orders.show', $order->reference)->with('status', $replayed
             ? 'Cette demande a déjà été envoyée : la voici.'
             : 'Demande envoyée à '.$order->agreement->seller_name.'. Réponse attendue avant le '.Dates::format($order->response_deadline_at).'.');
+    }
+
+    /** Sélection recalculée par le serveur à partir des formules et options publiées ; null pour une offre unique sans option. */
+    private function selection(ServiceDetail $service, mixed $tier, array $options): ?array
+    {
+        if ($service->tiers === [] && $options === []) {
+            return null;
+        }
+
+        return ServiceTiers::resolve($service->tiers ?: null, $service->options ?: null, $tier, $options, (int) $service->price->xof, $service->deliveryDays, $service->revisionsIncluded);
     }
 }
