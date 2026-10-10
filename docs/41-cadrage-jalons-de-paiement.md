@@ -1,6 +1,6 @@
 # F-13 — Cadrage des jalons de paiement (Q6)
 
-> **Statut : projet de travail, non adopté.** Ce document cadre les règles financières avant toute maquette (docs/36, Q6). Aucune règle ci-dessous n'est une décision de GAMAD tant que le porteur ne l'a pas validée. Aucun code n'est écrit.
+> **Statut : cadrage validé par le porteur sur les 4 points du §4 (A, financement séquentiel, 2 à 5 jalons à 10 000 FCFA minimum, arrêt du plan par le client seul).** Les autres précisions (§3, R1 à R7, et celles de la maquette) restent des propositions tant qu'elles ne sont pas approuvées avec la maquette.
 
 ## 1. Point de départ : ce que le moteur fait aujourd'hui
 
