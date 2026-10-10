@@ -6,6 +6,7 @@ use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Catalog\Support\PrivateContact;
+use App\Modules\Finance\Commission\CommissionTerms;
 use App\Modules\Finance\PaymentGate;
 use App\Modules\Messaging\Actions\ConversationRules;
 use App\Modules\Messaging\Models\Conversation;
@@ -160,7 +161,8 @@ final class CustomOffers
         } catch (UniqueConstraintViolationException) {
             throw new OfferConflict('Cette offre est déjà acceptée.');
         }
-        $order->agreement()->create([
+        $terms = app(CommissionTerms::class)->forOrder($order->getKey(), (string) $order->freelancer_id);      // taux figé : normal, ou offert
+        $order->agreement()->create($terms + [
             'origin' => 'offer', 'offer_id' => $o->id, 'service_id' => null, 'service_row_version' => null,
             'service_title' => $o->title, 'service_summary' => mb_substr($o->scope, 0, 300), 'category_name' => 'Offre personnalisée',
             'seller_name' => $freelancer->freelanceProfile?->display_name ?? $freelancer->name,
@@ -168,7 +170,6 @@ final class CustomOffers
             'deliverables' => json_decode($o->deliverables, true), 'exclusions' => [], 'client_inputs' => json_decode($o->client_inputs, true),
             'delivery_requires_files' => $o->delivery_mode === 'files', 'delivery_mode' => $o->delivery_mode, 'brief_requires_files' => false,
             'response_hours' => (int) config('freeci.orders.response_hours'), 'payment_hours' => $paymentHours,
-            'commission_bp' => (int) config('freeci.finance.commission_bp'), 'commission_policy' => (string) config('freeci.finance.commission_policy'),       // conditions financières FIGÉES à l'accord
             'conditions_version' => config('freeci.orders.conditions_version'), 'conditions_accepted_at' => $now,
         ]);
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);

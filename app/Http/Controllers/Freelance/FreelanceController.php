@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Accounts\Actions\GetFreelanceProfile;
 use App\Modules\Accounts\Actions\PublishFreelanceProfile;
 use App\Modules\Accounts\Actions\SaveFreelanceProfile;
+use App\Modules\Admin\Actions\PromoCampaigns;
 use App\Modules\Catalog\Actions\AvailabilityManager;
 use App\Modules\Catalog\Actions\ListFreelancerServices;
 use App\Modules\Finance\Queries\FreelancerEarnings;
@@ -15,6 +16,7 @@ use App\Modules\Orders\Queries\FreelancerOverview;
 use App\Modules\Orders\Queries\ListOrders;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /** Espace freelance minimal : demandes reçues, commandes, services (lecture seule), profil. */
@@ -51,13 +53,23 @@ class FreelanceController extends Controller
     {
         $data = $request->validate([
             'display_name' => ['required', 'string', 'max:120'], 'headline' => ['required', 'string', 'max:160'], 'city' => ['nullable', 'string', 'max:80'],
-            'bio' => ['nullable', 'string', 'max:3000'], 'skills' => ['nullable', 'string', 'max:600'],
+            'bio' => ['nullable', 'string', 'max:3000'], 'skills' => ['nullable', 'string', 'max:600'], 'promo_code' => ['nullable', 'string', 'max:40'],
         ]);      // liste blanche : tout autre champ envoyé (badge, vérification, rôle, publication…) est ignoré
         $first = ! $request->user()->hasRole('freelance');
         $save($request->user(), $data['display_name'], $data['headline'], $data['city'] ?? null, $request->has('bio') ? (string) ($data['bio'] ?? '') : null, $request->has('skills') ? (string) ($data['skills'] ?? '') : null);
 
-        return $first ? redirect()->route('freelance.dashboard')->with('status', 'Espace freelance activé. Votre profil est enregistré.')
-            : redirect()->route('freelance.profile')->with('status', 'Profil enregistré.');
+        $promo = '';
+        if (filled($request->input('promo_code'))) {
+            try {
+                app(PromoCampaigns::class)->redeem($request->user(), $request->input('promo_code'));
+                $promo = ' Code promotionnel appliqué.';
+            } catch (ValidationException $e) {      // le profil est déjà enregistré : un code refusé ne l'annule pas
+                return redirect()->route('freelance.profile')->withErrors($e->errors())->withInput()->with('status', ($first ? 'Espace freelance activé. Votre profil est enregistré.' : 'Profil enregistré.').' Le code promotionnel n’a pas été appliqué.');
+            }
+        }
+
+        return $first ? redirect()->route('freelance.dashboard')->with('status', 'Espace freelance activé. Votre profil est enregistré.'.$promo)
+            : redirect()->route('freelance.profile')->with('status', 'Profil enregistré.'.$promo);
     }
 
     public function publish(Request $request, PublishFreelanceProfile $publish): RedirectResponse

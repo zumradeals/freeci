@@ -20,7 +20,7 @@
         $isAdmin ? $a('admin.stats', 'Statistiques', 'grid', ['admin.stats*', 'admin.exports*']) : null,
       ]),
       'Support' => [$a('admin.support', 'Dossiers', 'message', 'admin.support*', [], $sq['unassigned'] > 0 ? (string) $sq['unassigned'] : null)],
-      'Finances' => $isAdmin ? [$a('admin.finance', 'Opérations', 'card', 'admin.finance*'), $a('admin.payments', 'Rapprochements', 'clipboard', 'admin.payments*')] : [],
+      'Finances' => $isAdmin ? [$a('admin.finance', 'Opérations', 'card', 'admin.finance*'), $a('admin.payments', 'Rapprochements', 'clipboard', 'admin.payments*'), $a('admin.referrals', 'Parrainage', 'heart', 'admin.referrals*')] : [],
       'Configuration' => $isAdmin ? [$a('admin.settings', 'Paramètres', 'grid', 'admin.settings*'), $a('admin.categories', 'Catégories', 'list', 'admin.categories*'), $a('admin.navigation', 'Menus du site', 'list', 'admin.navigation*'), $a('admin.team', 'Équipe et habilitations', 'user', 'admin.team*'), $a('admin.legal', 'Pages légales', 'clipboard', 'admin.legal*')] : [],
       'Exploitation' => array_filter([
         $isAdmin ? $a('admin.operations', 'État et préparation', 'grid', 'admin.operations') : null,
@@ -55,8 +55,9 @@
   }
   if ($space !== 'admin') {
     $groups['Compte et aide'] = [
-      $a('account.settings', 'Mon compte', 'user', 'account.settings', $q), $a('support.index', 'Assistance', 'message', 'support.*', $q), $a('info', 'Aide', 'info', 'info', ['page' => 'aide']),
+      $a('account.settings', 'Mon compte', 'user', 'account.settings', $q), config('freeci.referral.enabled') ? $a('account.referral', 'Parrainage', 'heart', 'account.referral', $q) : null, $a('support.index', 'Assistance', 'message', 'support.*', $q), $a('info', 'Aide', 'info', 'info', ['page' => 'aide']),
     ];
+    $groups['Compte et aide'] = array_values(array_filter($groups['Compte et aide']));
   } else {
     $groups['Compte et aide'] = [$a('info', 'Aide', 'info', 'info', ['page' => 'aide'])];
   }

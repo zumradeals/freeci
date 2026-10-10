@@ -100,6 +100,9 @@ return [
         'invitations' => ['per_mission' => 10, 'per_client_day' => 20, 'message_max' => 500],
     ],
 
+    // F-14 : parrainage. La récompense est une commission offerte (part de FreeCI) : le prix payé par le client ne change jamais.
+    'referral' => ['enabled' => true, 'free_orders' => 3, 'rate_bp' => 0, 'max_qualified' => 10, 'cookie_days' => 30],
+
     // F-17 : exports CSV de gestion (administrateurs).
     'exports' => ['max_rows' => 50000],
 

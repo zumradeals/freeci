@@ -29,7 +29,7 @@ final class CsvExports
     public static function catalogue(): array
     {
         return [
-            'commandes' => ['label' => 'Commandes', 'sub' => 'Une ligne par commande créée dans la période', 'icon' => 'clipboard', 'cols' => ['référence', 'origine', 'état', 'environnement', 'créée le', 'clôturée le', 'motif de clôture', 'jalon', 'prix (FCFA)', 'délai (jours)', 'taux de commission (points de base)', 'commission (FCFA)']],
+            'commandes' => ['label' => 'Commandes', 'sub' => 'Une ligne par commande créée dans la période', 'icon' => 'clipboard', 'cols' => ['référence', 'origine', 'état', 'environnement', 'créée le', 'clôturée le', 'motif de clôture', 'jalon', 'prix (FCFA)', 'délai (jours)', 'taux de commission (points de base)', 'commission (FCFA)', 'commission offerte (FCFA)']],
             'paiements' => ['label' => 'Paiements', 'sub' => 'Une ligne par paiement créé dans la période', 'icon' => 'card', 'cols' => ['commande', 'montant (FCFA)', 'état', 'fournisseur', 'environnement du paiement', 'créé le', 'confirmé le']],
             'operations' => ['label' => 'Remboursements et reversements', 'sub' => 'Opérations financières créées dans la période et leur état de confirmation', 'icon' => 'card', 'cols' => ['opération', 'commande', 'type', 'portée', 'montant (FCFA)', 'état', 'mode d’exécution', 'preuve', 'créée le', 'confirmée le']],
             'commissions' => ['label' => 'Commissions', 'sub' => 'Une ligne par commande clôturée (livraison validée) dans la période', 'icon' => 'list', 'cols' => ['commande', 'clôturée le', 'prix (FCFA)', 'taux (points de base)', 'commission (FCFA)', 'part du freelance (FCFA)']],
@@ -73,8 +73,8 @@ final class CsvExports
         return match ($name) {
             'commandes' => [
                 $in($this->envOrders(DB::table('orders')->join('order_agreements as a', 'a.order_id', '=', 'orders.id')->leftJoin('mission_plan_items as mi', 'mi.id', '=', 'orders.milestone_item_id'), $live), 'orders.created_at')
-                    ->select('orders.id', 'orders.reference', 'orders.origin', 'orders.state', 'orders.environment', 'orders.created_at', 'orders.closed_at', 'orders.closure_reason', 'mi.rank', 'a.price_xof', 'a.delivery_days', 'a.commission_bp')->orderBy('orders.created_at')->orderBy('orders.id'),
-                fn ($r) => [$r->reference, $r->origin, $r->state, $r->environment, self::date($r->created_at), self::date($r->closed_at), $r->closure_reason, $r->rank, (int) $r->price_xof, (int) $r->delivery_days, $r->commission_bp, $r->commission_bp === null ? null : intdiv((int) $r->price_xof * (int) $r->commission_bp + 5000, 10000)],
+                    ->select('orders.id', 'orders.reference', 'orders.origin', 'orders.state', 'orders.environment', 'orders.created_at', 'orders.closed_at', 'orders.closure_reason', 'mi.rank', 'a.price_xof', 'a.delivery_days', 'a.commission_bp', 'a.commission_base_bp')->orderBy('orders.created_at')->orderBy('orders.id'),
+                fn ($r) => [$r->reference, $r->origin, $r->state, $r->environment, self::date($r->created_at), self::date($r->closed_at), $r->closure_reason, $r->rank, (int) $r->price_xof, (int) $r->delivery_days, $r->commission_bp, $r->commission_bp === null ? null : intdiv((int) $r->price_xof * (int) $r->commission_bp + 5000, 10000), $r->commission_base_bp === null ? 0 : max(0, intdiv((int) $r->price_xof * (int) $r->commission_base_bp + 5000, 10000) - intdiv((int) $r->price_xof * (int) $r->commission_bp + 5000, 10000))],
             ],
             'paiements' => [
                 $in($this->envOrders(DB::table('payments')->join('orders', 'orders.id', '=', 'payments.order_id'), $live), 'payments.created_at')

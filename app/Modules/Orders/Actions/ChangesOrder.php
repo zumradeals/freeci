@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Finance\Commission\CommissionGrants;
 use App\Modules\Finance\PaymentGate;
 use App\Modules\Missions\Actions\MissionLifecycle;
 use App\Modules\Missions\Actions\MissionPlans;
@@ -70,6 +71,9 @@ abstract class ChangesOrder
                     $updates['payment_deadline_at'] = $paymentOpen ? $now->copy()->addHours($locked->agreement->payment_hours) : null;
                 }
                 $locked->forceFill($updates)->save();
+                if (in_array($to, [OrderState::Cancelled, OrderState::Expired], true)) {
+                    app(CommissionGrants::class)->onEnded($locked->getKey());       // commission offerte : l'unité réservée est rendue (jamais après paiement)
+                }
                 if ($locked->mission_id !== null && in_array($to, [OrderState::Cancelled, OrderState::Expired], true)) {
                     app(MissionLifecycle::class)->onOrderEnded($locked, 'Commande annulée avant paiement : la proposition retenue est libérée.');
                     app(MissionPlans::class)->onOrderEnded($locked->getKey());

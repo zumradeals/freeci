@@ -2,6 +2,7 @@
 
 namespace App\Modules\Finance\Actions;
 
+use App\Modules\Finance\Commission\CommissionGrants;
 use App\Modules\Finance\Enums\PaymentState;
 use App\Modules\Finance\Models\LedgerBatch;
 use App\Modules\Finance\Models\Payment;
@@ -71,6 +72,7 @@ final class ConfirmPayment
             if ($order->mission_id !== null) {
                 app(MissionLifecycle::class)->onPaymentConfirmed($order);        // la mission n'est attribuée QU'ICI, paiement vérifié côté serveur
             }
+            app(CommissionGrants::class)->onPaid($order->getKey());              // commission offerte : l'unité réservée est consommée au paiement
             ($this->start)($order);
 
             return 'applied';

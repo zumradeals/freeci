@@ -2,6 +2,7 @@
 
 namespace App\Modules\Orders\Actions;
 
+use App\Modules\Finance\Commission\CommissionGrants;
 use App\Modules\Missions\Actions\MissionLifecycle;
 use App\Modules\Missions\Actions\MissionPlans;
 use App\Modules\Orders\Enums\ClosureReason;
@@ -51,6 +52,7 @@ class ExpireOverdueOrders
             }
             $from = $order->state;
             $order->forceFill(['state' => OrderState::Expired, 'closure_reason' => $reason, 'closed_at' => now(), 'row_version' => $order->row_version + 1])->save();
+            app(CommissionGrants::class)->onEnded($order->getKey());
             if ($order->mission_id !== null) {
                 app(MissionLifecycle::class)->onOrderEnded($order, $reason->label().' : la proposition retenue est libérée.');
                 app(MissionPlans::class)->onOrderEnded($order->getKey());

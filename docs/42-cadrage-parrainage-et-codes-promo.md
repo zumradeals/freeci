@@ -51,3 +51,7 @@ Tables : `referral_codes`, `referrals` (filleul unique), `commission_grants` (pa
 1. Le porteur répond aux points du §4.
 2. Maquette (page de parrainage, accord avec taux, administration des campagnes), puis approbation.
 3. Implémentation en sandbox, tests, mise à jour de docs/36 et docs/19.
+
+## 7. Réalisation
+
+Livré au lot 81 (voir docs/LIVRAISONS.md), en sandbox. Précisions retenues à la réalisation : le filleul se qualifie par sa première commande réelle validée **en tant que client ou en tant que freelance** ; une unité de commission offerte est **réservée à la création** de la commande, **consommée au paiement** et **rendue** si la commande expire ou est annulée avant paiement ; une mission payée par jalons compte pour **une seule** unité (les jalons reprennent l'accord de la sélection) ; un taux d'attribution égal ou supérieur au taux normal est sans effet ; la validation décidée par le support ne qualifie pas un parrainage.

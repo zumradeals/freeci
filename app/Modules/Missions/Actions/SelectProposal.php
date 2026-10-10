@@ -5,6 +5,7 @@ namespace App\Modules\Missions\Actions;
 use App\Integrations\Payments\PaymentMode;
 use App\Modules\Accounts\Actions\AccountStanding;
 use App\Modules\Accounts\Models\User;
+use App\Modules\Finance\Commission\CommissionTerms;
 use App\Modules\Finance\PaymentGate;
 use App\Modules\Messaging\Actions\Conversations;
 use App\Modules\Missions\Exceptions\MissionConflict;
@@ -130,7 +131,8 @@ final class SelectProposal
         if ($plan !== null) {
             app(MissionPlans::class)->attachFirst($plan['first'], $order->getKey());
         }
-        $order->agreement()->create(array_merge([
+        $terms = app(CommissionTerms::class)->forOrder($order->getKey(), (string) $order->freelancer_id);      // taux figé : normal, ou offert ; les jalons reprennent cet accord
+        $order->agreement()->create(array_merge($terms, [
             'origin' => 'mission', 'service_id' => null, 'service_row_version' => null, 'mission_id' => $m->getKey(), 'mission_version_id' => $live->getKey(), 'proposal_version_id' => $pv->getKey(),
             'service_title' => $live->title, 'service_summary' => mb_substr($live->description, 0, 300), 'category_name' => $live->category->name,
             'seller_name' => $freelancer->freelanceProfile?->display_name ?? $freelancer->name,
@@ -138,7 +140,6 @@ final class SelectProposal
             'deliverables' => $pv->deliverables, 'exclusions' => [], 'client_inputs' => $live->client_inputs,
             'delivery_requires_files' => $pv->delivery_mode === 'files', 'delivery_mode' => $pv->delivery_mode, 'brief_requires_files' => $live->brief_requires_files,
             'response_hours' => (int) config('freeci.orders.response_hours'), 'payment_hours' => $paymentHours,
-            'commission_bp' => (int) config('freeci.finance.commission_bp'), 'commission_policy' => (string) config('freeci.finance.commission_policy'),    // conditions financières FIGÉES à l'accord
             'conditions_version' => config('freeci.orders.conditions_version'), 'conditions_accepted_at' => $now,
         ], $plan !== null ? app(MissionPlans::class)->agreementFor($plan['first'], $plan['count'], $live->title) : []));
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);

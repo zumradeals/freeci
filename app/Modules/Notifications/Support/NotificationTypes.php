@@ -53,6 +53,8 @@ final class NotificationTypes
             'message_received' => ['label' => 'Nouveau message', 'category' => $o, 'description' => 'Vous recevez un message privé (le contenu n’est jamais envoyé par courriel).'],
             'milestone_opened' => ['label' => 'Jalon ouvert', 'category' => $e, 'description' => 'Un jalon est validé : le suivant est ouvert et attend le paiement du client.'],
             'milestone_update' => ['label' => 'Plan de jalons', 'category' => $e, 'description' => 'Un plan de jalons est mis en pause, repris, arrêté ou terminé.'],
+            'referral_reward' => ['label' => 'Récompense de parrainage', 'category' => $e, 'description' => 'Un parrainage est qualifié : des commandes à commission offerte vous sont attribuées.'],
+            'commission_grant_revoked' => ['label' => 'Commission offerte retirée', 'category' => $e, 'description' => 'Une attribution de commission offerte est révoquée par l’administration, avec le motif.'],
             'mission_alert' => ['label' => 'Alerte de mission', 'category' => $o, 'description' => 'Une mission correspondant à l’une de vos alertes (catégorie et budget) vient d’être publiée.'],
             'mission_invitation' => ['label' => 'Invitation à une mission', 'category' => $e, 'description' => 'Un client vous invite à proposer vos services pour l’une de ses missions.'],
             'invitation_update' => ['label' => 'Invitation déclinée', 'category' => $o, 'description' => 'Un freelance décline votre invitation à une mission (avec son motif).'],

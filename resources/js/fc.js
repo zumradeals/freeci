@@ -337,3 +337,17 @@ document.querySelectorAll('input[name="pricing_mode"]').forEach(function (r) {
     document.querySelectorAll("[data-tier-fields]").forEach(function (e) { e.hidden = !tiers; });
   });
 });
+
+/* Copier un texte (code ou lien de parrainage) : bouton [data-copy="#cible"] ; la cible est un champ ou un élément de texte. */
+(function () {
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-copy]");
+    if (!b) return;
+    var t = document.querySelector(b.getAttribute("data-copy"));
+    if (!t) return;
+    var text = "value" in t ? t.value : t.textContent;
+    var done = function () { var old = b.textContent; b.textContent = "Copié"; setTimeout(function () { b.textContent = old; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function () { if ("select" in t) t.select(); }); }
+    else if ("select" in t) { t.select(); try { document.execCommand("copy"); done(); } catch (x) {} }
+  });
+})();

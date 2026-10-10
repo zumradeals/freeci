@@ -3,6 +3,7 @@
 use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Account\ProfilePhotoController;
+use App\Http\Controllers\Account\ReferralController;
 use App\Http\Controllers\Account\TwoFactorController;
 use App\Http\Controllers\Admin\ActivationController;
 use App\Http\Controllers\Admin\AdminHomeController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\NavigationController;
 use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ReauthController;
 use App\Http\Controllers\Admin\ReconciliationController;
+use App\Http\Controllers\Admin\ReferralAdminController;
 use App\Http\Controllers\Admin\ReviewModerationController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -54,6 +56,7 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::get('/espace', DashboardController::class)->name('account.dashboard');
     // Compte : informations, mot de passe, adresse (vérifiée avant remplacement), sessions, export privé, fermeture.
     Route::get('/espace/compte', [AccountController::class, 'show'])->name('account.settings');
+    Route::get('/espace/parrainage', [ReferralController::class, 'show'])->name('account.referral');
     Route::post('/espace/compte/nom', [AccountController::class, 'name'])->middleware('throttle:20,1')->name('account.name');
     Route::post('/espace/compte/mot-de-passe', [AccountController::class, 'password'])->middleware('throttle:6,1')->name('account.password');
     Route::post('/espace/compte/adresse', [AccountController::class, 'requestEmail'])->middleware('throttle:5,10')->name('account.email.request');
@@ -275,6 +278,11 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::post('/moderation/{kind}/{version}/{decision}', [ModerationController::class, 'decide'])->whereIn('decision', ['approuver', 'refuser'])->middleware('throttle:30,1')->name('admin.moderation.decide');
             Route::post('/moderation/en-ligne/{kind}/{id}/{action}', [ModerationController::class, 'toggle'])->whereIn('action', ['suspendre', 'remettre'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.moderation.toggle');
 
+            Route::get('/parrainage', [ReferralAdminController::class, 'index'])->name('admin.referrals');
+            Route::post('/parrainage/campagnes', [ReferralAdminController::class, 'create'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.referrals.create');
+            Route::post('/parrainage/campagnes/{id}/modifier', [ReferralAdminController::class, 'update'])->whereUuid('id')->middleware(['recent-auth', 'throttle:20,1'])->name('admin.referrals.update');
+            Route::post('/parrainage/campagnes/{id}/{action}', [ReferralAdminController::class, 'state'])->whereUuid('id')->whereIn('action', ['suspendre', 'reprendre'])->middleware(['recent-auth', 'throttle:20,1'])->name('admin.referrals.state');
+            Route::post('/parrainage/attributions/{grant}/revoquer', [ReferralAdminController::class, 'revoke'])->whereUuid('grant')->middleware(['recent-auth', 'throttle:20,1'])->name('admin.referrals.revoke');
             Route::get('/statistiques', [StatisticsController::class, 'index'])->name('admin.stats');
             Route::get('/statistiques/exports', [StatisticsController::class, 'exports'])->name('admin.exports');
             Route::post('/statistiques/exports/{dataset}', [StatisticsController::class, 'download'])->middleware(['recent-auth', 'throttle:10,1'])->name('admin.exports.download');

@@ -47,6 +47,10 @@
             @error('bio')<p class="field-error" id="e-bio"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@enderror</div>
           <x-fc.field name="skills" label="Compétences" :value="implode(', ', $profile['skills'] ?? [])" :required="false" hint="De 1 à {{ config('freeci.catalog.skills_max') }}, séparées par des virgules (ex. AutoCAD, Mise en plan, Revit)." />
         @endunless
+        @unless(app(\App\Modules\Accounts\Referrals\Referrals::class)->hasCampaign((string) $user->getKey()))
+          <div class="field"><label for="f-promo_code">Code promotionnel <span class="muted">(facultatif)</span></label><input class="input" id="f-promo_code" name="promo_code" value="{{ old('promo_code') }}" maxlength="40" autocomplete="off" autocapitalize="characters" @error('promo_code') aria-invalid="true" aria-describedby="e-promo" @enderror>
+            @error('promo_code')<p class="field-error" id="e-promo"><x-fc.icon name="error" :size="16" />{{ $message }}</p>@else<p class="hint">Commission offerte ou réduite sur vos premières commandes réelles. Un seul code par compte ; non cumulable avec un parrainage (le plus favorable s’applique à chaque commande).</p>@enderror</div>
+        @endunless
         <button class="btn btn-primary btn-lg" type="submit" data-once-label="Enregistrement…">{{ $activation ? 'Activer l’espace freelance' : 'Enregistrer' }}</button>
       </form>
     </div>

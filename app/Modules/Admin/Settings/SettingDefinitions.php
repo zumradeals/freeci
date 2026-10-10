@@ -22,6 +22,9 @@ final class SettingDefinitions
             'commission' => ['title' => 'Commission', 'approvable' => true, 'financial' => true,
                 'intro' => 'Part prélevée par FreeCI sur chaque commande. Le taux est figé dans l’accord de chaque commande à sa création : le modifier ne change aucune commande existante.',
                 'keys' => ['finance.commission_bp']],
+            'parrainage' => ['title' => 'Parrainage', 'approvable' => false, 'financial' => true,
+                'intro' => 'Récompense du parrain et du filleul : FreeCI renonce à sa commission sur quelques commandes réelles. Le prix payé par le client ne change jamais, et le taux de chaque commande reste figé dans son accord : modifier ces réglages ne touche que l’avenir.',
+                'keys' => ['referral.enabled', 'referral.free_orders', 'referral.rate_bp', 'referral.max_qualified']],
             'delais' => ['title' => 'Délais', 'approvable' => true,
                 'intro' => 'Délais appliqués aux commandes, aux avis et à la fermeture de compte. Les délais d’une commande existante restent ceux figés dans son accord.',
                 'keys' => ['orders.response_hours', 'orders.payment_hours', 'orders.review_days', 'orders.extension_max_days', 'missions.selection_days', 'reviews.publication_days', 'account.closure_grace_days']],
@@ -81,6 +84,10 @@ final class SettingDefinitions
     {
         $d = [
             'finance.commission_bp' => ['label' => 'Commission FreeCI', 'help' => 'En pourcentage du montant payé par le client (0 à 30 %).', 'type' => 'percent', 'min' => 0, 'max' => 3000, 'unit' => '%'],
+            'referral.enabled' => ['label' => 'Parrainage actif', 'help' => 'Désactivé : plus aucune nouvelle récompense n’est accordée ; les attributions et les accords existants ne changent pas.', 'type' => 'bool'],
+            'referral.free_orders' => ['label' => 'Commandes à commission offerte (parrain et filleul)', 'help' => 'Nombre de commandes réelles pour chacun, par filleul qualifié.', 'type' => 'int', 'min' => 1, 'max' => 50, 'unit' => 'commandes'],
+            'referral.rate_bp' => ['label' => 'Commission appliquée aux commandes offertes', 'help' => '0 % : commission entièrement offerte. Doit rester inférieure à la commission normale.', 'type' => 'percent', 'min' => 0, 'max' => 3000, 'unit' => '%'],
+            'referral.max_qualified' => ['label' => 'Filleuls qualifiés par parrain', 'help' => 'Plafond de récompenses de parrain ; au-delà, le filleul est récompensé mais plus le parrain.', 'type' => 'int', 'min' => 1, 'max' => 100, 'unit' => 'filleuls'],
             'orders.response_hours' => ['label' => 'Délai de réponse du freelance', 'help' => 'Au-delà, la demande expire.', 'type' => 'int', 'min' => 1, 'max' => 240, 'unit' => 'heures'],
             'orders.payment_hours' => ['label' => 'Délai de paiement du client', 'help' => 'Après acceptation. Au-delà, la commande expire.', 'type' => 'int', 'min' => 1, 'max' => 168, 'unit' => 'heures'],
             'orders.review_days' => ['label' => 'Délai d’examen d’une livraison', 'help' => 'Temps laissé au client pour valider ou demander une correction.', 'type' => 'int', 'min' => 1, 'max' => 60, 'unit' => 'jours'],

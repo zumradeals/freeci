@@ -48,6 +48,7 @@ final class Statistics
             'finance' => [
                 $this->card('Encaissé', $xof($cur['collected']), $delta('collected'), 'Somme des paiements confirmés, par date de confirmation'),
                 $this->card('Commissions', $xof($cur['commission']), $delta('commission'), 'Taux figé de chaque accord × prix de chaque commande clôturée (arrondi par commande)'),
+                $this->card('Commissions offertes', $xof($cur['offered']), $delta('offered'), 'Parrainage et codes promotionnels : commission normale − commission appliquée, commandes clôturées de la période'),
                 $this->card('Remboursements', $xof($cur['refunds']), $n($cur['refundCount']).' opération'.($cur['refundCount'] > 1 ? 's' : ''), 'Opérations de remboursement confirmées, par date de confirmation'),
                 $this->card('Reversements', $xof($cur['payouts']), $n($cur['payoutCount']).' effectué'.($cur['payoutCount'] > 1 ? 's' : '').' · '.$n($cur['payoutOpen']).' en cours', 'Part du freelance confirmée avec preuve ; « en cours » : demandés, approuvés, en cours ou à vérifier'),
             ],
@@ -110,6 +111,8 @@ final class Statistics
         $closed = $count($closedQ());
         $commission = (int) $closedQ()->join('order_agreements as a', 'a.order_id', '=', 'orders.id')->sum(DB::raw('((a.price_xof * a.commission_bp + 5000) / 10000)'));
 
+        $offered = (int) $closedQ()->join('order_agreements as a2', 'a2.order_id', '=', 'orders.id')->whereNotNull('a2.commission_base_bp')
+            ->sum(DB::raw('(((a2.price_xof * a2.commission_base_bp + 5000) / 10000) - ((a2.price_xof * a2.commission_bp + 5000) / 10000))'));
         $svc = fn () => $range($this->orders(null, $live)->where('orders.origin', 'service'), 'orders.created_at');
         $accepted = $count($svc()->whereNotNull('orders.accepted_at'));
         $declined = $count($svc()->where('orders.closure_reason', 'declined'));
@@ -144,7 +147,7 @@ final class Statistics
 
         return [
             'registrations' => $registrations, 'freelancers' => $freelancers, 'services' => $services, 'missions' => $missions, 'orders' => $orders, 'closed' => $closed,
-            'commission' => $commission, 'acceptance' => $acceptance, 'payRate' => $payRate, 'collected' => $collected,
+            'commission' => $commission, 'offered' => $offered, 'acceptance' => $acceptance, 'payRate' => $payRate, 'collected' => $collected,
             'refunds' => (int) $refundQ()->sum('financial_operations.amount_xof'), 'refundCount' => $count($refundQ()),
             'payouts' => (int) $payoutQ()->sum('financial_operations.amount_xof'), 'payoutCount' => $count($payoutQ()), 'payoutOpen' => $payoutOpen,
             'byOrigin' => $byOrigin, 'reviews' => $count($rev()), 'avg' => $avg === null ? null : (float) $avg, 'disputes' => $disputes, 'overdue' => $overdue,
