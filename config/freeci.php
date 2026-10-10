@@ -100,6 +100,9 @@ return [
         'invitations' => ['per_mission' => 10, 'per_client_day' => 20, 'message_max' => 500],
     ],
 
+    // F-17 : exports CSV de gestion (administrateurs).
+    'exports' => ['max_rows' => 50000],
+
     // Notifications et messagerie. Les courriels ne partent que si le courrier est RÉELLEMENT configuré (MAIL_MAILER ≠ log/array).
     'notifications' => [
         'emails' => (bool) env('FREECI_NOTIFICATION_EMAILS', true),

@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\ReviewModerationController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\SupportCaseController;
 use App\Http\Controllers\Admin\SupportTeamController;
 use App\Http\Controllers\Admin\UserController;
@@ -273,6 +274,10 @@ Route::middleware(['auth', 'no-store', 'staff'])->prefix('admin')->group(functio
             Route::get('/moderation/en-ligne/mission/{id}', [ModerationController::class, 'liveMission'])->name('admin.moderation.live.mission');
             Route::post('/moderation/{kind}/{version}/{decision}', [ModerationController::class, 'decide'])->whereIn('decision', ['approuver', 'refuser'])->middleware('throttle:30,1')->name('admin.moderation.decide');
             Route::post('/moderation/en-ligne/{kind}/{id}/{action}', [ModerationController::class, 'toggle'])->whereIn('action', ['suspendre', 'remettre'])->middleware(['recent-auth', 'throttle:30,1'])->name('admin.moderation.toggle');
+
+            Route::get('/statistiques', [StatisticsController::class, 'index'])->name('admin.stats');
+            Route::get('/statistiques/exports', [StatisticsController::class, 'exports'])->name('admin.exports');
+            Route::post('/statistiques/exports/{dataset}', [StatisticsController::class, 'download'])->middleware(['recent-auth', 'throttle:10,1'])->name('admin.exports.download');
 
             Route::get('/utilisateurs', [UserController::class, 'index'])->name('admin.users');
             Route::get('/utilisateurs/{id}', [UserController::class, 'show'])->name('admin.users.show');

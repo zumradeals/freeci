@@ -24,7 +24,7 @@
 @endphp
 <x-layouts.admin title="Administration">
   <div class="page-body">
-    <div class="sx-head"><div><p class="sx-kicker">Administration</p><h1>Tableau de bord</h1><p class="muted">Ce qui demande une action maintenant, puis l’activité récente.</p></div></div>
+    <div class="sx-head"><div><p class="sx-kicker">Administration</p><h1>Tableau de bord</h1><p class="muted">Ce qui demande une action maintenant, puis l’activité récente.</p></div><div class="sx-acts"><a class="btn btn-secondary" href="{{ route('admin.stats') }}">Statistiques</a></div></div>
     <div style="display:grid;gap:22px">
       <section class="pl-mode {{ $live ? 'live' : '' }}" aria-labelledby="h-pay"><div class="pl-badge"><b>{{ $live ? 'LIVE' : 'TEST' }}</b><small>{{ $live ? 'argent réel' : 'sandbox' }}</small></div>
         <div style="display:grid;gap:12px"><div><b id="h-pay">Paiements Genius Pay en mode {{ $live ? 'LIVE' : 'TEST' }}</b><p class="muted" style="margin:2px 0 0"><strong>{{ $live ? 'LIVE (argent réel)' : 'TEST (sandbox, aucun argent réel)' }}.</strong> {{ $d['paymentMode']['message'] }}</p></div>

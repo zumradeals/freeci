@@ -17,6 +17,7 @@
         $isAdmin ? $a('admin.moderation', 'Modération', 'shield', 'admin.moderation*', [], $pending['services'] + $pending['missions'] > 0 ? (string) ($pending['services'] + $pending['missions']) : null) : null,
         $isAdmin ? $a('admin.reviews', 'Avis', 'flag', 'admin.reviews*') : null,
         $isAdmin ? $a('admin.users', 'Utilisateurs', 'user', 'admin.users*') : null,
+        $isAdmin ? $a('admin.stats', 'Statistiques', 'grid', ['admin.stats*', 'admin.exports*']) : null,
       ]),
       'Support' => [$a('admin.support', 'Dossiers', 'message', 'admin.support*', [], $sq['unassigned'] > 0 ? (string) $sq['unassigned'] : null)],
       'Finances' => $isAdmin ? [$a('admin.finance', 'Opérations', 'card', 'admin.finance*'), $a('admin.payments', 'Rapprochements', 'clipboard', 'admin.payments*')] : [],
