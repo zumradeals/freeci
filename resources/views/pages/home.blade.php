@@ -1,4 +1,4 @@
-<x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'" main-class="home-modern">
+<x-layouts.public :title="'Trouver une prestation en Côte d’Ivoire'" :seo="['jsonld' => [\App\Shared\Seo::organization()]]" main-class="home-modern">
 @php
   $hm = fn (string $k) => config("freeci.home.$k") ?: \App\Modules\Admin\Settings\AppSettings::default("home.$k");
   $announce = trim((string) config('freeci.home.announce_text'));

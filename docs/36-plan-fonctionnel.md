@@ -70,7 +70,7 @@
 
 ### Vague 2 — Croissance
 
-F-14 parrainage et codes promotionnels · F-15 version anglaise · F-16 référencement (plan du site, aperçus de partage, données structurées) · F-17 statistiques d'administration et exports CSV — **livrée au lot 79 (maquette approuvée, 12 points approuvés)** · F-18 double authentification facultative pour tous — **livrée au lot 73 (maquette approuvée, 5 points approuvés)**.
+F-14 parrainage et codes promotionnels · F-15 version anglaise · F-16 référencement (plan du site, aperçus de partage, données structurées) — **livré au lot 80 (maquette approuvée, 9 points approuvés)** · F-17 statistiques d'administration et exports CSV — **livrée au lot 79 (maquette approuvée, 12 points approuvés)** · F-18 double authentification facultative pour tous — **livrée au lot 73 (maquette approuvée, 5 points approuvés)**.
 
 ### Reporté
 

@@ -7,7 +7,7 @@
   $url = fn (array $over = []) => route('freelances.index', array_filter(array_merge($base, $over), fn ($v) => $v !== null && $v !== ''));
   $hasFilters = $f['q'] !== '' || $f['categorie'] !== '' || $f['competence'] !== '' || $f['prix_max'] !== '' || $f['delai_max'] !== '';
 @endphp
-<x-layouts.public title="Freelances" description="Profils publiés : compétences, services et avis réels." main-class="catalog-page">
+<x-layouts.public title="Freelances" description="Profils publiés : compétences, services et avis réels." :seo="['jsonld' => [\App\Shared\Seo::breadcrumbs([['name' => 'Accueil', 'url' => \App\Shared\Seo::base().'/'], ['name' => 'Freelances', 'url' => \App\Shared\Seo::url('freelances.index')]])]]" main-class="catalog-page">
 <div class="service-directory talent-directory">
   <form class="sd-form" method="get" action="{{ route('freelances.index') }}" role="search" data-autosubmit>
     <input type="hidden" name="categorie" value="{{ $f['categorie'] }}">

@@ -13,9 +13,13 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PortfolioMediaController;
 use App\Http\Controllers\PublicMissionController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('/sitemap.xml', [SeoController::class, 'index'])->name('seo.sitemap');
+Route::get('/sitemap-{kind}.xml', [SeoController::class, 'show'])->where('kind', '[a-z]+')->name('seo.sitemap.kind');
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

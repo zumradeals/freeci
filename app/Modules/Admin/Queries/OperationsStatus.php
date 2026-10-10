@@ -12,6 +12,7 @@ use App\Modules\Admin\Legal\LegalPages;
 use App\Modules\Admin\Settings\AppSettings;
 use App\Modules\Admin\Settings\SettingDefinitions;
 use App\Modules\Notifications\Support\MailStatus;
+use App\Shared\Seo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -141,6 +142,13 @@ final class OperationsStatus
             'detail' => $missing === [] ? 'Toutes adoptées.' : 'Non adoptées (brouillon public) : '.implode(', ', array_map(fn ($k) => LegalDefaults::PAGES[$k], $missing)).'.'];
         $operator = filled(config('freeci.legal.operator_name')) && filled(config('freeci.legal.operator_address')) && filled(config('freeci.legal.contact_email'));
         $items[] = ['key' => 'operator', 'label' => 'Identité et contact de l’exploitant', 'state' => $operator ? 'ok' : 'todo', 'link' => route('admin.settings'), 'detail' => $operator ? 'Renseignés dans Paramètres.' : 'À renseigner dans Paramètres (nom, adresse, contact) : rien n’est inventé.'];
+
+        $base = Seo::base();
+        $publicUrl = str_starts_with($base, 'https://') && ! preg_match('#^https://(localhost|127\.|.*\.(test|local|invalid)(/|:|$))#i', $base);
+        $blocked = Seo::indexingBlocked();
+        $items[] = ['key' => 'seo', 'label' => 'Référencement', 'link' => route('admin.settings'), 'state' => $blocked ? 'info' : ($publicUrl ? 'ok' : 'todo'),
+            'detail' => $blocked ? 'Site masqué aux moteurs : robots.txt « Disallow: / », plan du site non publié. Les aperçus de partage restent actifs. À l’ouverture : décocher « masquer », vérifier APP_URL, puis soumettre /sitemap.xml dans Google Search Console.'
+                : ($publicUrl ? 'Indexation ouverte : robots.txt et plan du site publiés pour '.$base.'. Soumettez /sitemap.xml dans Google Search Console.' : 'Indexation ouverte mais APP_URL ('.$base.') n’est pas l’adresse publique en https : les adresses du plan du site et des aperçus seraient fausses.')];
 
         $demo = PurgeDemoData::counts();
         $left = $demo['services'] + $demo['missions'] + $demo['profiles'] + $demo['users'];

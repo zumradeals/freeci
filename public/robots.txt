@@ -1,7 +1,0 @@
-User-agent: *
-Disallow: /espace
-Disallow: /connexion
-Disallow: /inscription
-Disallow: /mot-de-passe-oublie
-Disallow: /reinitialisation
-Disallow: /livewire

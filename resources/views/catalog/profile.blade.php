@@ -5,8 +5,17 @@
   $count = $svcs->count();
   $countLabel = $count.' '.($count > 1 ? 'services publiés' : 'service publié');
   $missionUrl = \App\Modules\Admin\Navigation\Destinations::url((string) config('freeci.home.mission_btn_dest')) ?? route('client.missions.new');
+  $pfUrl = \App\Shared\Seo::url('freelances.show', ['slug' => $slug]);
+  $pfPhotoId = app(\App\Modules\Accounts\Queries\ProfilePhotoIds::class)->for((string) $p['userId']);
+  $pfImg = $pfPhotoId ? route('photo.show', [$pfPhotoId, 'large'], false) : null;
+  $pfRating = ! empty($p['rating']) && ($p['rating']['count'] ?? 0) > 0 ? ['avg' => (string) $p['rating']['avg'], 'count' => (int) $p['rating']['count']] : null;
+  $pfDesc = trim($p['headline'].($p['city'] ? ' · '.$p['city'] : '').'. '.($pfRating ? str_replace('.', ',', $pfRating['avg']).'/5 · '.$pfRating['count'].' avis · ' : '').$countLabel.' à prix annoncé.');
+  $pfSeo = ['image' => $pfImg, 'imageAlt' => 'Photo de '.$p['name'], 'type' => 'profile', 'jsonld' => [
+    \App\Shared\Seo::person(['name' => $p['name'], 'headline' => $p['headline'], 'url' => $pfUrl, 'city' => $p['city'], 'image' => $pfImg ? \App\Shared\Seo::absolute($pfImg) : null, 'rating' => $pfRating]),
+    \App\Shared\Seo::breadcrumbs([['name' => 'Accueil', 'url' => \App\Shared\Seo::base().'/'], ['name' => 'Freelances', 'url' => \App\Shared\Seo::url('freelances.index')], ['name' => $p['name'], 'url' => $pfUrl]]),
+  ]];
 @endphp
-<x-layouts.public :title="$p['name']" :description="$p['headline']" main-class="svc-page">
+<x-layouts.public :title="$p['name']" :description="$pfDesc" :seo="$pfSeo" main-class="svc-page">
 <section class="pf-band" aria-labelledby="pf-name">
   <div class="container">
     <nav class="sd-crumbs" aria-label="Fil d’Ariane"><a href="{{ url('/') }}">Accueil</a><span aria-hidden="true">/</span><a href="{{ route('freelances.index') }}">Freelances</a><span aria-hidden="true">/</span><span aria-current="page">{{ $p['name'] }}</span></nav>

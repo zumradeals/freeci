@@ -19,6 +19,7 @@
 3. `freeci:genius:status --env=live` : configuration « conforme » ; `freeci:genius:status --env=live --ping` : clés acceptées.
 4. **Purger les données de démonstration** (commandes de recette marquées test, comptes `@demo.freeci.invalid`, services d'exemple) : `freeci:demo:purge` — après sauvegarde. Les commandes de test restent séparées du réel, mais il ne faut pas ouvrir au public avec elles.
 5. Sauvegarde : `deploy/backup.sh avant-ouverture-reelle`.
+6. **Référencement (F-16)** : `APP_URL` = adresse publique en `https://` (ex. `https://freeci.net`) ; `FREECI_NOINDEX` reste activé tant que vous ne voulez pas être indexé ; à l'ouverture publique, Administration → Paramètres : décocher « Masquer le site aux moteurs de recherche » ; contrôler `/robots.txt` (ne contient plus `Disallow: /`) et `/sitemap.xml` ; soumettre `https://freeci.net/sitemap.xml` dans Google Search Console ; tester un lien partagé avec l'outil de débogage de partage de Facebook. La ligne « Référencement » de « État et préparation » résume l'état.
 
 ## 3. Bascule (par le porteur, avec confirmation de l'administration)
 

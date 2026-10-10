@@ -72,11 +72,14 @@ class ProductionHardeningTest extends TestCase
 
     public function test_robots_txt_hides_private_paths(): void
     {
-        $robots = file_get_contents(public_path('robots.txt'));
+        config(['freeci.noindex' => false]);
+        $robots = $this->get('/robots.txt')->assertOk()->getContent();
         foreach (['/espace', '/connexion', '/inscription', '/reinitialisation', '/livewire'] as $p) {
             $this->assertStringContainsString("Disallow: {$p}", $robots);
         }
         $this->assertStringNotContainsString("Disallow: /\n", $robots);
+        config(['freeci.noindex' => true]);
+        $this->assertStringContainsString("Disallow: /\n", $this->get('/robots.txt')->getContent(), 'masqué aux moteurs : tout est interdit');
     }
 
     public function test_destructive_database_commands_are_prohibited_in_production(): void

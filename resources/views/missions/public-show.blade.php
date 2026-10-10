@@ -1,4 +1,9 @@
-<x-layouts.public :title="$m['title']" :description="mb_substr($m['description'], 0, 150)" main-class="svc-page">
+@php
+  $msUrl = \App\Shared\Seo::url('missions.show', ['slug' => $m['slug']]);
+  $msSeo = ['jsonld' => [\App\Shared\Seo::breadcrumbs([['name' => 'Accueil', 'url' => \App\Shared\Seo::base().'/'], ['name' => 'Missions', 'url' => \App\Shared\Seo::url('missions.index')], ['name' => $m['title'], 'url' => $msUrl]])]];
+  $msDesc = 'Mission à '.str_replace(["\u{202F}", "\u{00A0}"], ' ', $m['budget']->formatted()).' FCFA, candidatures jusqu’au '.$m['deadline'].'. '.\App\Shared\Seo::trim($m['description'], 100);
+@endphp
+<x-layouts.public :title="$m['title']" :description="$msDesc" :seo="$msSeo" main-class="svc-page">
 @php
   $left = $m['daysLeft'] ?? null;
   $leftLabel = $left === null ? null : ($left === 0 ? 'Dernier jour' : 'J-'.$left);

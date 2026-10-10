@@ -1,8 +1,8 @@
-@props(['title'=>null,'description'=>null,'robots'=>null,'mainClass'=>null])
+@props(['title'=>null,'description'=>null,'robots'=>null,'mainClass'=>null,'seo'=>[]])
 <!doctype html>
 <html lang="fr">
 <head>
-@include('partials.head', ['title' => $title, 'description' => $description, 'robots' => $robots])
+@include('partials.head', ['title' => $title, 'description' => $description, 'robots' => $robots, 'seo' => $seo])
 </head>
 <body class="" id="top">
 <a class="skip-link" href="#contenu">Aller au contenu</a>

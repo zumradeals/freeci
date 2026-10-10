@@ -8,7 +8,7 @@
   $url = fn (array $over = []) => route('missions.index', array_filter(array_merge($base, $over), fn ($v) => $v !== null && $v !== ''));
   $hasFilters = $q !== '' || $categorie !== '' || $f['budget_min'] !== '' || $f['budget_max'] !== '' || $f['delai'] !== '';
 @endphp
-<x-layouts.public title="Missions ouvertes" description="Besoins publiés par des clients : consultez-les et proposez vos services à prix ferme." main-class="catalog-page">
+<x-layouts.public title="Missions ouvertes" description="Besoins publiés par des clients : consultez-les et proposez vos services à prix ferme." :seo="['jsonld' => [\App\Shared\Seo::breadcrumbs([['name' => 'Accueil', 'url' => \App\Shared\Seo::base().'/'], ['name' => 'Missions', 'url' => \App\Shared\Seo::url('missions.index')]])]]" main-class="catalog-page">
 <div class="service-directory mission-directory">
   <form class="sd-form" method="get" action="{{ route('missions.index') }}" role="search" data-autosubmit>
     <input type="hidden" name="categorie" value="{{ $categorie }}">

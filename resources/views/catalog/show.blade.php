@@ -1,4 +1,15 @@
-<x-layouts.public :title="$service->title" :description="$service->summary" main-class="svc-page">
+@php
+  $svcUrl = \App\Shared\Seo::url('services.show', ['slug' => $service->slug]);
+  $svcImg = \App\Shared\Seo::raster($service->images[0]['src'] ?? null);
+  $svcPrice = str_replace(["\u{202F}", "\u{00A0}"], ' ', $service->price->formatted());
+  $svcDesc = \App\Shared\Seo::trim($service->summary, 112).' — '.$svcPrice.' FCFA, '.$service->deliveryDays.' '.($service->deliveryDays > 1 ? 'jours' : 'jour').'.';
+  $svcSeo = ['image' => $svcImg, 'imageAlt' => $service->images[0]['alt'] ?? $service->title, 'jsonld' => [
+    \App\Shared\Seo::service(['title' => $service->title, 'summary' => $service->summary, 'url' => $svcUrl, 'price' => $service->price->xof, 'seller' => $service->sellerName, 'city' => $service->sellerCity, 'category' => $service->categoryName,
+      'image' => $svcImg ? \App\Shared\Seo::absolute($svcImg) : null, 'rating' => $service->ratingCount > 0 && $service->ratingAvg ? ['avg' => (string) $service->ratingAvg, 'count' => $service->ratingCount] : null]),
+    \App\Shared\Seo::breadcrumbs([['name' => 'Accueil', 'url' => \App\Shared\Seo::base().'/'], ['name' => 'Services', 'url' => \App\Shared\Seo::url('services.index')], ['name' => $service->title, 'url' => $svcUrl]]),
+  ]];
+@endphp
+<x-layouts.public :title="$service->title" :description="$svcDesc" :seo="$svcSeo" main-class="svc-page">
 @php
   $days = $service->deliveryDays.' '.($service->deliveryDays > 1 ? 'jours' : 'jour');
   $rev = $service->revisionsIncluded === 0 ? 'Aucune' : $service->revisionsIncluded;
