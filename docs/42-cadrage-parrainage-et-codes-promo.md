@@ -1,6 +1,6 @@
 # F-14 — Cadrage du parrainage et des codes promotionnels
 
-> **Statut : projet de travail, non adopté.** Ce document cadre les règles avant toute maquette, comme pour F-13 (docs/41). Aucune règle ci-dessous n'est une décision de GAMAD tant que le porteur ne l'a pas validée. Aucun code n'est écrit.
+> **Statut : cadrage validé par le porteur sur les 4 points du §4 (niveau A + B ; parrain et filleul récompensés ; 3 commandes à 0 % chacun, 10 filleuls qualifiés au plus par parrain ; codes promotionnels de campagne inclus, même mécanisme).** Les autres règles (§3) et celles de la maquette restent des propositions tant qu'elles ne sont pas approuvées avec la maquette. Aucun code n'est écrit.
 
 ## 1. Point de départ : ce que le moteur financier fait aujourd'hui
 
