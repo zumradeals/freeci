@@ -24,6 +24,7 @@
       @if($canUnsubmit)<a class="btn btn-secondary" href="{{ route('client.missions.confirm', [$mission->getKey(), 'retirer-soumission']) }}">Retirer la soumission</a>@endif
       @if($canRevise)<a class="btn btn-secondary" href="{{ route('client.missions.confirm', [$mission->getKey(), 'nouvelle-version']) }}">Modifier la mission</a>@endif
       @if($live && $mission->status === 'open')<a class="btn btn-link" href="{{ route('missions.show', $mission->slug) }}">Voir la page publique</a>@endif
+      @if($hasPlan ?? false)<a class="btn btn-secondary" href="{{ route('milestones.show', $mission->getKey()) }}">Plan de jalons</a>@endif
       @if($mission->status === 'open')<a class="btn btn-secondary" href="{{ route('client.missions.invitations', $mission->getKey()) }}">Invitations</a>@endif
       @if($mission->status === 'open' && $proposals)<a class="btn btn-secondary" href="{{ route('client.missions.proposals', $mission->getKey()) }}">Propositions ({{ $proposals }})</a>@endif
       @if($canClose && $mission->status === 'open')<a class="btn btn-link" href="{{ route('client.missions.confirm', [$mission->getKey(), 'fermer']) }}">Fermer la mission</a>@endif

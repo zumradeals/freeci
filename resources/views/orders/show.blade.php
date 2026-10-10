@@ -25,6 +25,7 @@
       @endif
     @endif
 
+    @if($milestone)<div class="notice tone-info" role="note"><x-fc.icon name="clipboard" /><p><strong>Jalon {{ $milestone['rank'] }} sur {{ $milestone['count'] }}</strong> d’une mission payée par jalons. <a href="{{ route('milestones.show', $milestone['mission']) }}">Voir le plan complet</a></p></div>@endif
     <section class="card order-head" aria-labelledby="h-title">
       <div class="top"><span class="badge tone-{{ $d->tone }}"><x-fc.icon :name="$d->icon" :size="16" />{{ $d->stateLabel }}</span><span class="muted">Réf. <span class="num">{{ $d->reference }}</span></span><a class="btn btn-secondary" href="{{ route('messages.order', $d->reference) }}"><x-fc.icon name="message" :size="18" />Messages @if($d->messageUnread > 0)<span class="count-badge" aria-label="{{ $d->messageUnread }} non lu{{ $d->messageUnread > 1 ? 's' : '' }}">{{ $d->messageUnread }}</span>@endif</a>@if($d->environment === 'test')<span class="tag-demo">Commande de test — aucun argent réel</span>@elseif($d->environment === 'legacy')<span class="tag-demo">Ancienne commande</span>@endif</div>
       <h1 class="t-h1" id="h-title">{{ $d->title }}</h1>@if($d->origin === 'offer')<p><span class="badge tone-info">Offre personnalisée</span></p>@endif
@@ -52,7 +53,8 @@
       <section class="card card-accent-success" aria-labelledby="h-closed"><p class="eyebrow"><x-fc.icon name="check-circle" :size="16" />Clôturée</p><h2 class="t-h2 mt-6" id="h-closed">Livraison v{{ $dl['latestVersion'] }} validée : commande clôturée</h2>
         <p class="mt-6">Validée le {{ $dl['validatedAt'] }}. Cette clôture est <strong>commerciale</strong> : elle ne confirme ni ne déclenche aucun reversement.</p>
         <p class="muted mt-8">Toutes les versions livrées restent consultables dans l’onglet « Livraisons ».</p>
-        <p class="mt-12"><a class="btn btn-secondary" href="{{ route('orders.review', $d->reference) }}">{{ $isF ? 'Voir l’avis du client' : 'Laisser un avis ou voir mon avis' }}</a>@if($d->environment === 'test') <span class="tag-demo">Commande de test : aperçu non public</span>@endif</p></section>
+        @if(! $milestone || $milestone['reviewAllowed'])<p class="mt-12"><a class="btn btn-secondary" href="{{ route('orders.review', $d->reference) }}">{{ $isF ? 'Voir l’avis du client' : 'Laisser un avis ou voir mon avis' }}</a>@if($d->environment === 'test') <span class="tag-demo">Commande de test : aperçu non public</span>@endif</p>@else<p class="muted mt-12">Mission payée par jalons : l’avis est unique et se dépose à la validation du dernier jalon (ou à l’arrêt du plan).</p>@endif
+        @if($milestone)<p class="mt-8"><a class="btn btn-link" href="{{ route('milestones.show', $milestone['mission']) }}">Voir le plan de jalons</a></p>@endif</section>
     @elseif($d->isFinal)
       <section class="card" aria-labelledby="h-closed"><p class="eyebrow">{{ $d->stateValue === 'expired' ? 'Expirée' : 'Annulée' }}</p><h2 class="t-h2 mt-6" id="h-closed">{{ $d->closureReason }}</h2>
         @if($d->closureNote && $d->stateValue === 'cancelled' && $d->closureReason === 'Demande refusée par le freelance')<p class="mt-8"><strong>Motif :</strong> « {{ $d->closureNote }} »</p>@endif

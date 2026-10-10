@@ -35,6 +35,7 @@ use App\Http\Controllers\Freelance\MissionAlertController;
 use App\Http\Controllers\Freelance\PortfolioController;
 use App\Http\Controllers\Freelance\ServiceManagementController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\MissionPlanController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\OrderController;
@@ -135,6 +136,10 @@ Route::middleware(['auth', 'no-store'])->group(function () {
     Route::post('/espace/missions/{mission}/propositions/{version}/choisir', [ClientMissionController::class, 'select'])->middleware('throttle:10,1')->name('client.missions.select.store');
     Route::get('/espace/missions/{mission}/invitations', [ClientInvitationController::class, 'mission'])->whereUuid('mission')->name('client.missions.invitations');
     Route::post('/espace/invitations/{invitation}/retirer', [ClientInvitationController::class, 'withdraw'])->whereUuid('invitation')->middleware('throttle:20,1')->name('client.invitations.withdraw');
+    Route::get('/espace/jalons/{mission}', [MissionPlanController::class, 'show'])->whereUuid('mission')->name('milestones.show');
+    Route::post('/espace/jalons/{mission}/rouvrir', [MissionPlanController::class, 'reopen'])->whereUuid('mission')->middleware('throttle:10,10')->name('milestones.reopen');
+    Route::get('/espace/jalons/{mission}/arreter', [MissionPlanController::class, 'stopForm'])->whereUuid('mission')->name('milestones.stop');
+    Route::post('/espace/jalons/{mission}/arreter', [MissionPlanController::class, 'stop'])->whereUuid('mission')->middleware('throttle:10,10')->name('milestones.stop.store');
     Route::get('/freelances/{slug}/inviter', [ClientInvitationController::class, 'create'])->name('invitations.create');
     Route::post('/freelances/{slug}/inviter', [ClientInvitationController::class, 'store'])->middleware('throttle:20,10')->name('invitations.store');
     Route::get('/espace/missions/{mission}/{kind}', [ClientMissionController::class, 'confirm'])->whereIn('kind', ['soumettre', 'retirer-soumission', 'nouvelle-version', 'fermer', 'annuler', 'rouvrir'])->name('client.missions.confirm');

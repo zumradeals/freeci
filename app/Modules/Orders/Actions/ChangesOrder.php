@@ -5,6 +5,7 @@ namespace App\Modules\Orders\Actions;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Finance\PaymentGate;
 use App\Modules\Missions\Actions\MissionLifecycle;
+use App\Modules\Missions\Actions\MissionPlans;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\InvalidTransition;
@@ -71,6 +72,7 @@ abstract class ChangesOrder
                 $locked->forceFill($updates)->save();
                 if ($locked->mission_id !== null && in_array($to, [OrderState::Cancelled, OrderState::Expired], true)) {
                     app(MissionLifecycle::class)->onOrderEnded($locked, 'Commande annulée avant paiement : la proposition retenue est libérée.');
+                    app(MissionPlans::class)->onOrderEnded($locked->getKey());
                 }
                 $locked->events()->create([
                     'type' => $eventType, 'actor_id' => $actor->getKey(), 'from_state' => $from->value, 'to_state' => $to->value,

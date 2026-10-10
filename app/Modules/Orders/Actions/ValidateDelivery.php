@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Missions\Actions\MissionPlans;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Exceptions\InvalidTransition;
@@ -48,6 +49,7 @@ final class ValidateDelivery
                 ])->save();
                 $locked->events()->create(['type' => 'closed', 'actor_id' => null, 'from_state' => OrderState::Validated->value, 'to_state' => OrderState::Closed->value,
                     'note' => 'Clôture commerciale. Aucun reversement n’est déclenché ni confirmé par cette étape.']);
+                app(MissionPlans::class)->onValidated($locked->getKey());      // jalon : ouvre le suivant ou termine le plan
 
                 return $locked->getKey();
             },

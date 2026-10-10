@@ -45,6 +45,7 @@ final class MissionProposals
                 'proposalId' => $p->getKey(), 'versionId' => $v->getKey(), 'number' => $v->number, 'author' => $p->freelancer->freelanceProfile?->display_name ?? $p->freelancer->name, 'authorId' => (string) $p->freelancer_id,
                 'headline' => $p->freelancer->freelanceProfile?->headline, 'profileSlug' => $p->freelancer->freelanceProfile?->published_at ? $p->freelancer->freelanceProfile->slug : null,
                 'price' => Money::xof($v->price_xof), 'priceXof' => $v->price_xof, 'days' => $v->delivery_days, 'revisions' => $v->revisions_included, 'deliverables' => $v->deliverables,
+                'milestones' => collect($v->milestones ?? [])->values()->map(fn ($x, $k) => ['rank' => $k + 1, 'title' => $x['title'], 'scope' => $x['scope'], 'price' => Money::xof((int) $x['price_xof']), 'days' => (int) $x['days']])->all(),
                 'scope' => $v->scope, 'mode' => $v->delivery_mode === 'files' ? 'Au moins un fichier contrôlé' : 'Par message seul', 'message' => $v->message,
                 'validUntil' => Dates::format($v->valid_until), 'submittedAt' => Dates::format($v->submitted_at), 'selected' => $p->state === 'selected',
                 'selectable' => $block === null, 'block' => $block, 'stale' => $stale, 'expired' => $expired,

@@ -51,3 +51,7 @@ Nouvelle table de jalons liée à la version de proposition (immuable une fois r
 1. Le porteur répond aux points du §4.
 2. Maquette (proposition avec jalons, comparaison, suivi côté client et freelance) puis approbation.
 3. Implémentation en sandbox, tests, mise à jour de docs/19 et docs/36.
+
+## 7. Réalisation
+
+Livré au lot 78 (voir docs/LIVRAISONS.md), en sandbox. Règles retenues : celles du §3, plus (maquette approuvée) reprise du paiement d'un jalon pendant 14 jours, avis unique, brief unique, et statut de mission inchangé (« attribuée ») ; l'état du plan est porté par `mission_plans`.

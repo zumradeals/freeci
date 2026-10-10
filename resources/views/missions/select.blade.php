@@ -8,6 +8,10 @@
       <dl class="defs"><div><dt>Prix ferme</dt><dd><x-fc.money :amount="$item['price']" /></dd></div><div><dt>Délai</dt><dd>{{ $item['days'] }} jours à partir du départ du travail</dd></div><div><dt>Corrections incluses</dt><dd>{{ $item['revisions'] }}</dd></div>
         <div><dt>Périmètre</dt><dd>{{ $item['scope'] }}</dd></div><div><dt>Livrables</dt><dd>@foreach($item['deliverables'] as $d){{ $d }}@if(! $loop->last)<br>@endif @endforeach</dd></div><div><dt>Mode de livraison</dt><dd>{{ $item['mode'] }}</dd></div><div><dt>Valable jusqu’au</dt><dd>{{ $item['validUntil'] }}</dd></div></dl>
         </section>
+        @if(count($item['milestones']))<section class="ed-card" aria-labelledby="h-plan"><h2 id="h-plan">Plan de paiement par jalons (figé à la sélection)</h2>
+          <ol class="jl-tl">@foreach($item['milestones'] as $x)<li class="{{ $loop->first ? 'cur' : '' }}"><span class="dot">{{ $x['rank'] }}</span><div><b>{{ $x['title'] }}</b><small>{{ $x['days'] }} jours · {{ $loop->first ? 'commande créée maintenant' : 's’ouvre après validation du jalon '.($x['rank'] - 1) }}</small></div><b>{{ $x['price']->formatted() }} FCFA</b></li>@endforeach</ol>
+          <div class="jl-sum"><div><span>Total des {{ count($item['milestones']) }} jalons</span><span>{{ $item['price']->formatted() }} FCFA</span></div><div class="tot"><span>À payer maintenant (jalon 1)</span><span>{{ $item['milestones'][0]['price']->formatted() }} FCFA</span></div></div>
+          <p class="muted small" style="margin:0">Le brief saisi à cette étape sert aux {{ count($item['milestones']) }} jalons. Vous pourrez arrêter le plan après un jalon validé : les jalons non ouverts ne sont jamais dus.</p></section>@endif
         <section class="ed-card">
       @if($errors->any())<div class="notice tone-error" role="alert"><x-fc.icon name="error" /><p>Vérifiez les champs signalés ci-dessous. Vos saisies sont conservées.</p></div>@endif
       <form method="post" action="{{ route('client.missions.select.store', [$mission->getKey(), $item['versionId']]) }}" data-once style="display:grid;gap:16px;margin-top:16px" novalidate>@csrf

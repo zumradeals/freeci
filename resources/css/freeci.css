@@ -2395,3 +2395,16 @@ a.kpi:hover { background: var(--marine-100); }
 .iv-q{border-left:3px solid #c9d6e6;padding:6px 12px;background:#f7f9fc;border-radius:0 8px 8px 0}
 .iv-fp{display:flex;gap:14px;align-items:center;border:1px solid #dfe5ec;border-radius:14px;padding:14px;background:#fff}
 @media(max-width:800px){.al-row,.al-f,.iv-row{grid-template-columns:1fr}}
+
+/* F-13 : jalons de paiement */
+.jl-rows{display:grid;gap:12px}.jl-row{border:1px solid #dfe5ec;border-radius:14px;background:#fff;padding:14px;display:grid;gap:10px}
+.jl-g{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
+.jl-sum{border:1px solid #dfe5ec;border-radius:14px;background:#fff;padding:14px;display:grid;gap:6px}.jl-sum>div{display:flex;justify-content:space-between;gap:10px}.jl-sum .tot{border-top:1px solid #dfe5ec;padding-top:8px;font-weight:800}
+.jl-rules{margin:0;padding-left:18px;color:#4a5563;display:grid;gap:4px}
+.jl-mini{display:grid;gap:6px;border-left:3px solid #c9d6e6;padding:4px 0 4px 12px}.jl-mini>div{display:flex;justify-content:space-between;gap:10px}
+.jl-tl{list-style:none;margin:0;padding:0;display:grid}.jl-tl li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:start;padding:14px 0;border-top:1px solid #dfe5ec}.jl-tl li:first-child{border-top:0}
+.jl-tl .dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#eef1f5;color:#4a5563}.jl-tl .done .dot{background:#1a7f4b;color:#fff}.jl-tl .cur .dot{background:#1b3a63;color:#fff}
+.jl-tl small{color:#4a5563;display:block}.jl-tl b{display:block}
+.jl-bar{height:8px;border-radius:99px;background:#e6ebf1;overflow:hidden}.jl-bar i{display:block;height:100%;background:#1a7f4b}
+@media(max-width:800px){.jl-g{grid-template-columns:1fr}.jl-tl li{grid-template-columns:34px minmax(0,1fr)}.jl-tl li>:last-child{grid-column:2}}
+.jl-row[hidden],.jl-rows[hidden],[data-ms-add][hidden]{display:none}

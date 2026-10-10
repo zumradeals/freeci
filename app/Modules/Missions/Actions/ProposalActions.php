@@ -10,6 +10,7 @@ use App\Modules\Missions\Exceptions\MissionForbidden;
 use App\Modules\Missions\Models\Mission;
 use App\Modules\Missions\Models\Proposal;
 use App\Modules\Missions\Models\ProposalVersion;
+use App\Modules\Missions\Support\MilestoneRules;
 use App\Modules\Missions\Support\MissionHistory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,12 @@ final class ProposalActions
     {
         AccountStanding::assertCanStartNew($freelancer);
         $v = $this->normalize($input);
+        if (! empty($input['use_milestones']) && $v['milestones'] === []) {
+            throw ValidationException::withMessages(['milestones' => 'Renseignez les jalons (2 à '.config('freeci.missions.milestones.count')[1].') ou décochez le paiement par jalons.']);
+        }
+        if ($v['milestones'] !== []) {          // avec des jalons, le délai total est la somme des délais des jalons (jamais saisi deux fois)
+            $v['delivery_days'] = array_sum(array_map(fn ($m) => (int) $m['days'], $v['milestones'])) ?: null;
+        }
         $this->validate($v);
 
         return DB::transaction(function () use ($freelancer, $missionId, $v, $expectedNumber) {
@@ -62,7 +69,7 @@ final class ProposalActions
             $pv = ProposalVersion::create([
                 'proposal_id' => $p->getKey(), 'number' => $current + 1, 'mission_version_id' => $live->getKey(), 'price_xof' => $v['price_xof'], 'delivery_days' => $v['delivery_days'],
                 'revisions_included' => $v['revisions_included'], 'scope' => $v['scope'], 'deliverables' => $v['deliverables'], 'delivery_mode' => $v['delivery_mode'],
-                'valid_until' => now()->addDays($v['validity_days']), 'message' => $v['message'],
+                'valid_until' => now()->addDays($v['validity_days']), 'message' => $v['message'], 'milestones' => $v['milestones'] === [] ? null : array_map(fn ($m) => ['title' => $m['title'], 'scope' => $m['scope'], 'price_xof' => $m['price_xof'], 'days' => $m['days']], $v['milestones']),
             ]);
             MissionHistory::log($m->getKey(), $current === 0 ? 'proposal_submitted' : 'proposal_revised', $freelancer, 'freelance', null, ['number' => $pv->number], $live->getKey(), $p->getKey());
 
@@ -94,6 +101,7 @@ final class ProposalActions
             'price_xof' => $int($in['price_xof'] ?? null), 'delivery_days' => $int($in['delivery_days'] ?? null), 'revisions_included' => $int($in['revisions_included'] ?? null) ?? 0,
             'validity_days' => $int($in['validity_days'] ?? null), 'scope' => trim((string) ($in['scope'] ?? '')), 'deliverables' => $lines($in['deliverables'] ?? ''),
             'delivery_mode' => ($in['delivery_mode'] ?? 'files') === 'message' ? 'message' : 'files', 'message' => trim((string) ($in['message'] ?? '')) ?: null,
+            'milestones' => ! empty($in['use_milestones']) ? MilestoneRules::normalize($in['milestones'] ?? []) : [],
         ];
     }
 
@@ -131,6 +139,9 @@ final class ProposalActions
             if (! isset($e[$f]) && PrivateContact::found($text)) {
                 $e[$f] = 'Retirez les coordonnées privées (adresse e-mail, numéro de téléphone) : les échanges passent par FreeCI.';
             }
+        }
+        if ($v['milestones'] !== []) {
+            $e += MilestoneRules::errors($v['milestones'], $v['price_xof']);
         }
         if ($e !== []) {
             throw ValidationException::withMessages($e);

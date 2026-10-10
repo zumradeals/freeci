@@ -80,6 +80,7 @@ final class GetOrderDossier
                 'closed' => 'Commande clôturée (clôture commerciale)',
                 'disagreement_reported' => "Désaccord signalé par {$who} (livraison v".($e->meta['delivery_version'] ?? '?').') : besoin de suivi enregistré',
                 'review_overdue' => 'Délai d’examen dépassé : besoin de suivi enregistré',
+                'milestone_opened' => $e->note ?: 'Jalon ouvert',
                 'proposal_selected' => 'Proposition v'.($e->meta['proposal_version'] ?? '?')." retenue par {$who}",
                 'declined' => "Demande refusée par {$who}",
                 'withdrawn' => "Demande retirée par {$who}",

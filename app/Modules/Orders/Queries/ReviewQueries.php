@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Queries;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Missions\Queries\PlanQueries;
 use App\Modules\Orders\Support\ReviewVisibility;
 use App\Shared\Dates;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -110,7 +111,7 @@ final class ReviewQueries
         }
         $isClient = $viewer->getKey() === $o->client_id;
         $closedValidated = $o->state === 'closed' && $o->closure_reason === 'validated';
-        if (! $closedValidated) {
+        if (! $closedValidated || ! PlanQueries::reviewAllowed($o)) {
             return null;
         }
         $explicit = DB::table('order_events')->where('order_id', $o->id)->where('type', 'validated')->where('actor_id', $o->client_id)->exists();

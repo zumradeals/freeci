@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Missions\Actions\MissionLifecycle;
+use App\Modules\Missions\Actions\MissionPlans;
 use App\Modules\Orders\Enums\ClosureReason;
 use App\Modules\Orders\Enums\OrderState;
 use App\Modules\Orders\Models\Order;
@@ -52,6 +53,7 @@ class ExpireOverdueOrders
             $order->forceFill(['state' => OrderState::Expired, 'closure_reason' => $reason, 'closed_at' => now(), 'row_version' => $order->row_version + 1])->save();
             if ($order->mission_id !== null) {
                 app(MissionLifecycle::class)->onOrderEnded($order, $reason->label().' : la proposition retenue est libérée.');
+                app(MissionPlans::class)->onOrderEnded($order->getKey());
             }
             $order->events()->create(['type' => 'expired', 'actor_id' => null, 'from_state' => $from->value, 'to_state' => 'expired', 'note' => $reason->label()]);
 

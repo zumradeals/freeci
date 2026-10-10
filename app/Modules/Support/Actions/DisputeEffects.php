@@ -2,6 +2,7 @@
 
 namespace App\Modules\Support\Actions;
 
+use App\Modules\Missions\Actions\MissionPlans;
 use App\Modules\Support\Exceptions\SupportConflict;
 use Illuminate\Support\Facades\DB;
 
@@ -47,12 +48,14 @@ final class DisputeEffects
                 DB::table('orders')->where('id', $o->id)->update(['state' => 'closed', 'validated_delivery_id' => $latest->id, 'validated_at' => $now, 'closure_reason' => 'validated', 'closed_at' => $now] + $base);
                 DB::table('order_events')->insert(['order_id' => $o->id, 'type' => 'closed', 'actor_id' => null, 'from_state' => 'validated', 'to_state' => 'closed', 'occurred_at' => $now,
                     'note' => 'Clôture commerciale à la suite de la décision du support. Aucun reversement n’est déclenché ni confirmé par cette étape.']);
+                app(MissionPlans::class)->onValidated($o->id);
 
                 return ['disputed', 'closed'];
 
             default:      // cancel
                 DB::table('orders')->where('id', $o->id)->update(['state' => 'cancelled', 'closure_reason' => 'cancelled_after_payment', 'closure_note' => mb_substr($reason, 0, 500), 'closed_at' => $now] + $base);
                 $event('dispute_cancelled', 'cancelled', 'Annulation motivée après paiement. Aucun remboursement n’est exécuté par cette étape.');
+                app(MissionPlans::class)->onOrderEnded($o->id);
 
                 return ['disputed', 'cancelled'];
         }

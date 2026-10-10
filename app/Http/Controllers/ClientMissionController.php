@@ -8,6 +8,7 @@ use App\Modules\Missions\Exceptions\MissionConflict;
 use App\Modules\Missions\Exceptions\MissionForbidden;
 use App\Modules\Missions\Queries\ClientMissions;
 use App\Modules\Missions\Queries\MissionProposals;
+use App\Modules\Missions\Queries\PlanQueries;
 use App\Modules\Missions\Queries\PublicMissions;
 use App\Modules\Orders\Exceptions\OperationKeyReused;
 use Illuminate\Http\RedirectResponse;
@@ -65,7 +66,7 @@ class ClientMissionController extends Controller
 
     public function show(Request $request, string $mission): View
     {
-        return view('missions.show', $this->hub($request, $mission) + ['space' => 'client']);
+        return view('missions.show', $this->hub($request, $mission) + ['hasPlan' => app(PlanQueries::class)->forMission($request->user(), $mission) !== null, 'space' => 'client']);
     }
 
     public function edit(Request $request, string $mission): View|RedirectResponse

@@ -29,7 +29,7 @@ final class FreelancerProposals
                 default => ['En attente du choix du client', 'info'],
             };
 
-            return ['id' => $p->getKey(), 'missionTitle' => $live?->title ?? 'Mission', 'missionSlug' => $p->mission->slug, 'category' => $live?->category?->name, 'state' => $p->state, 'label' => $label, 'tone' => $tone, 'number' => $v->number,
+            return ['id' => $p->getKey(), 'missionTitle' => $live?->title ?? 'Mission', 'missionId' => (string) $p->mission_id, 'milestones' => count($v->milestones ?? []), 'missionSlug' => $p->mission->slug, 'category' => $live?->category?->name, 'state' => $p->state, 'label' => $label, 'tone' => $tone, 'number' => $v->number,
                 'price' => Money::xof($v->price_xof), 'days' => $v->delivery_days, 'validUntil' => Dates::format($v->valid_until), 'stale' => $stale,
                 'missionOpen' => $p->mission->status === 'open' && $live !== null && $live->application_deadline->gt(now())];
         })->all();
@@ -45,7 +45,8 @@ final class FreelancerProposals
         $v = ProposalVersion::query()->where('proposal_id', $p->getKey())->orderByDesc('number')->first();
 
         return ['proposalId' => $p->getKey(), 'state' => $p->state, 'number' => $v->number, 'price_xof' => $v->price_xof, 'delivery_days' => $v->delivery_days, 'revisions_included' => $v->revisions_included,
-            'scope' => $v->scope, 'deliverables' => implode("\n", $v->deliverables), 'delivery_mode' => $v->delivery_mode, 'message' => $v->message];
+            'scope' => $v->scope, 'deliverables' => implode("\n", $v->deliverables), 'delivery_mode' => $v->delivery_mode, 'message' => $v->message,
+            'milestones' => collect($v->milestones ?? [])->map(fn ($x) => ['title' => $x['title'], 'scope' => $x['scope'], 'price' => $x['price_xof'], 'days' => $x['days']])->all()];
     }
 
     public function ownedProposal(User $freelancer, string $proposalId): array

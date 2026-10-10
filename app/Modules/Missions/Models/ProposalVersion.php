@@ -17,7 +17,7 @@ class ProposalVersion extends Model
 
     protected function casts(): array
     {
-        return ['price_xof' => 'integer', 'delivery_days' => 'integer', 'revisions_included' => 'integer', 'number' => 'integer', 'deliverables' => 'array', 'valid_until' => 'datetime', 'submitted_at' => 'datetime'];
+        return ['price_xof' => 'integer', 'delivery_days' => 'integer', 'revisions_included' => 'integer', 'number' => 'integer', 'deliverables' => 'array', 'milestones' => 'array', 'valid_until' => 'datetime', 'submitted_at' => 'datetime'];
     }
 
     public function proposal(): BelongsTo

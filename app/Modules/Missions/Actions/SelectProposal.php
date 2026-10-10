@@ -112,10 +112,11 @@ final class SelectProposal
         $now = now();
         $reference = 'FC-'.$now->format('ym').'-'.str_pad((string) DB::selectOne("select nextval('order_reference_seq') as n")->n, 5, '0', STR_PAD_LEFT);
         $paymentHours = (int) config('freeci.orders.payment_hours');
+        $plan = ! empty($pv->milestones) ? app(MissionPlans::class)->create($m->getKey(), $pv, $client->getKey(), $freelancer->getKey()) : null;      // F-13 : plan figé, jalon 1 = cette commande
         try {
             $order = Order::create([
                 'reference' => $reference, 'client_id' => $client->getKey(), 'freelancer_id' => $freelancer->getKey(), 'service_id' => null, 'origin' => 'mission',
-                'mission_id' => $m->getKey(), 'proposal_version_id' => $pv->getKey(), 'state' => OrderState::AwaitingPayment,
+                'mission_id' => $m->getKey(), 'proposal_version_id' => $pv->getKey(), 'milestone_item_id' => $plan['first']->id ?? null, 'state' => OrderState::AwaitingPayment,
                 'requested_at' => $now, 'response_deadline_at' => $now, 'accepted_at' => $now,            // la proposition vaut acceptation du freelance : pas de délai de réponse
                 'is_demo' => $client->is_demo || $m->is_demo || (bool) $freelancer->freelanceProfile?->is_demo,
                 'environment' => PaymentMode::orderEnvironment(),          // fixé À LA CRÉATION, immuable
@@ -126,7 +127,10 @@ final class SelectProposal
 
         app(Conversations::class)->linkProposalOrder($order, $p->getKey());       // contexte conservé ; les fils des autres candidats ne sont pas touchés
 
-        $order->agreement()->create([
+        if ($plan !== null) {
+            app(MissionPlans::class)->attachFirst($plan['first'], $order->getKey());
+        }
+        $order->agreement()->create(array_merge([
             'origin' => 'mission', 'service_id' => null, 'service_row_version' => null, 'mission_id' => $m->getKey(), 'mission_version_id' => $live->getKey(), 'proposal_version_id' => $pv->getKey(),
             'service_title' => $live->title, 'service_summary' => mb_substr($live->description, 0, 300), 'category_name' => $live->category->name,
             'seller_name' => $freelancer->freelanceProfile?->display_name ?? $freelancer->name,
@@ -136,7 +140,7 @@ final class SelectProposal
             'response_hours' => (int) config('freeci.orders.response_hours'), 'payment_hours' => $paymentHours,
             'commission_bp' => (int) config('freeci.finance.commission_bp'), 'commission_policy' => (string) config('freeci.finance.commission_policy'),    // conditions financières FIGÉES à l'accord
             'conditions_version' => config('freeci.orders.conditions_version'), 'conditions_accepted_at' => $now,
-        ]);
+        ], $plan !== null ? app(MissionPlans::class)->agreementFor($plan['first'], $plan['count'], $live->title) : []));
         $order->brief()->create(['answers' => $brief['answers'], 'notes' => $brief['notes']]);
 
         // Le paiement n'est « ouvert » (échéance de 24 h) que si les paiements sont ouverts pour CETTE commande ; sinon aucune échéance de paiement.

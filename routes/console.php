@@ -17,6 +17,8 @@ TaskHeartbeat::watch(Schedule::command('freeci:media:prune')->daily(), 'media:pr
 TaskHeartbeat::watch(Schedule::command('freeci:photos:purge')->daily(), 'photos:purge');
 // Offres personnalisées échues : constat et notification des deux personnes (la validité est de toute façon évaluée à chaque lecture).
 TaskHeartbeat::watch(Schedule::command('freeci:offers:expire')->everyFifteenMinutes()->withoutOverlapping(), 'offers:expire');
+// Plans de jalons en pause au-delà du délai de reprise : constat et arrêt (jamais de jalon dû sans paiement).
+TaskHeartbeat::watch(Schedule::command('freeci:milestones:expire')->hourly(), 'milestones:expire');
 // Retours de disponibilité : constate les dates de retour échues (la disponibilité elle-même est évaluée à la lecture) et prévient le freelance.
 TaskHeartbeat::watch(Schedule::command('freeci:availability:reopen')->dailyAt('00:10'), 'availability:reopen');
 // Courriels de notification : relance des envois restés en attente ; vidage de la file par le planificateur SEULEMENT si demandé

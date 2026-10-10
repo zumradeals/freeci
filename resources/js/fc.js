@@ -229,6 +229,47 @@ document.querySelectorAll("[data-thread]").forEach(function (t) { t.scrollTop = 
   refresh();
 })();
 
+/* Paiement par jalons (proposition) : lignes supplémentaires masquées tant qu'elles sont vides, somme et délai total en direct (indicatif : le serveur valide). */
+(function () {
+  var box = document.querySelector("[data-ms-form]");
+  if (!box) return;
+  var toggle = box.querySelector("[data-ms-toggle]");
+  var rows = [].slice.call(box.querySelectorAll("[data-ms-row]"));
+  var form = box.closest("form");
+  var num = function (v) { return Number(String(v).replace(/\D/g, "")) || 0; };
+  var fmt = function (n) { return new Intl.NumberFormat("fr-FR").format(n); };
+  var empty = function (r) { return [].every.call(r.querySelectorAll("input,textarea"), function (i) { return i.value.trim() === ""; }); };
+  var sync = function () {
+    var on = toggle.checked;
+    box.querySelector("[data-ms-rows]").hidden = !on;
+    box.querySelector("[data-ms-add]").hidden = !on;
+    var days = form.elements.namedItem("delivery_days");
+    if (days) { days.readOnly = on; var f = days.closest(".field"); if (f) f.style.opacity = on ? ".6" : ""; }
+    var sum = 0, total = 0;
+    rows.forEach(function (r) { sum += num(r.querySelector("[data-ms-price]").value); total += num(r.querySelector("[data-ms-days]").value); });
+    box.querySelector("[data-ms-sum]").textContent = fmt(sum) + " FCFA";
+    box.querySelector("[data-ms-total-days]").textContent = total + (total > 1 ? " jours" : " jour");
+    if (on && days) days.value = total || "";
+    var price = num(form.elements.namedItem("price_xof").value), chk = box.querySelector("[data-ms-check]");
+    chk.textContent = !on ? "—" : (price > 0 && sum === price ? "✓ La somme des jalons égale le prix ferme" : "La somme doit égaler le prix ferme (" + fmt(price) + " FCFA)");
+    chk.style.color = on && price > 0 && sum === price ? "#1a7f4b" : "";
+  };
+  rows.forEach(function (r) { if (r.hasAttribute("data-ms-extra") && empty(r)) r.hidden = true; });
+  box.querySelector("[data-ms-add]").addEventListener("click", function () {
+    var next = rows.filter(function (r) { return r.hidden; })[0];
+    if (next) { next.hidden = false; var i = next.querySelector("input"); if (i) i.focus(); }
+  });
+  box.addEventListener("click", function (e) {
+    if (!e.target.closest("[data-ms-remove]")) return;
+    var r = e.target.closest("[data-ms-row]");
+    r.querySelectorAll("input,textarea").forEach(function (i) { i.value = ""; });
+    r.hidden = true; sync();
+  });
+  form.addEventListener("input", sync);
+  toggle.addEventListener("change", sync);
+  sync();
+})();
+
 /* Réalisations : agrandissement de l'image dans une boîte de dialogue native (Échap ferme, le focus revient sur la carte). Sans JavaScript, le lien ouvre l'image. */
 (function () {
   "use strict";

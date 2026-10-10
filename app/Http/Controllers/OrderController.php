@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Modules\Missions\Queries\PlanQueries;
 use App\Modules\Orders\Actions\AcceptServiceRequest;
 use App\Modules\Orders\Actions\CancelBeforePayment;
 use App\Modules\Orders\Actions\DeclineServiceRequest;
@@ -41,7 +42,7 @@ class OrderController extends Controller
             abort(404);
         }
 
-        return view('orders.show', ['d' => $d, 'space' => $d->perspective]);
+        return view('orders.show', ['d' => $d, 'space' => $d->perspective, 'milestone' => app(PlanQueries::class)->forReference($reference)]);
     }
 
     public function confirm(Request $request, string $reference, string $action, GetOrderDossier $dossier): View|RedirectResponse

@@ -3,6 +3,7 @@
 namespace App\Modules\Orders\Actions;
 
 use App\Modules\Accounts\Models\User;
+use App\Modules\Missions\Queries\PlanQueries;
 use App\Modules\Orders\Exceptions\OrderForbidden;
 use App\Modules\Orders\Exceptions\ReviewConflict;
 use App\Shared\CommandReceipts;
@@ -46,6 +47,9 @@ final class SubmitReview
                 // « Validation explicite » : la livraison a été validée PAR LE CLIENT (une validation décidée par le support n'ouvre pas d'avis).
                 if (! DB::table('order_events')->where('order_id', $o->id)->where('type', 'validated')->where('actor_id', $client->getKey())->exists()) {
                     throw new ReviewConflict('Un avis n’est possible que si vous avez vous-même validé la livraison.');
+                }
+                if (! PlanQueries::reviewAllowed($o)) {
+                    throw new ReviewConflict('Pour une mission payée par jalons, l’avis est unique : il se dépose à la validation du dernier jalon (ou à l’arrêt du plan).');
                 }
                 if (DB::table('reviews')->where('order_id', $o->id)->exists()) {
                     throw new ReviewConflict('Vous avez déjà déposé un avis pour cette commande : un seul avis est possible.');

@@ -35,7 +35,7 @@
         <div class="ms2-side"><span class="ms2-budget"><x-fc.money :amount="$p['price']" /></span></div>
         <div class="ms2-acts">
           @if($p['missionOpen'] && in_array($p['state'], ['active', 'withdrawn', 'released']))<a class="btn btn-primary" href="{{ route('missions.proposal', $p['missionSlug']) }}">{{ $p['stale'] ? 'Reconfirmer' : ($p['state'] === 'active' ? 'Réviser' : 'Proposer à nouveau') }}</a>@endif
-          @if($p['state'] === 'selected')<a class="btn btn-primary" href="{{ route('freelance.orders') }}">Voir la commande</a>@endif
+          @if($p['state'] === 'selected')<a class="btn btn-primary" href="{{ route('freelance.orders') }}">Voir la commande</a>@if($p['milestones'])<a class="btn btn-secondary" href="{{ route('milestones.show', $p['missionId']) }}">Plan de jalons</a>@endif @endif
           <a class="btn btn-secondary" href="{{ route('missions.show', $p['missionSlug']) }}">Voir la mission</a>
           @if($p['state'] === 'active')<a class="btn btn-link" href="{{ route('freelance.proposals.withdraw', $p['id']) }}">Retirer</a>@endif
           <a class="btn btn-link" href="{{ route('messages.start.proposal', $p['id']) }}">Écrire au client</a>

@@ -95,6 +95,8 @@ return [
         'proposal' => ['price_xof' => [5000, 5000000], 'delivery_days' => [1, 180], 'revisions' => [0, 10], 'scope' => [50, 3000], 'validity_days' => [1, 30], 'deliverables_max' => 10],
         // F-11 : alertes (catégorie + budget minimum) ; F-12 : invitations d'un client à un freelance.
         'alerts' => ['max' => 5, 'daily_notifications' => 10],
+        // F-13 : jalons de paiement (valeurs provisoires, décision du porteur : 2 à 5 jalons, 10 000 FCFA au moins ; reprise du paiement d'un jalon pendant 14 jours).
+        'milestones' => ['count' => [2, 5], 'price_min' => 10000, 'title' => [3, 80], 'scope' => [30, 1000], 'days' => [1, 180], 'reopen_days' => 14],
         'invitations' => ['per_mission' => 10, 'per_client_day' => 20, 'message_max' => 500],
     ],
 
