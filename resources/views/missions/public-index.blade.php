@@ -73,6 +73,10 @@
             <option value="budget-decroissant" @selected($f['tri'] === 'budget-decroissant')>Budget décroissant</option>
           </select></div>
       </div>
+      @if($categorie !== '' && auth()->check() && auth()->user()->hasRole('freelance'))
+      <div class="al-cta"><x-fc.icon name="bell" :size="20" /><div><b>Être prévenu des prochaines missions de cette catégorie{{ $f['budget_min'] !== '' ? ' à partir de '.number_format((int) $f['budget_min'], 0, ',', ' ').' FCFA' : '' }}</b><p class="muted small" style="margin:0">Une alerte = catégorie + budget minimum : le texte, le budget maximum et les délais ne sont pas repris.</p></div>
+        <button class="btn btn-primary" type="submit" form="al-create">Créer cette alerte</button></div>
+      @endif
       <div class="sd-count">
         <p class="sd-count-main" role="status">{{ $results->total() }} mission{{ $results->total() > 1 ? 's' : '' }} ouverte{{ $results->total() > 1 ? 's' : '' }}@if($hasFilters) pour votre recherche @endif</p>
         <p class="muted small">Budgets en FCFA <span aria-hidden="true">·</span> Candidatures jusqu’à la date indiquée</p>
@@ -80,6 +84,7 @@
     </div>
   </form>
 
+  @if($categorie !== '' && auth()->check() && auth()->user()->hasRole('freelance'))<form id="al-create" method="post" action="{{ route('freelance.alerts.store') }}" data-once>@csrf<input type="hidden" name="category" value="{{ $categorie }}"><input type="hidden" name="min_budget" value="{{ $f['budget_min'] }}"></form>@endif
   <div class="container">
   @if($results->count())
     <div class="mission-grid mg-new">@foreach($results as $m)<x-fc.mission-card :m="$m" />@endforeach</div>

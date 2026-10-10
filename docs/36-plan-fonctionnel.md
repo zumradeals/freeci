@@ -64,8 +64,8 @@
 | F-08 | **Offres à niveaux et options payantes** — **livré au lot 76 (maquette approuvée, 5 points approuvés)** | Basique / standard / premium et options sur un service ; l'accord de commande fige le choix (comme aujourd'hui pour prix, délai, périmètre) |
 | F-09 | **Offre personnalisée** — **livrée au lot 75 (maquette approuvée, 5 points approuvés)** | Depuis la messagerie : le freelance propose prix, délai, périmètre ; le client accepte ; création d'une commande normale |
 | F-10 | **Disponibilité et temps de réponse** — **livré au lot 74 (maquette approuvée, 5 points approuvés)** | Mode « indisponible » du freelance (ses services restent visibles mais non commandables) ; temps de réponse **calculé**, jamais déclaré |
-| F-11 | **Alertes de recherche et missions recommandées** | Alertes par catégorie ; recommandations fondées uniquement sur la catégorie et le budget |
-| F-12 | **Inviter un freelance à une mission** | Le client invite ; le freelance décide de proposer ou non |
+| F-11 | **Alertes de recherche et missions recommandées** — **livré au lot 77 (maquette approuvée, 12 points approuvés avec F-12)** | Alertes par catégorie ; recommandations fondées uniquement sur la catégorie et le budget |
+| F-12 | **Inviter un freelance à une mission** — **livré au lot 77** | Le client invite ; le freelance décide de proposer ou non |
 | F-13 | **Jalons de paiement pour les missions** | Découpage d'une mission en étapes payées séparément ; **dépend de F-03** et d'un cadrage financier (Q6) |
 
 ### Vague 2 — Croissance

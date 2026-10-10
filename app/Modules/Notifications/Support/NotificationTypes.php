@@ -51,6 +51,9 @@ final class NotificationTypes
             'review_published' => ['label' => 'Nouvel avis publié', 'category' => $o, 'description' => 'Un avis sur l’une de vos prestations vient d’être publié ; vous pouvez y répondre publiquement.'],
             'mission_ended' => ['label' => 'Mission : action requise', 'category' => $e, 'description' => 'Une mission expire ou sa sélection se termine.'],
             'message_received' => ['label' => 'Nouveau message', 'category' => $o, 'description' => 'Vous recevez un message privé (le contenu n’est jamais envoyé par courriel).'],
+            'mission_alert' => ['label' => 'Alerte de mission', 'category' => $o, 'description' => 'Une mission correspondant à l’une de vos alertes (catégorie et budget) vient d’être publiée.'],
+            'mission_invitation' => ['label' => 'Invitation à une mission', 'category' => $e, 'description' => 'Un client vous invite à proposer vos services pour l’une de ses missions.'],
+            'invitation_update' => ['label' => 'Invitation déclinée', 'category' => $o, 'description' => 'Un freelance décline votre invitation à une mission (avec son motif).'],
             'proposal_received' => ['label' => 'Nouvelle proposition', 'category' => $o, 'description' => 'Un freelance répond à l’une de vos missions.'],
             'proposal_updated' => ['label' => 'Proposition révisée', 'category' => $o, 'description' => 'Un candidat révise ou reconfirme sa proposition.'],
         ];

@@ -9,6 +9,8 @@ use App\Modules\Accounts\Actions\SaveFreelanceProfile;
 use App\Modules\Catalog\Actions\AvailabilityManager;
 use App\Modules\Catalog\Actions\ListFreelancerServices;
 use App\Modules\Finance\Queries\FreelancerEarnings;
+use App\Modules\Missions\Queries\MissionInvitationQueries;
+use App\Modules\Missions\Queries\RecommendedMissions;
 use App\Modules\Orders\Queries\FreelancerOverview;
 use App\Modules\Orders\Queries\ListOrders;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +24,7 @@ class FreelanceController extends Controller
     {
         return view('freelance.dashboard', [
             'user' => $request->user(), 'o' => $overview($request->user()),
-            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'availability' => app(AvailabilityManager::class)->state($request->user()), 'revenue' => $earnings->overview($request->user(), 1)['totals']['real'], 'space' => 'freelancer',
+            'services' => $services($request->user()), 'profile' => $profile($request->user()), 'availability' => app(AvailabilityManager::class)->state($request->user()), 'revenue' => $earnings->overview($request->user(), 1)['totals']['real'], 'recommended' => app(RecommendedMissions::class)->for($request->user(), 3), 'invitationsPending' => app(MissionInvitationQueries::class)->pendingCount($request->user()), 'space' => 'freelancer',
         ]);
     }
 

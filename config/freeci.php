@@ -93,6 +93,9 @@ return [
         // Après la date limite de candidature, le client dispose de N jours pour choisir ; passé ce délai la mission expire.
         'selection_days' => 14,
         'proposal' => ['price_xof' => [5000, 5000000], 'delivery_days' => [1, 180], 'revisions' => [0, 10], 'scope' => [50, 3000], 'validity_days' => [1, 30], 'deliverables_max' => 10],
+        // F-11 : alertes (catégorie + budget minimum) ; F-12 : invitations d'un client à un freelance.
+        'alerts' => ['max' => 5, 'daily_notifications' => 10],
+        'invitations' => ['per_mission' => 10, 'per_client_day' => 20, 'message_max' => 500],
     ],
 
     // Notifications et messagerie. Les courriels ne partent que si le courrier est RÉELLEMENT configuré (MAIL_MAILER ≠ log/array).

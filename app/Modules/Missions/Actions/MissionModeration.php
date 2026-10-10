@@ -32,7 +32,8 @@ final class MissionModeration
 
     public function approve(User $moderator, string $versionId): Mission
     {
-        return DB::transaction(function () use ($moderator, $versionId) {
+        $first = false;
+        $mission = DB::transaction(function () use ($moderator, $versionId, &$first) {
             [$m, $v] = $this->lockInReview($moderator, $versionId);
             if ($v->application_deadline->lte(now())) {
                 throw new MissionConflict('La date limite de candidature est dépassée : l’auteur doit la corriger avant approbation.');
@@ -54,6 +55,15 @@ final class MissionModeration
 
             return $m;
         });
+        if ($first) {          // alertes (F-11) : première publication seulement, hors transaction ; un échec de notification ne défait jamais l'approbation
+            try {
+                app(MissionAlerts::class)->notifyPublished($mission->getKey());
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $mission;
     }
 
     public function requestChanges(User $moderator, string $versionId, string $reason): Mission

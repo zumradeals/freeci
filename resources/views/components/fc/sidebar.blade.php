@@ -32,7 +32,8 @@
       'Activité' => [
         $a('freelance.dashboard', 'Vue d’ensemble', 'grid', 'freelance.dashboard'), $a('freelance.orders', 'Demandes et commandes', 'clipboard', 'freelance.orders'),
         $a('freelance.services', 'Mes services', 'briefcase', 'freelance.services*'), $a('freelance.proposals', 'Mes propositions', 'pencil', 'freelance.proposals*'),
-        $a('missions.index', 'Missions ouvertes', 'search', 'missions.*'), $a('freelance.profile', 'Mon profil', 'user', 'freelance.profile'),
+        $a('missions.index', 'Missions ouvertes', 'search', 'missions.*'), $a('freelance.recommended', 'Missions pour vous', 'bell', ['freelance.recommended', 'freelance.alerts*']),
+        $a('freelance.invitations', 'Invitations', 'inbox', 'freelance.invitations*'), $a('freelance.profile', 'Mon profil', 'user', 'freelance.profile'),
       ],
       'Échanges' => [
         $a('messages.index', 'Messages', 'message', 'messages.*', $q, 'messages'), $a('notifications.index', 'Notifications', 'inbox', 'notifications.*', $q, 'notifications'), $a('favorites.index', 'Favoris', 'heart', 'favorites.*', $q),

@@ -15,7 +15,7 @@
       <div class="pf-id-text"><p class="pf-kicker">Profil freelance</p><h1 id="pf-name">{{ $p['name'] }}</h1><p class="pf-headline">{{ $p['headline'] }}</p>
         <p style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><x-fc.seller-pill :user="$p['userId']" rate /></p>
         <p class="pf-meta">@if($p['city'])<span><x-fc.icon name="pin" :size="16" /> {{ $p['city'] }}</span>@endif @if($p['rating'])<span><x-fc.rating :avg="$p['rating']['avg']" :count="$p['rating']['count']" /></span>@endif <span>{{ $countLabel }}</span></p></div>
-      <div class="pf-actions">@if($count)<a class="btn btn-accent btn-lg" href="#h-svcs">Voir les services</a>@endif<span class="pf-fav"><x-fc.fav-button-inline kind="freelance" :slug="$slug" :on="$p['favorited']" /></span></div>
+      <div class="pf-actions">@if($p['seller']['available'] && auth()->id() !== $p['userId'])<a class="btn btn-secondary btn-lg" href="{{ route('invitations.create', $slug) }}">Inviter à une mission</a>@endif @if($count)<a class="btn btn-accent btn-lg" href="#h-svcs">Voir les services</a>@endif<span class="pf-fav"><x-fc.fav-button-inline kind="freelance" :slug="$slug" :on="$p['favorited']" /></span></div>
     </div>
   </div>
 </section>
